@@ -1,4 +1,4 @@
-export type UserRole = "patient" | "caregiver" | "healer";
+export type UserRole = "patient" | "caregiver" | "healer" | "admin";
 
 export interface JourneyStageItem {
   id: string;

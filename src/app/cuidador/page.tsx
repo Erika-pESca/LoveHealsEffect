@@ -8,7 +8,7 @@ export default function CuidadorPage() {
       roleLabel="Rol Cuidador"
       title="Espacio del Cuidador"
       description="Contenido exclusivo para familiares y cuidadores, conectado 1 a 1 con el calendario de medicinas, citas y documentos de su paciente."
-      folderPath="src/modules/cuidador/"
+      folderPath="src/components/cuidador/"
       plannedFeatures={[
         "Ficha propia del cuidador (parentesco, horarios disponibles y áreas de apoyo).",
         "Tablero compartido en tiempo real con 'ficha_paciente' (medicinas y citas).",

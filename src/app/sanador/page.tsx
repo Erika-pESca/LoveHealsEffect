@@ -8,7 +8,7 @@ export default function SanadorPage() {
       roleLabel="Rol Sanador · Fase 1: Omar & Kelsey"
       title="Portal del Sanador y Trazabilidad"
       description="Herramienta de trabajo para Omar, Kelsey y futuros especialistas integrativos: contenidos, agenda de reservas, bitácora y resumen IA de la paciente."
-      folderPath="src/modules/sanador/"
+      folderPath="src/components/sanador/"
       plannedFeatures={[
         "Perfil público (Short Bio, especialidad) y disponibilidad para Booking.",
         "Subida de contenidos gratuitos: música, podcasts, libros PDF, videos y meditaciones.",

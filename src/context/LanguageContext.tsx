@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { homeDictionary, Locale } from "@/i18n/homeDictionary";
+import { homeDictionary, Locale } from "@/data/homeDictionary";
 
 interface LanguageContextValue {
   locale: Locale;

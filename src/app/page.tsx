@@ -1,8 +1,8 @@
 import React from "react";
-import { HeroSection } from "@/modules/inicio/components/HeroSection";
-import { MarqueeRibbon } from "@/modules/inicio/components/MarqueeRibbon";
-import { JourneyTabsSection } from "@/modules/inicio/components/JourneyTabsSection";
-import { CommunityCirclesSection } from "@/modules/inicio/components/CommunityCirclesSection";
+import { HeroSection } from "@/components/inicio/HeroSection";
+import { MarqueeRibbon } from "@/components/inicio/MarqueeRibbon";
+import { JourneyTabsSection } from "@/components/inicio/JourneyTabsSection";
+import { CommunityCirclesSection } from "@/components/inicio/CommunityCirclesSection";
 
 export default function HomePage() {
   return (

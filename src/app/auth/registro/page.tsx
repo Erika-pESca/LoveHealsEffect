@@ -8,7 +8,7 @@ export default function RegistroPage() {
       roleLabel="Célula Paciente – Cuidador"
       title="Registro Vinculado 1 a 1"
       description="Flujo bidireccional para crear la Célula Paciente-Cuidador sin importar quién llegue primero a la plataforma."
-      folderPath="src/modules/auth/"
+      folderPath="src/components/auth/"
       plannedFeatures={[
         "Flujo A (Paciente): Crea su cuenta y agrega/invita a su cuidador o lo deja pendiente.",
         "Flujo B (Cuidador): Crea su cuenta y registra a su paciente en 3 pasos simples si está en cama.",

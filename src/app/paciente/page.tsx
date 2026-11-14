@@ -8,7 +8,7 @@ export default function PacientePage() {
       roleLabel="Rol Paciente (Eje Central)"
       title="Espacio de la Paciente"
       description="Panel personalizado según la etapa de cáncer de mama, donde se centraliza la ficha médica, medicamentos, citas y recursos de bienestar."
-      folderPath="src/modules/paciente/"
+      folderPath="src/components/paciente/"
       plannedFeatures={[
         "Ficha integral por etapa (Diagnóstico, Tratamiento Activo, Cirugía, Remisión).",
         "Lista de medicamentos, suplementos y calendario de citas médicas.",
