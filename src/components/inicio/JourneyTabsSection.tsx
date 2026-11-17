@@ -1,15 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, HeartHandshake, Sparkles } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-
-const TAB_STYLES = [
-  "bg-gradient-to-r from-[#D45D74] to-[#C44A62] text-white shadow-md shadow-rose-900/20",
-  "bg-gradient-to-r from-[#3D7A62] to-[#2B614D] text-white shadow-md shadow-emerald-900/20",
-  "bg-gradient-to-r from-[#C26748] to-[#A85135] text-white shadow-md shadow-orange-900/20",
-  "bg-gradient-to-r from-[#C9861E] to-[#AA6C12] text-white shadow-md shadow-amber-900/20",
-];
 
 export function JourneyTabsSection() {
   const { dict } = useLanguage();
@@ -18,28 +11,19 @@ export function JourneyTabsSection() {
   const currentStage = dict.journey.tabs[activeIdx] || dict.journey.tabs[0];
 
   return (
-    <section
-      id="etapas"
-      className="relative w-full overflow-hidden bg-surface-container-low/60 py-16 lg:py-24"
-    >
-      <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-tertiary-fixed/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-primary-fixed/30 blur-3xl" />
-
-      <div className="relative z-10 mx-auto max-w-6xl px-5 lg:px-8">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-primary">
+    <section id="etapas" className="w-full py-10">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="mb-5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-veranda-blue">
             {dict.journey.badge}
           </span>
-          <h2 className="mt-2 font-serif text-3xl font-bold text-espresso sm:text-4xl">
+          <h2 className="mt-1 font-serif text-2xl font-bold text-espresso sm:text-3xl">
             {dict.journey.title}
           </h2>
-          <p className="mt-3 text-sm text-on-surface-variant sm:text-base">
-            {dict.journey.subtitle}
-          </p>
         </div>
 
-        {/* Pestañas de Etapas con los colores distintivos de NARA */}
-        <div className="mx-auto mb-10 flex max-w-4xl flex-wrap items-center justify-center gap-2 rounded-full border border-espresso/10 bg-white/90 p-2 shadow-sm backdrop-blur-md">
+        {/* Pestañas deslizables en móvil */}
+        <div className="mb-5 flex items-center gap-2 overflow-x-auto pb-1">
           {dict.journey.tabs.map((tab, idx) => {
             const isActive = idx === activeIdx;
             return (
@@ -47,55 +31,51 @@ export function JourneyTabsSection() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveIdx(idx)}
-                className={`flex cursor-pointer items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold transition-all duration-300 sm:text-sm ${
+                className={`shrink-0 cursor-pointer rounded-full px-4 py-2 text-xs font-semibold transition ${
                   isActive
-                    ? `${TAB_STYLES[idx]} scale-[1.02] font-bold`
-                    : "text-espresso/75 hover:bg-espresso/5 hover:text-espresso"
+                    ? "bg-veranda-blue text-white shadow-sm"
+                    : "bg-white text-espresso/75 shadow-sm hover:bg-lychee/50"
                 }`}
               >
-                <Sparkles className="h-4 w-4" />
-                <span>{tab.label}</span>
+                {tab.label}
               </button>
             );
           })}
         </div>
 
-        {/* Tarjeta de Contenido de la Etapa Activa */}
-        <div className="grid grid-cols-1 items-center gap-8 rounded-3xl bg-white p-6 shadow-[0_8px_32px_rgba(45,49,66,0.06)] lg:grid-cols-12 lg:p-10">
-          <div className="flex flex-col gap-4 lg:col-span-7">
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-secondary-container px-3.5 py-1 text-xs font-bold text-espresso">
-              <HeartHandshake className="h-3.5 w-3.5 text-primary" />
+        {/* Tarjeta limpia estilo App */}
+        <div className="grid grid-cols-1 items-center gap-6 rounded-[28px] bg-white p-5 shadow-sm lg:grid-cols-12 lg:p-8">
+          <div className="space-y-4 lg:col-span-7">
+            <span className="inline-block rounded-full bg-[#E5F2F1] px-3 py-1 text-[11px] font-bold text-[#2D5F5D]">
               {currentStage.pill}
             </span>
-
-            <h3 className="font-serif text-2xl font-bold text-espresso sm:text-3xl">
+            <h3 className="font-serif text-xl font-bold text-espresso sm:text-2xl">
               {currentStage.title}
             </h3>
-
-            <p className="text-sm leading-relaxed text-on-surface-variant sm:text-base">
+            <p className="text-xs leading-relaxed text-espresso/70 sm:text-sm">
               {currentStage.desc}
             </p>
 
-            <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
-              <div className="flex items-start gap-3 rounded-2xl bg-cream p-4">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-2.5 rounded-2xl bg-[#F4F2E6] p-3.5">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-veranda-blue" />
                 <div>
-                  <h4 className="text-sm font-bold text-espresso">
+                  <h4 className="text-xs font-bold text-espresso">
                     {currentStage.card1Title}
                   </h4>
-                  <p className="mt-1 text-xs text-on-surface-variant">
+                  <p className="mt-0.5 text-[11px] text-espresso/70">
                     {currentStage.card1Desc}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-2xl bg-cream p-4">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-tertiary" />
+              <div className="flex items-start gap-2.5 rounded-2xl bg-[#FCECEE] p-3.5">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cupid-pink" />
                 <div>
-                  <h4 className="text-sm font-bold text-espresso">
+                  <h4 className="text-xs font-bold text-espresso">
                     {currentStage.card2Title}
                   </h4>
-                  <p className="mt-1 text-xs text-on-surface-variant">
+                  <p className="mt-0.5 text-[11px] text-espresso/70">
                     {currentStage.card2Desc}
                   </p>
                 </div>
@@ -104,18 +84,18 @@ export function JourneyTabsSection() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-container shadow-md">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
               <img
                 src={currentStage.image}
                 alt={currentStage.title}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-espresso/60 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 p-3.5 backdrop-blur-sm">
-                <p className="text-xs font-bold text-primary">
+              <div className="absolute inset-0 bg-gradient-to-t from-espresso/55 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 rounded-xl bg-white/95 p-3">
+                <p className="text-[11px] font-bold text-veranda-blue">
                   {currentStage.tipLabel}
                 </p>
-                <p className="mt-0.5 text-xs italic text-espresso">
+                <p className="mt-0.5 text-[11px] italic text-espresso/80">
                   {currentStage.tipQuote}
                 </p>
               </div>
@@ -126,4 +106,3 @@ export function JourneyTabsSection() {
     </section>
   );
 }
-
