@@ -1,9 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Clock, Heart, Layers, LogOut, Users } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ArrowLeft,
+  Bell,
+  CheckCircle2,
+  Clock,
+  Dumbbell,
+  Heart,
+  HeartPulse,
+  Layers,
+  LogOut,
+  MapPin,
+  User,
+  Users,
+} from "lucide-react";
 
 interface ModuleScaffoldProps {
   moduleNumber: string;
@@ -32,7 +45,77 @@ interface SessionData {
   };
 }
 
-export function ModuleScaffold({
+const TAB_DESCRIPTIONS: Record<
+  string,
+  {
+    title: string;
+    subtitle: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+> = {
+  practicas: {
+    title: "Prácticas y Bienestar Integral",
+    subtitle:
+      "Meditaciones, musicoterapia, cuencos sonoros, nutrición y ejercicios adaptados a tu etapa.",
+    icon: Dumbbell,
+  },
+  autocuidado: {
+    title: "Autocuidado y Guías para el Cuidador",
+    subtitle:
+      "Herramientas de contención emocional, descanso, manejo del agotamiento y apoyo práctico.",
+    icon: Dumbbell,
+  },
+  contenidos: {
+    title: "Biblioteca y Recursos Multimedia",
+    subtitle:
+      "Gestión de audios, videos BAM, podcasts, libros PDF, Love Circles y contenidos bilingües.",
+    icon: Dumbbell,
+  },
+  salud: {
+    title: "Mi Ficha de Salud y Medicamentos",
+    subtitle:
+      "Horarios de medicinas, suplementos, estudios de laboratorio y documentos del oncólogo.",
+    icon: HeartPulse,
+  },
+  "salud-paciente": {
+    title: "Ficha Compartida de mi Paciente (Sincronizada 1 a 1)",
+    subtitle:
+      "Vista en tiempo real de medicamentos, horarios, síntomas y documentos médicos de tu paciente.",
+    icon: HeartPulse,
+  },
+  pacientes: {
+    title: "Fichas de Pacientes y Resumen Ejecutivo PONO IA",
+    subtitle:
+      "Lectura rápida del contexto clínico-emocional antes de cada sesión y bitácora post-sesión.",
+    icon: HeartPulse,
+  },
+  familias: {
+    title: "Supervisión de Células Familiares (Paciente ↔ Cuidador)",
+    subtitle:
+      "Estado de vínculos 1 a 1, invitaciones activas y seguimiento integral de cada familia.",
+    icon: HeartPulse,
+  },
+  inicio: {
+    title: "Eje Central del Panel",
+    subtitle:
+      "Vista principal personalizada con el resumen de tu etapa, próximos pasos y acceso directo.",
+    icon: MapPin,
+  },
+  alertas: {
+    title: "Citas, Reservas y Notificaciones",
+    subtitle:
+      "Recordatorios de tomas de medicamentos, citas oncológicas y sesiones con sanadores.",
+    icon: Bell,
+  },
+  perfil: {
+    title: "Mi Perfil y Configuración de Vínculo",
+    subtitle:
+      "Datos personales, preferencia de idioma (ES / EN), estado de suscripción y vínculo familiar.",
+    icon: User,
+  },
+};
+
+function ModuleScaffoldInner({
   moduleNumber,
   title,
   roleLabel,
@@ -41,8 +124,12 @@ export function ModuleScaffold({
   folderPath,
 }: ModuleScaffoldProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") || "inicio";
+  const tabMeta = TAB_DESCRIPTIONS[activeTab] || TAB_DESCRIPTIONS.inicio;
+  const TabIcon = tabMeta.icon;
+
   const [session, setSession] = useState<SessionData | null>(null);
-  const [loadingSession, setLoadingSession] = useState(true);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -52,8 +139,7 @@ export function ModuleScaffold({
           setSession(data);
         }
       })
-      .catch(() => {})
-      .finally(() => setLoadingSession(false));
+      .catch(() => {});
   }, []);
 
   const handleLogout = async () => {
@@ -67,22 +153,26 @@ export function ModuleScaffold({
   };
 
   return (
-    <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:py-24">
+    <section className="mx-auto max-w-4xl px-4 pb-36 pt-10 sm:px-6 lg:pt-14">
       {/* TARJETA DE SESIÓN ACTIVA Y ESTADO DEL VÍNCULO EN BASE DE DATOS */}
       {session && session.user && (
         <div className="mb-6 rounded-3xl border border-[#DF9B80]/40 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3.5">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#E8809A] font-bold text-lg">
-                {session.user.rol === "paciente" ? <Heart className="h-6 w-6" /> : <Users className="h-6 w-6" />}
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FCECEE] text-lg font-bold text-[#E8809A]">
+                {session.user.rol === "paciente" ? (
+                  <Heart className="h-6 w-6" />
+                ) : (
+                  <Users className="h-6 w-6" />
+                )}
               </span>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-espresso text-base sm:text-lg">
+                  <h3 className="text-base font-bold text-espresso sm:text-lg">
                     {session.user.nombre}
                   </h3>
                   <span className="rounded-full bg-[#5C8D67]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#5C8D67]">
-                    ● Sesión activa
+                    ● Sesión activa ({session.user.rol})
                   </span>
                 </div>
                 <p className="text-xs text-espresso/60">{session.user.correo}</p>
@@ -99,37 +189,65 @@ export function ModuleScaffold({
           </div>
 
           {/* Estado del vínculo en la base de datos (Paciente <-> Cuidador) */}
-          <div className="mt-4 rounded-2xl border border-espresso/10 bg-[#FAF9F6] p-4 text-xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/50 block mb-1">
-              Conexión en Base de Datos (Relación Paciente · Cuidador)
-            </span>
-            {session.relation?.status === "vinculado" ? (
-              <div className="flex items-center gap-2 text-[#2A5C35]">
-                <CheckCircle2 className="h-4 w-4 text-[#5C8D67] shrink-0" />
-                <span>
-                  <strong>Célula sincronizada con éxito:</strong> Vinculada/o con{" "}
-                  <strong>{session.relation.partnerName || session.relation.partnerEmail}</strong>.
-                  Ambos perfiles comparten la misma ficha médica y bitácora de salud.
-                </span>
-              </div>
-            ) : session.relation?.partnerEmail ? (
-              <div className="flex items-center gap-2 text-[#7F3348]">
-                <Clock className="h-4 w-4 text-[#E8809A] shrink-0" />
-                <span>
-                  <strong>Invitación enviada por correo directo a:</strong>{" "}
-                  <strong>{session.relation.partnerEmail}</strong>. El vínculo quedará 100% activo en
-                  cuanto tu acompañante acepte y cree su contraseña.
-                </span>
-              </div>
-            ) : (
-              <p className="text-espresso/70">
-                Aún no has vinculado un acompañante. Puedes invitar a tu familiar o cuidador desde este
-                panel en cualquier momento enviándole un correo directo.
-              </p>
-            )}
-          </div>
+          {(session.user.rol === "paciente" ||
+            session.user.rol === "cuidador") && (
+            <div className="mt-4 rounded-2xl border border-espresso/10 bg-[#FAF9F6] p-4 text-xs">
+              <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-espresso/50">
+                Conexión en Base de Datos (Relación Paciente · Cuidador)
+              </span>
+              {session.relation?.status === "vinculado" ? (
+                <div className="flex items-center gap-2 text-[#2A5C35]">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#5C8D67]" />
+                  <span>
+                    <strong>Célula sincronizada con éxito:</strong> Vinculada/o
+                    con{" "}
+                    <strong>
+                      {session.relation.partnerName ||
+                        session.relation.partnerEmail}
+                    </strong>
+                    . Ambos perfiles comparten la misma ficha médica y bitácora
+                    de salud.
+                  </span>
+                </div>
+              ) : session.relation?.partnerEmail ? (
+                <div className="flex items-center gap-2 text-[#7F3348]">
+                  <Clock className="h-4 w-4 shrink-0 text-[#E8809A]" />
+                  <span>
+                    <strong>Invitación enviada por correo directo a:</strong>{" "}
+                    <strong>{session.relation.partnerEmail}</strong>. El vínculo
+                    quedará 100% activo en cuanto tu acompañante acepte y cree
+                    su contraseña.
+                  </span>
+                </div>
+              ) : (
+                <p className="text-espresso/70">
+                  Aún no has vinculado un acompañante. Puedes invitar a tu
+                  familiar o cuidador desde este panel en cualquier momento
+                  enviándole un correo directo.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
+
+      {/* INDICADOR DE SECCIÓN ACTIVA EN LA BARRA INFERIOR CURVA */}
+      <div className="mb-6 flex items-center gap-4 rounded-3xl border border-[#E8809A]/25 bg-gradient-to-r from-[#FCECEE]/80 via-white to-[#FAF7F2] p-5 shadow-sm">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] via-[#DC5678] to-[#B03052] text-white shadow-[0_6px_16px_rgba(196,54,92,0.35)]">
+          <TabIcon className="h-5 w-5" />
+        </div>
+        <div>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
+            Sección activa en la barra inferior · {activeTab.toUpperCase()}
+          </span>
+          <h2 className="font-serif text-lg font-bold text-espresso sm:text-xl">
+            {tabMeta.title}
+          </h2>
+          <p className="mt-0.5 text-xs text-espresso/70 sm:text-sm">
+            {tabMeta.subtitle}
+          </p>
+        </div>
+      </div>
 
       <div className="rounded-3xl border border-espresso/10 bg-white p-8 shadow-sm sm:p-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -174,5 +292,13 @@ export function ModuleScaffold({
         </div>
       </div>
     </section>
+  );
+}
+
+export function ModuleScaffold(props: ModuleScaffoldProps) {
+  return (
+    <Suspense fallback={null}>
+      <ModuleScaffoldInner {...props} />
+    </Suspense>
   );
 }

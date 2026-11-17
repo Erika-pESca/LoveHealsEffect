@@ -7,9 +7,19 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export function Navbar() {
   const { locale, setLocale, dict } = useLanguage();
-  const pathname = usePathname();
-  const isAuthPage = pathname?.startsWith("/auth");
+  const pathname = usePathname() || "";
+  const isAuthPage = pathname.startsWith("/auth");
+  const isPanelPage =
+    pathname.startsWith("/paciente") ||
+    pathname.startsWith("/cuidador") ||
+    pathname.startsWith("/sanador") ||
+    pathname.startsWith("/admin");
   const isEs = locale === "es";
+
+  // En los 4 paneles de usuario no se muestra el header superior; solo queda la barra inferior curva
+  if (isPanelPage) {
+    return null;
+  }
 
   const navLinks = isEs
     ? [

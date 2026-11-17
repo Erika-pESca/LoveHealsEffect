@@ -9,7 +9,14 @@ export function Footer() {
   const { locale, dict } = useLanguage();
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/auth")) {
+  const isHiddenRoute =
+    pathname?.startsWith("/auth") ||
+    pathname?.startsWith("/paciente") ||
+    pathname?.startsWith("/cuidador") ||
+    pathname?.startsWith("/sanador") ||
+    pathname?.startsWith("/admin");
+
+  if (isHiddenRoute) {
     return null;
   }
 

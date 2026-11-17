@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS ficha_paciente (
     citas_medicas JSONB DEFAULT '[]'::jsonb,           -- Planificador de citas, controles y chequeos
     documentos_oncologo JSONB DEFAULT '[]'::jsonb,     -- Recetas, notas y estudios digitalizados
     contactos_personales JSONB DEFAULT '[]'::jsonb,    -- Directorio básico de contactos personales
+    bienestar_diario JSONB DEFAULT '{}'::jsonb,        -- Check-in diario: ánimo, hábitos y agua por fecha
+    bitacora_clinica JSONB DEFAULT '[]'::jsonb,        -- Línea de tiempo del proceso: síntomas, citas, procedimientos, medicinas...
     resumen_ia_pono TEXT DEFAULT '',                   -- Resumen interno generado por PONO para sanadores
     resumen_ia_actualizado_en TIMESTAMP WITH TIME ZONE,
     registrado_por VARCHAR(30) DEFAULT 'paciente' CHECK (registrado_por IN ('paciente', 'cuidador')),
@@ -57,6 +59,7 @@ CREATE TABLE IF NOT EXISTS ficha_cuidador (
     habitos_autocuidado TEXT DEFAULT '',
     horarios_disponibles TEXT DEFAULT '',
     areas_de_interes TEXT DEFAULT '',
+    bienestar_diario JSONB DEFAULT '{}'::jsonb,        -- Check-in diario del cuidador: ánimo y autocuidado
     estado_vinculo VARCHAR(30) DEFAULT 'vinculado' CHECK (estado_vinculo IN ('pendiente', 'vinculado')),
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -145,3 +148,9 @@ CREATE INDEX IF NOT EXISTS idx_ficha_paciente_cuidador ON ficha_paciente(cuidado
 CREATE INDEX IF NOT EXISTS idx_sanadores_usuario ON sanadores_y_contenidos(sanador_usuario_id, tipo_registro);
 CREATE INDEX IF NOT EXISTS idx_bitacora_paciente ON citas_y_bitacora_sanador(ficha_paciente_id, fecha_sesion DESC);
 CREATE INDEX IF NOT EXISTS idx_tickets_estado ON tickets_feedback(estado, creado_en DESC);
+
+
+-- Migración para bases ya creadas (ejecutar una vez en el SQL Editor de Supabase):
+ALTER TABLE ficha_paciente ADD COLUMN IF NOT EXISTS bienestar_diario JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE ficha_cuidador ADD COLUMN IF NOT EXISTS bienestar_diario JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE ficha_paciente ADD COLUMN IF NOT EXISTS bitacora_clinica JSONB DEFAULT '[]'::jsonb;

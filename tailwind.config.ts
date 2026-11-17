@@ -51,8 +51,34 @@ const config: Config = {
       },
       animation: {
         marquee: "marquee 30s linear infinite",
+        "sheet-up": "sheetUp 0.28s ease-out",
+        "fade-in": "fadeIn 0.35s ease-out both",
+        breathe: "breathe 8s ease-in-out infinite",
+        wave: "wave 1.1s ease-in-out infinite",
+        pop: "pop 0.3s ease-out",
       },
       keyframes: {
+        sheetUp: {
+          "0%": { transform: "translateY(40px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        fadeIn: {
+          "0%": { opacity: "0", transform: "translateY(6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        breathe: {
+          "0%, 100%": { transform: "scale(0.78)" },
+          "50%": { transform: "scale(1.12)" },
+        },
+        wave: {
+          "0%, 100%": { transform: "scaleY(0.35)" },
+          "50%": { transform: "scaleY(1)" },
+        },
+        pop: {
+          "0%": { transform: "scale(0.9)" },
+          "60%": { transform: "scale(1.08)" },
+          "100%": { transform: "scale(1)" },
+        },
         marquee: {
           "0%": { transform: "translateX(0%)" },
           "100%": { transform: "translateX(-50%)" },
