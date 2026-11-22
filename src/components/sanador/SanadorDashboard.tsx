@@ -36,7 +36,12 @@ import {
 } from "@/components/panel/ui";
 import { STAGES, todayKey, TYPE_META } from "@/components/paciente/PacienteDashboard";
 
-const CORAL = "from-[#F7A27F] via-[#EE7C86] to-[#D85678]";
+import { CORAL } from "./types";
+import { InicioSection } from "./InicioSection";
+import { PacientesSection } from "./PacientesSection";
+import { ContenidosSection } from "./ContenidosSection";
+import { AgendaSection } from "./AgendaSection";
+import { PerfilSection } from "./PerfilSection";
 
 function SanadorDashboardInner() {
   const router = useRouter();
@@ -256,305 +261,73 @@ function SanadorDashboardInner() {
 
         {/* ===================== INICIO ===================== */}
         {activeTab === "inicio" && (
-          <main className="mt-6 space-y-7">
-            <section className="animate-fade-in">
-              <div className={`relative overflow-hidden rounded-[32px] bg-gradient-to-br ${CORAL} p-6 text-white shadow-[0_14px_34px_rgba(216,86,120,0.3)]`}>
-                <span className="absolute -right-1 top-3 select-none text-7xl opacity-90">🌺</span>
-                <span className="inline-block rounded-full bg-white/25 px-3 py-1 text-[11px] font-bold">{t("Tu agenda", "Your agenda")}</span>
-                <h2 className="mt-3 max-w-[70%] font-serif text-3xl font-bold leading-tight">
-                  {todayCount > 0
-                    ? t(`${todayCount} sesión${todayCount > 1 ? "es" : ""} hoy`, `${todayCount} session${todayCount > 1 ? "s" : ""} today`)
-                    : t("Hoy sin sesiones", "No sessions today")}
-                </h2>
-                <p className="mt-1 text-xs font-semibold text-white/85">
-                  {programmed.length} {t("programadas en total", "scheduled in total")}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => openLog()}
-                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-[#D85678] shadow-lg transition active:scale-95"
-                >
-                  <Mic className="h-4 w-4" />
-                  {t("Registrar bitácora", "Record session log")}
-                </button>
-              </div>
-            </section>
-
-            <section className="grid grid-cols-3 gap-3">
-              {[
-                { v: fichas.length, l: t("Pacientes", "Patients"), bg: "bg-[#FAD4DC]" },
-                { v: programmed.length, l: t("Programadas", "Scheduled"), bg: "bg-[#D7F3EA]" },
-                { v: published.length, l: t("Recursos", "Resources"), bg: "bg-[#FFF1B8]" },
-              ].map((s) => (
-                <div key={s.l} className={`rounded-3xl ${s.bg} py-4 text-center`}>
-                  <div className="font-serif text-3xl font-bold text-espresso">{s.v}</div>
-                  <div className="text-[11px] font-bold text-espresso/60">{s.l}</div>
-                </div>
-              ))}
-            </section>
-
-            <section>
-              <SectionTitle title={t("Próximas sesiones", "Upcoming sessions")} action={t("Ver todas", "See all")} onAction={() => goToTab("alertas")} />
-              <div className="space-y-2.5">
-                {programmed.length === 0 && <Card className="text-center text-sm text-espresso/60">{t("No hay sesiones programadas. 🌿", "No sessions scheduled. 🌿")}</Card>}
-                {programmed.slice(0, 4).map((s) => {
-                  const p = patientOf(s.ficha_paciente_id);
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => {
-                        setPatientId(s.ficha_paciente_id);
-                        openSheet("patient");
-                      }}
-                      className="flex w-full items-center gap-3 rounded-3xl bg-white px-4 py-3.5 text-left shadow-sm transition active:scale-[0.98]"
-                    >
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif text-lg font-bold text-white">
-                        {(p?.nombre_paciente || "P").charAt(0)}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold text-espresso">{p?.nombre_paciente || t("Paciente", "Patient")}</span>
-                        <span className="block truncate text-xs text-espresso/60">
-                          {fmtDate(s.fecha_sesion)} · {String(s.modalidad).toUpperCase()}
-                        </span>
-                      </span>
-                      <span className="flex items-center gap-1 rounded-full bg-[#E7F2F1] px-3 py-1 text-[11px] font-bold text-[#239BA2]">
-                        <Sparkles className="h-3 w-3" />
-                        PONO
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section>
-              <SectionTitle title={t("Acceso rápido", "Quick access")} />
-              <div className="grid grid-cols-4 gap-3">
-                {[
-                  { label: t("Pacientes", "Patients"), icon: Users, bg: "bg-[#FAD4DC]", fg: "text-[#C94A6A]", go: () => goToTab("pacientes") },
-                  { label: t("Publicar", "Publish"), icon: Plus, bg: "bg-[#E4E0FA]", fg: "text-[#7A4FD1]", go: () => openSheet("publish", { tipo: "video_bam", publico: "ambos" }) },
-                  { label: t("Reservas", "Bookings"), icon: CalendarHeart, bg: "bg-[#D7F3EA]", fg: "text-[#239BA2]", go: () => goToTab("alertas") },
-                  { label: t("Mi ficha", "Profile"), icon: UserCog, bg: "bg-[#FFF1B8]", fg: "text-[#B98A00]", go: () => goToTab("perfil") },
-                ].map((q) => (
-                  <button key={q.label} type="button" onClick={q.go} className="flex flex-col items-center gap-2 rounded-3xl bg-white py-4 shadow-sm transition active:scale-95">
-                    <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ${q.bg} ${q.fg}`}>
-                      <q.icon className="h-5 w-5" />
-                    </span>
-                    <span className="text-[11px] font-bold text-espresso/75">{q.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          </main>
+          <InicioSection
+            t={t}
+            isEs={isEs}
+            todayCount={todayCount}
+            programmed={programmed}
+            openLog={openLog}
+            fichas={fichas}
+            published={published}
+            goToTab={goToTab}
+            patientOf={patientOf}
+            setPatientId={setPatientId}
+            openSheet={openSheet}
+            fmtDate={fmtDate}
+          />
         )}
 
         {/* ===================== PACIENTES ===================== */}
         {activeTab === "pacientes" && (
-          <main className="mt-6 space-y-5">
-            <div className="animate-fade-in">
-              <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t("Mis pacientes", "My patients")}</h2>
-              <p className="mt-1 text-sm text-espresso/60">{t("Toca una ficha para leer el resumen de PONO IA antes de la sesión.", "Tap a chart to read the PONO AI summary before the session.")}</p>
-            </div>
-            <div className="space-y-3">
-              {fichas.map((f) => {
-                const stage = STAGES.find((s) => s.id === f.etapa_actual) || STAGES[0];
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => {
-                      setPatientId(f.id);
-                      openSheet("patient");
-                    }}
-                    className="flex w-full items-center gap-4 rounded-[26px] bg-white p-4 text-left shadow-[0_8px_22px_rgba(80,60,90,0.07)] transition active:scale-[0.98]"
-                  >
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif text-xl font-bold text-white">
-                      {(f.nombre_paciente || "P").charAt(0)}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base font-bold text-espresso">{f.nombre_paciente}</span>
-                      <span className="mt-0.5 block text-xs text-espresso/60">
-                        {stage.emoji} {isEs ? stage.es : stage.en} · {f.caregiverName ? `${t("con", "with")} ${f.caregiverName.split(" ")[0]}` : t("sin cuidador", "no caregiver")}
-                      </span>
-                      <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#E7F2F1] px-2.5 py-0.5 text-[10px] font-bold text-[#239BA2]">
-                        <Sparkles className="h-3 w-3" />
-                        {t("Resumen PONO IA listo", "PONO AI summary ready")}
-                      </span>
-                    </span>
-                    <ChevronRight className="h-5 w-5 text-espresso/30" />
-                  </button>
-                );
-              })}
-            </div>
-          </main>
+          <PacientesSection
+            t={t}
+            isEs={isEs}
+            fichas={fichas}
+            setPatientId={setPatientId}
+            openSheet={openSheet}
+          />
         )}
 
         {/* ===================== CONTENIDOS ===================== */}
         {activeTab === "contenidos" && (
-          <main className="mt-6 space-y-5">
-            <div className="animate-fade-in">
-              <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t("Mis contenidos", "My content")}</h2>
-              <p className="mt-1 text-sm text-espresso/60">{t("Lo que publiques aparece al instante para pacientes y cuidadores.", "What you publish appears instantly for patients and caregivers.")}</p>
-            </div>
-            <PrimaryButton color={CORAL} onClick={() => openSheet("publish", { tipo: "video_bam", publico: "ambos" })}>
-              <Plus className="h-5 w-5" />
-              {t("Publicar recurso o evento", "Publish resource or event")}
-            </PrimaryButton>
-            <div className="space-y-3">
-              {published.map((item) => {
-                const meta = TYPE_META[item.tipo_contenido] || TYPE_META.guia_autocuidado;
-                const Icon = meta.icon;
-                return (
-                  <div key={item.id} className="flex items-center gap-4 rounded-[26px] bg-white p-3.5 shadow-[0_8px_22px_rgba(80,60,90,0.07)]">
-                    <span className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${meta.grad} text-espresso/70`}>
-                      <Icon className="h-7 w-7" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#D85678]">
-                        {isEs ? meta.es : meta.en} · {item.publico_objetivo}
-                      </span>
-                      <span className="mt-0.5 block text-sm font-bold leading-snug text-espresso line-clamp-2">{item.titulo_es}</span>
-                      {item.fecha_evento && <span className="block text-xs text-espresso/55">{String(item.fecha_evento).slice(0, 16).replace("T", " ")}</span>}
-                    </span>
-                    <button type="button" onClick={() => runAction("delete_content", { id: item.id }, t("Recurso eliminado", "Removed"))} className="text-espresso/35 transition hover:text-[#C94A6A]" aria-label={t("Eliminar", "Delete")}>
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </main>
+          <ContenidosSection
+            t={t}
+            isEs={isEs}
+            openSheet={openSheet}
+            published={published}
+            runAction={runAction}
+          />
         )}
 
         {/* ===================== RESERVAS ===================== */}
         {activeTab === "alertas" && (
-          <main className="mt-6 space-y-5">
-            <div className="animate-fade-in">
-              <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t("Reservas", "Bookings")}</h2>
-              <p className="mt-1 text-sm text-espresso/60">{t("Sesiones online y en persona.", "Online and in-person sessions.")}</p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { v: sessions.length, l: t("Reservadas", "Booked"), bg: "bg-[#E4E0FA]" },
-                { v: `$${gross}`, l: t("Facturación", "Billing"), bg: "bg-[#D7F3EA]" },
-                { v: `$${fee}`, l: t("Fee LHEAPP 15%", "LHEAPP fee 15%"), bg: "bg-[#FAD4DC]" },
-              ].map((s) => (
-                <div key={s.l} className={`rounded-3xl ${s.bg} py-4 text-center`}>
-                  <div className="font-serif text-2xl font-bold text-espresso">{s.v}</div>
-                  <div className="text-[10px] font-bold text-espresso/60">{s.l}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-3 gap-1.5 rounded-full bg-white p-1.5 shadow-sm">
-              {([["programada", t("Programadas", "Scheduled")], ["completada", t("Completadas", "Completed")], ["todas", t("Todas", "All")]] as const).map(([id, label]) => (
-                <button key={id} type="button" onClick={() => setBookingFilter(id)} className={`rounded-full py-2.5 text-xs font-bold transition ${bookingFilter === id ? "bg-espresso text-white shadow" : "text-espresso/60"}`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              {visibleSessions.length === 0 && <Card className="text-center text-sm text-espresso/60">{t("Nada por aquí. 🌿", "Nothing here. 🌿")}</Card>}
-              {visibleSessions.map((s) => {
-                const p = patientOf(s.ficha_paciente_id);
-                return (
-                  <div key={s.id} className="rounded-[26px] bg-white p-4 shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif font-bold text-white">
-                        {(p?.nombre_paciente || "P").charAt(0)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-espresso">{p?.nombre_paciente || t("Paciente", "Patient")}</p>
-                        <p className="truncate text-xs text-espresso/60">{s.enlace_o_lugar}</p>
-                      </div>
-                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${s.estado_cita === "completada" ? "bg-[#5C8D67]/15 text-[#2A5C35]" : s.estado_cita === "cancelada" ? "bg-espresso/10 text-espresso/60" : "bg-[#FFF1B8] text-[#8A6A00]"}`}>
-                        {s.estado_cita}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-espresso/60">
-                      {fmtDate(s.fecha_sesion)} · {String(s.modalidad).toUpperCase()} · {t("Asiste", "Attends")}: {s.asistente_rol}
-                      {s.es_sesion_gratuita_mensual ? ` · ${t("gratuita", "free")}` : ""}
-                    </p>
-                    {s.estado_cita === "programada" && (
-                      <div className="mt-3 flex gap-2">
-                        <button type="button" onClick={() => openLog(s.ficha_paciente_id, s.id)} className="flex-1 rounded-full bg-[#D85678] py-2 text-xs font-bold text-white">
-                          {t("Registrar bitácora", "Log session")}
-                        </button>
-                        <button type="button" onClick={() => runAction("update_session_status", { session_id: s.id, estado_cita: "cancelada" }, t("Sesión cancelada", "Session cancelled"))} className="rounded-full border border-espresso/15 px-4 py-2 text-xs font-bold text-espresso/70">
-                          {t("Cancelar", "Cancel")}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </main>
+          <AgendaSection
+            t={t}
+            isEs={isEs}
+            sessions={sessions}
+            gross={gross}
+            fee={fee}
+            bookingFilter={bookingFilter}
+            setBookingFilter={setBookingFilter}
+            visibleSessions={visibleSessions}
+            patientOf={patientOf}
+            fmtDate={fmtDate}
+            openLog={openLog}
+            runAction={runAction}
+          />
         )}
 
         {/* ===================== PERFIL ===================== */}
         {activeTab === "perfil" && (
-          <main className="mt-6 space-y-6">
-            <div className="animate-fade-in text-center">
-              <div className={`mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ${CORAL} text-white shadow-lg`}>
-                <Sparkles className="h-10 w-10" />
-              </div>
-              <h2 className="mt-3 font-serif text-2xl font-bold text-espresso">Omar Melero &amp; Kelsie Reynolds</h2>
-              <p className="text-xs text-espresso/55">{data.user.correo}</p>
-              <span className="mt-2 inline-block rounded-full bg-[#FAD4DC] px-3 py-1 text-[11px] font-bold text-[#C94A6A]">{t("Sanadores · Piloto V1", "Healers · V1 Pilot")}</span>
-            </div>
-
-            <div className="overflow-hidden rounded-[28px] bg-white shadow-sm">
-              {profiles.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() =>
-                    openSheet("profile", {
-                      id: String(p.id),
-                      especialidad: p.especialidad || "",
-                      tarifa: String(p.tarifa_hora_usd ?? 85),
-                      bioEs: p.short_bio_es || "",
-                      bioEn: p.short_bio_en || "",
-                      modalidades: p.modalidades || "ambas",
-                    })
-                  }
-                  className={`flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-[#FFF5F0] ${i > 0 ? "border-t border-espresso/5" : ""}`}
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FFE7D6] text-[#F2711C]">
-                    <UserCog className="h-5 w-5" />
-                  </span>
-                  <span className="flex-1 text-sm font-bold text-espresso">
-                    {t("Ficha pública de", "Public profile of")} {String(p.especialidad).split("·")[0].trim()}
-                  </span>
-                  <span className="text-xs text-espresso/50">${p.tarifa_hora_usd}/h</span>
-                  <ChevronRight className="h-4 w-4 text-espresso/30" />
-                </button>
-              ))}
-              {[
-                { icon: Globe, label: t("Idioma", "Language"), hint: isEs ? "Español" : "English", action: () => setLocale(isEs ? "en" : "es") },
-                { icon: HelpCircle, label: t("Ayuda y comentarios", "Help & feedback"), hint: "", action: () => openSheet("help", { tipo: "feedback" }) },
-              ].map((row) => (
-                <button key={row.label} type="button" onClick={row.action} className="flex w-full items-center gap-3 border-t border-espresso/5 px-5 py-4 text-left transition hover:bg-[#FFF5F0]">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FFE7D6] text-[#F2711C]">
-                    <row.icon className="h-5 w-5" />
-                  </span>
-                  <span className="flex-1 text-sm font-bold text-espresso">{row.label}</span>
-                  <span className="text-xs text-espresso/50">{row.hint}</span>
-                  <ChevronRight className="h-4 w-4 text-espresso/30" />
-                </button>
-              ))}
-              <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 border-t border-espresso/5 px-5 py-4 text-left text-[#C94A6A] transition hover:bg-[#FCECEE]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FCECEE]">
-                  <LogOut className="h-5 w-5" />
-                </span>
-                <span className="flex-1 text-sm font-bold">{t("Cerrar sesión", "Log out")}</span>
-              </button>
-            </div>
-          </main>
+          <PerfilSection
+            t={t}
+            isEs={isEs}
+            data={data}
+            profiles={profiles}
+            openSheet={openSheet}
+            setLocale={setLocale}
+            handleLogout={handleLogout}
+          />
         )}
       </div>
 

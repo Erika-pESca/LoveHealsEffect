@@ -52,16 +52,12 @@ import {
   TYPE_META,
 } from "@/components/paciente/PacienteDashboard";
 
-const TEAL = "from-[#4DB6B0] to-[#239BA2]";
-
-const CMOODS = [
-  { id: "energia", emoji: "😊", es: "Con energía", en: "Energized", bg: "bg-[#FFF1B8]", type: "guia_autocuidado", msgEs: "¡Qué bueno! Aprovecha para adelantar algo de autocuidado.", msgEn: "Great! Use it to get ahead on some self-care." },
-  { id: "tranquilo", emoji: "😌", es: "Tranquilo/a", en: "Calm", bg: "bg-[#D7F3EA]", type: "guia_autocuidado", msgEs: "Qué bien. Esa calma también la siente tu paciente.", msgEn: "Wonderful. Your patient feels that calm too." },
-  { id: "agotado", emoji: "🥱", es: "Agotado/a", en: "Exhausted", bg: "bg-[#E4E0FA]", type: "meditacion_audio", msgEs: "Cuidar cansa. Regálate 8 minutos de pausa: no puedes dar desde el vacío.", msgEn: "Caring is tiring. Give yourself an 8-minute pause: you can't pour from an empty cup." },
-  { id: "estresado", emoji: "😣", es: "Estresado/a", en: "Stressed", bg: "bg-[#FFE0D2]", type: "meditacion_audio", msgEs: "Respira un momento. Una pausa corta baja la tensión.", msgEn: "Take a breath. A short pause lowers tension." },
-  { id: "abrumado", emoji: "😰", es: "Abrumado/a", en: "Overwhelmed", bg: "bg-[#D9E8FB]", type: "love_circle", msgEs: "No tienes que poder con todo solo/a. Tu Love Circle de cuidadores te espera.", msgEn: "You don't have to carry it all alone. Your caregivers' Love Circle awaits." },
-  { id: "agradecido", emoji: "🥰", es: "Agradecido/a", en: "Grateful", bg: "bg-[#FAD4DC]", type: "workshop", msgEs: "Qué hermoso sentir eso. Compártelo con tu paciente hoy.", msgEn: "Beautiful to feel that. Share it with your patient today." },
-];
+import { TEAL, CMOODS } from "./types";
+import { InicioSection } from "./InicioSection";
+import { AutocuidadoSection } from "./AutocuidadoSection";
+import { FichaPacienteSection } from "./FichaPacienteSection";
+import { AgendaSection } from "./AgendaSection";
+import { PerfilSection } from "./PerfilSection";
 
 function CuidadorDashboardInner() {
   const router = useRouter();
@@ -216,8 +212,7 @@ function CuidadorDashboardInner() {
 
   const runAction = async (
     action: string,
-    payload: Record<string, any>,
-    message: string,
+    payload: Record<string, any> = {}, message: string = "",
     options: { refetch?: boolean } = { refetch: true }
   ) => {
     try {
@@ -437,625 +432,99 @@ function CuidadorDashboardInner() {
 
         {/* ===================== INICIO ===================== */}
         {activeTab === "inicio" && (
-          <main className="mt-6 space-y-7">
-            {/* Tarjeta de la célula */}
-            <section className="animate-fade-in">
-              <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#CFEDE8] via-[#E8F6F3] to-[#FDE3E8] p-6 shadow-[0_14px_34px_rgba(35,155,162,0.15)]">
-                <span className="absolute -right-1 top-3 select-none text-7xl opacity-90">🤝</span>
-                <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#239BA2]">
-                  {t("Célula familiar 1 a 1", "1-to-1 family cell")}
-                </span>
-                <h2 className="mt-3 max-w-[72%] font-serif text-2xl font-bold leading-tight text-espresso">
-                  {t(`Acompañando a ${patientFirst}`, `Supporting ${patientFirst}`)}
-                </h2>
-                <p className="mt-1 text-xs font-semibold text-espresso/60">
-                  {stage.emoji} {isEs ? stage.es : stage.en} · {fc?.relacion_familiar || t("Cuidador", "Caregiver")}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => goToTab("salud-paciente")}
-                  className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#239BA2] px-6 py-3 text-sm font-bold text-white shadow-lg transition active:scale-95"
-                >
-                  <Heart className="h-4 w-4" />
-                  {t(`Ver ficha de ${patientFirst}`, `View ${patientFirst}'s chart`)}
-                </button>
-              </div>
-            </section>
-
-            {/* Etapa de la paciente */}
-            <section>
-              <SectionTitle title={t(`Etapa de ${patientFirst}`, `${patientFirst}'s stage`)} />
-              <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1">
-                {STAGES.map((s) => {
-                  const active = s.id === fp.etapa_actual;
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => runAction("update_patient_stage", { etapa_actual: s.id }, t(`Etapa: ${s.es}`, `Stage: ${s.en}`))}
-                      className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
-                        active ? "bg-espresso text-white shadow-md" : "bg-white text-espresso/70 shadow-sm"
-                      }`}
-                    >
-                      <span>{s.emoji}</span>
-                      {isEs ? s.es : s.en}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Ánimo del cuidador */}
-            <section>
-              <SectionTitle title={t("Y tú, ¿cómo estás hoy?", "And you, how are you today?")} />
-              <div className="grid grid-cols-3 gap-3">
-                {CMOODS.map((m) => {
-                  const active = currentMood?.id === m.id;
-                  return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => updateDaily({ mood: m.id })}
-                      className={`flex flex-col items-center gap-1.5 rounded-3xl ${m.bg} px-2 py-4 transition active:scale-95 ${
-                        active ? "scale-[1.04] shadow-md ring-2 ring-[#239BA2]" : "opacity-90 hover:opacity-100"
-                      }`}
-                    >
-                      <span className={`text-3xl ${active ? "animate-pop" : ""}`}>{m.emoji}</span>
-                      <span className="text-[11px] font-bold text-espresso/80">{isEs ? m.es : m.en}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {currentMood && (
-                <div className="mt-3 animate-fade-in rounded-2xl bg-white/80 px-4 py-3 text-sm leading-relaxed text-espresso/80 shadow-sm">
-                  {isEs ? currentMood.msgEs : currentMood.msgEn}
-                  {suggested && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPlayerItem(suggested);
-                        setSheet("player");
-                      }}
-                      className="mt-2 flex items-center gap-1.5 text-xs font-bold text-[#239BA2]"
-                    >
-                      <Play className="h-3.5 w-3.5" />
-                      {isEs ? suggested.titulo_es : suggested.titulo_en || suggested.titulo_es}
-                    </button>
-                  )}
-                </div>
-              )}
-            </section>
-
-            {/* Tareas del día */}
-            <section>
-              <SectionTitle
-                title={t("Mi día de cuidado", "My caregiving day")}
-                action={t("Ver medicinas", "View meds")}
-                onAction={() => goToTab("salud-paciente")}
-              />
-              <Card className="mb-3 !p-4">
-                <div className="flex items-center justify-between text-xs font-bold text-espresso/70">
-                  <span>
-                    {doneCount}/{habits.length} {t("completadas", "done")}
-                  </span>
-                  <span className="text-[#239BA2]">{progressPct}%</span>
-                </div>
-                <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#E3F1EF]">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#6BB1AD] to-[#239BA2] transition-all duration-500" style={{ width: `${progressPct}%` }} />
-                </div>
-              </Card>
-              <div className="space-y-2.5">
-                {habits.map((h: any, i: number) => {
-                  const done = Boolean(todayHabits[h.key]);
-                  const Icon = h.icon;
-                  return (
-                    <button
-                      key={h.key}
-                      type="button"
-                      onClick={() => updateDaily({ habits: { [h.key]: !done } })}
-                      className={`flex w-full items-center gap-3 rounded-3xl ${HABIT_COLORS[i % HABIT_COLORS.length]} px-4 py-3.5 text-left transition active:scale-[0.98] ${done ? "opacity-60" : ""}`}
-                    >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-espresso/70">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className={`block truncate text-sm font-bold text-espresso ${done ? "line-through" : ""}`}>{h.label}</span>
-                        <span className="block truncate text-xs text-espresso/60">{h.sub}</span>
-                      </span>
-                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition ${done ? "border-[#239BA2] bg-[#239BA2] text-white" : "border-espresso/25 bg-white/70"}`}>
-                        {done && <Check className="h-4 w-4" />}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Racha */}
-            <section>
-              <Card>
-                <div className="flex items-center gap-3">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFE7D6] text-[#F2711C]">
-                    <Flame className="h-6 w-6" />
-                  </span>
-                  <div>
-                    <div className="font-serif text-2xl font-bold text-espresso">
-                      {streak} {streak === 1 ? t("día", "day") : t("días", "days")}
-                    </div>
-                    <p className="text-xs text-espresso/60">
-                      {streak > 0 ? t("Cuidarte también es cuidar. ¡Sigue así!", "Caring for yourself is caring too. Keep going!") : t("Marca cómo estás o una tarea para empezar tu racha.", "Log how you feel or a task to start your streak.")}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 flex justify-between">
-                  {weekDays.map((d) => (
-                    <div key={d.key} className="flex flex-col items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-espresso/45">{d.letter}</span>
-                      <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs ${d.done ? "bg-[#239BA2] text-white" : d.isToday ? "border-2 border-dashed border-[#239BA2] text-[#239BA2]" : "bg-[#E3F1EF] text-transparent"}`}>
-                        {d.done ? <Check className="h-4 w-4" /> : "·"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </section>
-
-            {/* Acceso rápido */}
-            <section>
-              <SectionTitle title={t("Acceso rápido", "Quick access")} />
-              <div className="grid grid-cols-4 gap-3">
-                {[
-                  { label: t("Medicinas", "Meds"), icon: Pill, bg: "bg-[#FAD4DC]", fg: "text-[#C94A6A]", go: () => goToTab("salud-paciente") },
-                  { label: t("Agenda", "Agenda"), icon: Stethoscope, bg: "bg-[#D7F3EA]", fg: "text-[#239BA2]", go: () => goToTab("alertas") },
-                  { label: t("Autocuidado", "Self-care"), icon: Dumbbell, bg: "bg-[#E4E0FA]", fg: "text-[#7A4FD1]", go: () => goToTab("autocuidado") },
-                  { label: t("Círculo", "Circle"), icon: Users, bg: "bg-[#FFF1B8]", fg: "text-[#B98A00]", go: () => goToTab("autocuidado") },
-                ].map((q) => (
-                  <button key={q.label} type="button" onClick={q.go} className="flex flex-col items-center gap-2 rounded-3xl bg-white py-4 shadow-sm transition active:scale-95">
-                    <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ${q.bg} ${q.fg}`}>
-                      <q.icon className="h-5 w-5" />
-                    </span>
-                    <span className="text-[11px] font-bold text-espresso/75">{q.label}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Próxima cita */}
-            <section>
-              <button type="button" onClick={() => goToTab("alertas")} className="block w-full text-left">
-                <Card>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#239BA2]">{t("Próxima cita", "Next visit")}</span>
-                  {upcoming[0] ? (
-                    <>
-                      <p className="mt-1 text-sm font-bold text-espresso">{upcoming[0].title}</p>
-                      <p className="text-xs text-espresso/60">{fmtDate(upcoming[0].date)}</p>
-                    </>
-                  ) : (
-                    <p className="mt-1 text-sm text-espresso/60">{t("Sin citas próximas. ¡Agrega una!", "No upcoming visits. Add one!")}</p>
-                  )}
-                </Card>
-              </button>
-            </section>
-          </main>
+          <InicioSection
+            t={t}
+            isEs={isEs}
+            patientFirst={patientFirst}
+            stage={stage}
+            fc={fc}
+            fp={fp}
+            goToTab={goToTab}
+            runAction={runAction}
+            currentMood={currentMood}
+            updateDaily={updateDaily}
+            suggested={suggested}
+            setPlayerItem={setPlayerItem}
+            setSheet={setSheet}
+            doneCount={doneCount}
+            habits={habits}
+            progressPct={progressPct}
+            todayHabits={todayHabits}
+            streak={streak}
+            weekDays={weekDays}
+            upcoming={upcoming}
+            fmtDate={fmtDate}
+          />
         )}
 
         {/* ===================== AUTOCUIDADO ===================== */}
         {activeTab === "autocuidado" && (
-          <main className="mt-6 space-y-6">
-            <div className="animate-fade-in">
-              <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t("Para ti, cuidador/a", "For you, caregiver")}</h2>
-              <p className="mt-1 text-sm text-espresso/60">{t("Cuidar a quien amas empieza por cuidarte.", "Caring for a loved one starts with caring for yourself.")}</p>
-            </div>
-
-            <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[#CFEDE8] to-[#E4E0FA] p-5">
-              <span className="absolute -right-2 top-2 text-6xl opacity-90">🌿</span>
-              <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#239BA2]">Love Circle · {t("gratis", "free")}</span>
-              <h3 className="mt-2 max-w-[75%] font-serif text-xl font-bold text-espresso">{t("Círculo de cuidadores con Omar", "Caregivers circle with Omar")}</h3>
-              <button
-                type="button"
-                onClick={() =>
-                  runAction(
-                    "book_healer_session",
-                    {
-                      asistente_rol: "cuidador",
-                      modalidad: "online",
-                      fecha_sesion: new Date(Date.now() + 4 * 86400000).toISOString(),
-                      es_sesion_gratuita_mensual: true,
-                      enlace_o_lugar: "Love Circle for Caregivers · Zoom con Omar Melero",
-                    },
-                    t("¡Tu cupo quedó reservado!", "Your spot is reserved!")
-                  )
-                }
-                className="mt-4 rounded-full bg-[#239BA2] px-5 py-2.5 text-xs font-bold text-white shadow-md transition active:scale-95"
-              >
-                {t("Reservar mi cupo", "Reserve my spot")}
-              </button>
-            </div>
-
-            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-              {[
-                { id: "todos", es: "Todo", en: "All" },
-                { id: "guia_autocuidado", es: "Guías y cocina", en: "Guides & cooking" },
-                { id: "meditacion_audio", es: "Pausas y descanso", en: "Pauses & rest" },
-                { id: "workshop", es: "Workshops", en: "Workshops" },
-                { id: "love_circle", es: "Círculos", en: "Circles" },
-              ].map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setResourceFilter(f.id)}
-                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition ${resourceFilter === f.id ? "bg-[#239BA2] text-white shadow-md" : "bg-white text-espresso/65 shadow-sm"}`}
-                >
-                  {isEs ? f.es : f.en}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              {filteredResources.map((item) => {
-                const meta = TYPE_META[item.tipo_contenido] || TYPE_META.guia_autocuidado;
-                const Icon = meta.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setPlayerItem(item);
-                      setSheet("player");
-                    }}
-                    className="flex w-full items-center gap-4 rounded-[26px] bg-white p-3.5 text-left shadow-[0_8px_22px_rgba(35,155,162,0.08)] transition active:scale-[0.98]"
-                  >
-                    <span className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${meta.grad} text-espresso/70`}>
-                      <Icon className="h-8 w-8" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#239BA2]">
-                        {isEs ? meta.es : meta.en}
-                        {!item.es_gratuito && ` · $${item.costo_usd}`}
-                      </span>
-                      <span className="mt-0.5 block text-sm font-bold leading-snug text-espresso line-clamp-2">{isEs ? item.titulo_es : item.titulo_en || item.titulo_es}</span>
-                      {item.fecha_evento && <span className="mt-0.5 block text-xs text-espresso/55">{fmtDate(item.fecha_evento)}</span>}
-                    </span>
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#239BA2] text-white shadow-md">
-                      <Play className="h-5 w-5" />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </main>
+          <AutocuidadoSection
+            t={t}
+            isEs={isEs}
+            runAction={runAction}
+            resourceFilter={resourceFilter}
+            setResourceFilter={setResourceFilter}
+            filteredResources={filteredResources}
+            setPlayerItem={setPlayerItem}
+            setSheet={setSheet}
+            fmtDate={fmtDate}
+          />
         )}
 
         {/* ===================== FICHA DE LA PACIENTE ===================== */}
         {activeTab === "salud-paciente" && (
-          <main className="mt-6 space-y-6">
-            <div className="animate-fade-in">
-              <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t(`Salud de ${patientFirst}`, `${patientFirst}'s health`)}</h2>
-              <p className="mt-1 text-sm text-espresso/60">{t("Lo que actualices aquí lo ve ella al instante.", "What you update here, she sees instantly.")}</p>
-            </div>
-
-            {/* Preparar cita con PONO IA (para cuando el cuidador acompaña al médico o sanador) */}
-            <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[#CFEDE8] via-[#E8F6F3] to-[#E4E0FA] p-5 shadow-sm">
-              <span className="absolute -right-1 top-2 text-6xl opacity-90">📋</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#239BA2]">
-                <Sparkles className="h-3 w-3" />
-                PONO IA · {t("Certeza en la consulta", "Certainty at the visit")}
-              </span>
-              <h3 className="mt-2 max-w-[74%] font-serif text-xl font-bold leading-tight text-espresso">
-                {t(
-                  `Resumen listo de ${patientFirst} para mostrar al médico o sanador`,
-                  `Ready summary of ${patientFirst} to show the doctor or healer`
-                )}
-              </h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => openConsult("medico")}
-                  className="rounded-full bg-[#239BA2] px-4 py-2.5 text-xs font-bold text-white shadow-md transition active:scale-95"
-                >
-                  🩺 {t("Resumen para el médico", "Summary for doctor")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openConsult("sanador")}
-                  className="rounded-full bg-white px-4 py-2.5 text-xs font-bold text-[#239BA2] shadow-sm transition active:scale-95"
-                >
-                  ✨ {t("Resumen para el sanador", "Summary for healer")}
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-4 gap-1.5 rounded-full bg-white p-1.5 shadow-sm">
-              {([
-                ["bitacora", t("Bitácora", "Journal")],
-                ["medicinas", t("Medicinas", "Meds")],
-                ["ficha", t("Ficha", "Chart")],
-                ["documentos", t("Docs", "Docs")],
-              ] as const).map(([id, label]) => (
-                <button key={id} type="button" onClick={() => setSaludView(id)} className={`rounded-full py-2.5 text-xs font-bold transition ${saludView === id ? "bg-espresso text-white shadow" : "text-espresso/60"}`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {saludView === "bitacora" && (
-              <div className="space-y-3">
-                <PrimaryButton
-                  color={TEAL}
-                  onClick={() => openSheet("bitacora", { tipo: "nota", fecha: todayKey() })}
-                >
-                  <Plus className="h-5 w-5" />
-                  {t("Registrar evolución o cita con PONO IA", "Log progress or visit with PONO AI")}
-                </PrimaryButton>
-                {(fp.bitacora_clinica || []).length === 0 && (
-                  <Card className="text-center text-sm text-espresso/60">
-                    {t(
-                      "Registra aquí síntomas, consultas médicas o cambios de medicación para que nunca se olvide nada.",
-                      "Log symptoms, doctor visits or medication changes here so nothing is ever forgotten."
-                    )}
-                  </Card>
-                )}
-                {(fp.bitacora_clinica || []).map((e: any) => (
-                  <div
-                    key={e.id}
-                    className="flex items-start justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[11px] font-bold text-[#239BA2]">
-                        {fmtDate(e.fecha)} · {String(e.tipo || "nota").toUpperCase()}
-                      </span>
-                      <p className="mt-0.5 text-sm font-bold text-espresso">{e.titulo}</p>
-                      {e.detalle && (
-                        <p className="mt-1 text-xs leading-relaxed text-espresso/70">
-                          {e.detalle}
-                        </p>
-                      )}
-                      {e.medico && (
-                        <span className="mt-1.5 inline-block rounded-full bg-[#D9E8FB] px-2.5 py-0.5 text-[10px] font-bold text-[#3D7BD6]">
-                          🩺 {e.medico}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        runAction(
-                          "delete_bitacora",
-                          { id: e.id },
-                          t("Entrada eliminada", "Entry removed")
-                        )
-                      }
-                      className="text-espresso/30 hover:text-[#C94A6A]"
-                      aria-label={t("Eliminar", "Delete")}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {saludView === "medicinas" && (
-              <div className="space-y-6">
-                <div>
-                  <SectionTitle title={t("Medicamentos", "Medications")} />
-                  <div className="space-y-2.5">
-                    {fp.medicamentos_y_horarios.length === 0 && <Card className="text-center text-sm text-espresso/60">{t("Aún no hay medicinas registradas.", "No medications yet.")}</Card>}
-                    {fp.medicamentos_y_horarios.map((m: any, idx: number) => {
-                      const key = `med-${m.id ?? idx}`;
-                      const given = Boolean(todayHabits[key]);
-                      return (
-                        <div key={key} className={`flex items-center gap-3 rounded-3xl ${HABIT_COLORS[(idx + 1) % HABIT_COLORS.length]} px-4 py-3.5`}>
-                          <button
-                            type="button"
-                            onClick={() => updateDaily({ habits: { [key]: !given } })}
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition ${given ? "border-[#239BA2] bg-[#239BA2] text-white" : "border-espresso/25 bg-white/70"}`}
-                            aria-label={t("Marcar como dada", "Mark as given")}
-                          >
-                            {given && <Check className="h-4 w-4" />}
-                          </button>
-                          <div className="min-w-0 flex-1">
-                            <p className={`truncate text-sm font-bold text-espresso ${given ? "line-through opacity-60" : ""}`}>{m.nombre}</p>
-                            <p className="truncate text-xs text-espresso/65">
-                              {m.dosis} · {m.horario}
-                              {m.indicaciones ? ` · ${m.indicaciones}` : ""}
-                            </p>
-                          </div>
-                          <button type="button" onClick={() => runAction("delete_medication", { index: idx }, t("Medicamento eliminado", "Removed"))} className="text-espresso/35 transition hover:text-[#C94A6A]" aria-label={t("Eliminar", "Delete")}>
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <SectionTitle title={t("Suplementos", "Supplements")} />
-                  <div className="space-y-2.5">
-                    {fp.suplementos.length === 0 && <Card className="text-center text-sm text-espresso/60">{t("Sin suplementos registrados.", "No supplements yet.")}</Card>}
-                    {fp.suplementos.map((s: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-3 rounded-3xl bg-white px-4 py-3.5 shadow-sm">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D7F3EA] text-[#239BA2]">
-                          <Sparkles className="h-5 w-5" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold text-espresso">{s.nombre}</p>
-                          <p className="truncate text-xs text-espresso/60">{s.dosis} · {s.horario}</p>
-                        </div>
-                        <button type="button" onClick={() => runAction("delete_supplement", { index: idx }, t("Suplemento eliminado", "Removed"))} className="text-espresso/35 transition hover:text-[#C94A6A]" aria-label={t("Eliminar", "Delete")}>
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <PrimaryButton color={TEAL} onClick={() => openSheet("add-med", { kind: "med" })}>
-                  <Plus className="h-5 w-5" />
-                  {t("Agregar medicina o suplemento", "Add medication or supplement")}
-                </PrimaryButton>
-              </div>
-            )}
-
-            {saludView === "ficha" && (
-              <div className="space-y-3">
-                {[
-                  { label: t("Historia y evolución", "History & progress"), value: fp.historia_medica, bg: "bg-[#FAD4DC]", emoji: "📖" },
-                  { label: t("Alergias", "Allergies"), value: fp.alergias, bg: "bg-[#FFF1B8]", emoji: "⚠️" },
-                  { label: t("Alimentación e hidratación", "Nutrition & hydration"), value: fp.datos_nutricionales, bg: "bg-[#D7F3EA]", emoji: "🥗" },
-                ].map((c) => (
-                  <div key={c.label} className={`rounded-3xl ${c.bg} p-5`}>
-                    <p className="text-xs font-bold text-espresso/65">{c.emoji} {c.label}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-espresso">{c.value || t("Aún sin completar.", "Not filled in yet.")}</p>
-                  </div>
-                ))}
-                <PrimaryButton color={TEAL} onClick={() => openSheet("edit-ficha", { historia: fp.historia_medica || "", alergias: fp.alergias || "", nutricion: fp.datos_nutricionales || "" })}>
-                  {t("Editar ficha", "Edit chart")}
-                </PrimaryButton>
-              </div>
-            )}
-
-            {saludView === "documentos" && (
-              <div className="space-y-3">
-                {fp.documentos_oncologo.length === 0 && <Card className="text-center text-sm text-espresso/60">{t("Sube recetas o notas del oncólogo.", "Upload prescriptions or oncologist notes.")}</Card>}
-                {fp.documentos_oncologo.map((d: any, idx: number) => (
-                  <div key={idx} className="flex items-start gap-3 rounded-3xl bg-white p-4 shadow-sm">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FAD4DC] text-[#C94A6A]">
-                      <FileText className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-espresso">{d.titulo}</p>
-                      <p className="text-xs text-espresso/55">{d.tipo} · {d.fecha}</p>
-                      {d.notas && <p className="mt-1 text-xs text-espresso/75">{d.notas}</p>}
-                    </div>
-                    <button type="button" onClick={() => runAction("delete_document", { index: idx }, t("Documento eliminado", "Removed"))} className="text-espresso/35 transition hover:text-[#C94A6A]" aria-label={t("Eliminar", "Delete")}>
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                <PrimaryButton color={TEAL} onClick={() => openSheet("add-doc", { tipo: "Receta / Indicaciones del Oncólogo" })}>
-                  <Upload className="h-5 w-5" />
-                  {t("Subir documento", "Upload document")}
-                </PrimaryButton>
-              </div>
-            )}
-          </main>
+          <FichaPacienteSection
+            t={t}
+            patientFirst={patientFirst}
+            openConsult={openConsult}
+            saludView={saludView}
+            setSaludView={setSaludView}
+            openSheet={openSheet}
+            fp={fp}
+            fmtDate={fmtDate}
+            runAction={runAction}
+            todayHabits={todayHabits}
+            updateDaily={updateDaily}
+          />
         )}
 
         {/* ===================== AGENDA ===================== */}
         {activeTab === "alertas" && (
-          <main className="mt-6 space-y-6">
-            <div className="animate-fade-in">
-              <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t("Agenda familiar", "Family schedule")}</h2>
-              <p className="mt-1 text-sm text-espresso/60">{t(`Citas de ${patientFirst} y sesiones con sanadores.`, `${patientFirst}'s visits and healer sessions.`)}</p>
-            </div>
-
-            <Card>
-              <MiniCalendar marks={marks} selected={selectedDay} onSelect={setSelectedDay} isEs={isEs} />
-            </Card>
-
-            <div>
-              <SectionTitle title={fmtDate(selectedDay)} />
-              <div className="space-y-2.5">
-                {(eventsByDay[selectedDay] || []).length === 0 && <Card className="text-center text-sm text-espresso/60">{t("Nada programado este día. 🌿", "Nothing scheduled. 🌿")}</Card>}
-                {(eventsByDay[selectedDay] || []).map((ev: any, i: number) => (
-                  <div key={i} className="flex items-center gap-3 rounded-3xl bg-white px-4 py-3.5 shadow-sm">
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${ev.kind === "med" ? "bg-[#D7F3EA] text-[#239BA2]" : "bg-[#FFE7D6] text-[#F2711C]"}`}>
-                      {ev.kind === "med" ? <Stethoscope className="h-5 w-5" /> : <CalendarHeart className="h-5 w-5" />}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-espresso">{ev.title}</p>
-                      <p className="truncate text-xs text-espresso/60">{ev.sub}</p>
-                    </div>
-                    {ev.kind === "med" && (
-                      <button type="button" onClick={() => runAction("delete_medical_appointment", { index: ev.idx }, t("Cita eliminada", "Removed"))} className="text-espresso/35 transition hover:text-[#C94A6A]" aria-label={t("Eliminar", "Delete")}>
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <PrimaryButton color={TEAL} onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" })}>
-                <Stethoscope className="h-5 w-5" />
-                {t("Nueva cita médica", "New medical visit")}
-              </PrimaryButton>
-              <PrimaryButton onClick={() => openSheet("book", { healer: String(healers[0]?.id ?? ""), para: "cuidador", modalidad: "online", fecha: selectedDay, gratis: "1" })}>
-                <CalendarHeart className="h-5 w-5" />
-                {t("Reservar con un sanador", "Book with a healer")}
-              </PrimaryButton>
-            </div>
-          </main>
+          <AgendaSection
+            t={t}
+            isEs={isEs}
+            patientFirst={patientFirst}
+            marks={marks}
+            selectedDay={selectedDay}
+            setSelectedDay={setSelectedDay}
+            fmtDate={fmtDate}
+            eventsByDay={eventsByDay}
+            runAction={runAction}
+            openSheet={openSheet}
+            healers={healers}
+          />
         )}
 
         {/* ===================== PERFIL ===================== */}
         {activeTab === "perfil" && (
-          <main className="mt-6 space-y-6">
-            <div className="animate-fade-in text-center">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] font-serif text-4xl font-bold text-white shadow-lg">{firstName.charAt(0)}</div>
-              <h2 className="mt-3 font-serif text-2xl font-bold text-espresso">{user.nombre}</h2>
-              <p className="text-xs text-espresso/55">{user.correo}</p>
-              <span className="mt-2 inline-block rounded-full bg-[#D7F3EA] px-3 py-1 text-[11px] font-bold text-[#239BA2]">
-                {fc?.relacion_familiar || t("Cuidador", "Caregiver")} · {fp.nombre_familia}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { v: streak, l: t("Días de racha", "Day streak") },
-                { v: `${doneCount}/${habits.length}`, l: t("Tareas hoy", "Tasks today") },
-                { v: upcoming.length, l: t("Próximas citas", "Upcoming") },
-              ].map((s) => (
-                <div key={s.l} className="rounded-3xl bg-white py-4 text-center shadow-sm">
-                  <div className="font-serif text-2xl font-bold text-espresso">{s.v}</div>
-                  <div className="text-[11px] font-semibold text-espresso/55">{s.l}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="overflow-hidden rounded-[28px] bg-white shadow-sm">
-              {[
-                {
-                  icon: UserCog,
-                  label: t("Mi ficha de cuidador", "My caregiver profile"),
-                  hint: fc?.nivel_experiencia || "",
-                  action: () =>
-                    openSheet("profile", {
-                      relacion: fc?.relacion_familiar || "",
-                      nivel: fc?.nivel_experiencia || "Inicial",
-                      horarios: fc?.horarios_disponibles || "",
-                      areas: fc?.areas_de_interes || "",
-                      habitos: fc?.habitos_autocuidado || "",
-                    }),
-                },
-                {
-                  icon: Users,
-                  label: t("Vínculo con mi paciente", "Link with my patient"),
-                  hint: patientInfo.linked ? "✓" : t("Pendiente", "Pending"),
-                  action: () => openSheet("patient", { nombre: fp.nombre_paciente || "", correo: fp.correo_invitacion_paciente || "", etapa: fp.etapa_actual }),
-                },
-                { icon: Phone, label: t("Contactos", "Contacts"), hint: `${fp.contactos_personales.length}`, action: () => openSheet("contacts", { rol: "Oncólogo / Emergencia" }) },
-                { icon: Globe, label: t("Idioma", "Language"), hint: isEs ? "Español" : "English", action: () => setLocale(isEs ? "en" : "es") },
-                { icon: HelpCircle, label: t("Ayuda y comentarios", "Help & feedback"), hint: data.tickets.length ? `${data.tickets.length}` : "", action: () => openSheet("help", { tipo: "feedback" }) },
-              ].map((row, i) => (
-                <button key={row.label} type="button" onClick={row.action} className={`flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-[#F2FAF8] ${i > 0 ? "border-t border-espresso/5" : ""}`}>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E3F1EF] text-[#239BA2]">
-                    <row.icon className="h-5 w-5" />
-                  </span>
-                  <span className="flex-1 text-sm font-bold text-espresso">{row.label}</span>
-                  <span className="text-xs text-espresso/50">{row.hint}</span>
-                  <ChevronRight className="h-4 w-4 text-espresso/30" />
-                </button>
-              ))}
-              <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 border-t border-espresso/5 px-5 py-4 text-left text-[#C94A6A] transition hover:bg-[#FCECEE]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FCECEE]">
-                  <LogOut className="h-5 w-5" />
-                </span>
-                <span className="flex-1 text-sm font-bold">{t("Cerrar sesión", "Log out")}</span>
-              </button>
-            </div>
-          </main>
+          <PerfilSection
+            t={t}
+            isEs={isEs}
+            setLocale={setLocale}
+            firstName={firstName}
+            user={user}
+            fc={fc}
+            fp={fp}
+            streak={streak}
+            doneCount={doneCount}
+            habits={habits}
+            upcoming={upcoming}
+            openSheet={openSheet}
+            patientInfo={patientInfo}
+            data={data}
+            handleLogout={handleLogout}
+          />
         )}
       </div>
 
