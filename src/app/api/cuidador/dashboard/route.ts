@@ -261,6 +261,25 @@ export async function GET(req: NextRequest) {
     const { user, fichaPaciente, fichaCuidador } =
       await resolveCaregiverAndFichas(req);
 
+    // Consultas secundarias en paralelo para máxima velocidad
+    const [pUserRes, sessionsDataRes, ticketsDataRes] = await Promise.all([
+      fichaPaciente?.paciente_usuario_id
+        ? supabaseAdmin
+            .from("usuarios")
+            .select("nombre, correo, telefono")
+            .eq("id", fichaPaciente.paciente_usuario_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabaseAdmin
+        .from("citas_y_bitacora_sanador")
+        .select("*")
+        .eq("ficha_paciente_id", fichaPaciente.id),
+      supabaseAdmin
+        .from("tickets_feedback")
+        .select("*")
+        .eq("usuario_id", user.id),
+    ]);
+
     // Información de la paciente vinculada
     let patientInfo = {
       linked: Boolean(fichaPaciente?.paciente_usuario_id),
@@ -269,37 +288,22 @@ export async function GET(req: NextRequest) {
       telefono: "",
     };
 
-    if (fichaPaciente?.paciente_usuario_id) {
-      const { data: pUser } = await supabaseAdmin
-        .from("usuarios")
-        .select("nombre, correo, telefono")
-        .eq("id", fichaPaciente.paciente_usuario_id)
-        .maybeSingle();
-
-      if (pUser) {
-        patientInfo = {
-          linked: true,
-          nombre: pUser.nombre,
-          correo: pUser.correo,
-          telefono: pUser.telefono || "",
-        };
-      }
+    const pUser = pUserRes?.data;
+    if (pUser) {
+      patientInfo = {
+        linked: true,
+        nombre: pUser.nombre,
+        correo: pUser.correo,
+        telefono: pUser.telefono || "",
+      };
     }
 
     // Sesiones con sanadores de la célula familiar
-    const { data: sessionsData } = await supabaseAdmin
-      .from("citas_y_bitacora_sanador")
-      .select("*")
-      .eq("ficha_paciente_id", fichaPaciente.id);
-
+    const sessionsData = sessionsDataRes?.data;
     const healerSessions = Array.isArray(sessionsData) ? sessionsData : [];
 
     // Tickets del cuidador
-    const { data: ticketsData } = await supabaseAdmin
-      .from("tickets_feedback")
-      .select("*")
-      .eq("usuario_id", user.id);
-
+    const ticketsData = ticketsDataRes?.data;
     const tickets = Array.isArray(ticketsData) ? ticketsData : [];
 
     return NextResponse.json({

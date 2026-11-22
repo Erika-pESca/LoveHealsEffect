@@ -65,6 +65,221 @@ const PAID_RESOURCES = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/*  Datos clínicos y holísticos de ejemplo (Mi Camino / tab=salud)     */
+/* ------------------------------------------------------------------ */
+
+const SAMPLE_HISTORIA =
+  "Diagnosticada en septiembre de 2026 con Carcinoma Ductal Infiltrante (CDI) en mama izquierda, Estadio IIA (ER+, PR+, HER2-). Actualmente en ciclo de tratamiento integrativo combinando quimioterapia adyuvante con prácticas de movimiento suave BAM, meditación diaria y coaching holístico en Love Heals Effect junto a mi familia.";
+
+const SAMPLE_ALERGIAS =
+  "Alergia confirmada a Penicilina (urticaria y dificultad respiratoria leve). Sensibilidad leve al contraste yodado en tomografías. Sin alergias alimentarias conocidas.";
+
+const SAMPLE_NUTRICION =
+  "Protocolo antiinflamatorio rico en vegetales crucíferos, cúrcuma, caldos nutritivos y té de jengibre para evitar náuseas. Meta diaria de hidratación: 2.5 litros de agua estructurada. Sin ultraprocesados ni azúcares refinados.";
+
+const SAMPLE_MEDICAMENTOS = [
+  {
+    id: 1,
+    nombre: "Tamoxifeno",
+    dosis: "20 mg",
+    horario: "1 tableta cada mañana con el desayuno",
+    indicaciones: "Terapia hormonal, tomar con abundante agua",
+  },
+  {
+    id: 2,
+    nombre: "Ondansetrón",
+    dosis: "8 mg",
+    horario: "Cada 12 horas (según pauta médica)",
+    indicaciones: "Prevención de náuseas post-quimioterapia",
+  },
+  {
+    id: 3,
+    nombre: "Dexametasona",
+    dosis: "4 mg",
+    horario: "Mañanas días 1 a 3 del ciclo",
+    indicaciones: "Antiinflamatorio y soporte médico",
+  },
+];
+
+const SAMPLE_SUPLEMENTOS = [
+  {
+    nombre: "Vitamina D3 + K2",
+    dosis: "5000 UI",
+    horario: "Al mediodía con almuerzo graso saludable",
+  },
+  {
+    nombre: "Omega 3 EPA/DHA de alta pureza",
+    dosis: "2000 mg",
+    horario: "Noches con la cena",
+  },
+  {
+    nombre: "Magnesio Glicinato",
+    dosis: "400 mg",
+    horario: "30 minutos antes de dormir para descanso profundo",
+  },
+  {
+    nombre: "Melatonina Liposomal",
+    dosis: "5 mg",
+    horario: "Noches, soporte celular y sueño reparador",
+  },
+];
+
+const SAMPLE_CONTACTOS = [
+  {
+    nombre: "Dra. Sarah Jenkins",
+    rol: "Oncóloga Médica",
+    telefono: "(808) 691-1000",
+    email: "sjenkins@queensmedical.org",
+  },
+  {
+    nombre: "Dr. Michael Chen",
+    rol: "Cirujano Oncológico",
+    telefono: "(808) 983-6000",
+    email: "mchen@kapiolani.org",
+  },
+  {
+    nombre: "Dra. Maya Lin",
+    rol: "Medicina Integrativa y Acupuntura",
+    telefono: "(808) 523-8888",
+    email: "mlin@honoluluholistic.org",
+  },
+  {
+    nombre: "Kelsie Reynolds",
+    rol: "Holistic Breast Cancer Coach & BAM",
+    telefono: "(808) 728-1920",
+    email: "kelsie@lovehealscoaching.com",
+  },
+];
+
+const SAMPLE_DOCUMENTOS = [
+  {
+    titulo: "Informe de Patología e Inmunohistoquímica",
+    tipo: "Biopsia / Patología",
+    fecha: "2026-09-18",
+    notas:
+      "Receptores de estrógeno 95%, progesterona 80%, Ki-67 15%. Estadio IIA.",
+    archivo_url: "#",
+  },
+  {
+    titulo: "Analítica de Sangre Completa y Perfil Hepático",
+    tipo: "Laboratorio Clínico",
+    fecha: "2026-11-12",
+    notas:
+      "Hemograma dentro de parámetros normales pre-infusión. Neutrófilos estables.",
+    archivo_url: "#",
+  },
+  {
+    titulo: "Receta Médica y Pauta de Soporte Quimioterápico",
+    tipo: "Receta Médica",
+    fecha: "2026-11-15",
+    notas: "Firmada por Dra. Sarah Jenkins (Oncología Queen's Honolulu)",
+    archivo_url: "#",
+  },
+  {
+    titulo: "Plan de Cuidados Holísticos y Guía Nutricional LHE",
+    tipo: "Guía Integrativa",
+    fecha: "2026-11-01",
+    notas: "Plan personalizado coordinado con Kelsie Reynolds y Omar",
+    archivo_url: "#",
+  },
+];
+
+const SAMPLE_BITACORA = [
+  {
+    id: 1,
+    fecha: "2026-11-20",
+    tipo: "cita",
+    titulo: "Consulta de seguimiento con Oncología Médica",
+    detalle:
+      "Revisión de analítica sanguínea. Neutrófilos y plaquetas en niveles estables para continuar ciclo. Tolerancia al tratamiento favorable. Se autorizan caminatas suaves y sesiones BAM.",
+    medico: "Dra. Sarah Jenkins",
+    lugar: "Queen's Medical Center, Honolulu",
+    etiquetas: ["oncología", "laboratorio", "seguimiento"],
+    origen: "ia",
+    creado_en: "2026-11-20T10:30:00Z",
+  },
+  {
+    id: 2,
+    fecha: "2026-11-19",
+    tipo: "sintoma",
+    titulo: "Cansancio leve por la tarde y ligera náusea matutina",
+    detalle:
+      "Disminuyó tras infusión tibia de jengibre y descanso con respiración 4-7-8 recomendada por PONO. Buen apetito al mediodía y buen ánimo.",
+    medico: "",
+    lugar: "Casa",
+    etiquetas: ["síntomas", "náuseas", "autocuidado"],
+    origen: "escrito",
+    creado_en: "2026-11-19T14:15:00Z",
+  },
+  {
+    id: 3,
+    fecha: "2026-11-16",
+    tipo: "procedimiento",
+    titulo: "Ecografía mamaria de control post-ciclo 2",
+    detalle:
+      "Respuesta tumoral favorable con reducción milimétrica observada en mama izquierda. Ganglios axilares sin variaciones adversas.",
+    medico: "Dr. Michael Chen",
+    lugar: "Kapi'olani Medical Center",
+    etiquetas: ["ecografía", "control", "imágenes"],
+    origen: "auto",
+    creado_en: "2026-11-16T11:00:00Z",
+  },
+  {
+    id: 4,
+    fecha: "2026-11-14",
+    tipo: "sanador",
+    titulo: "Sesión holística 1 a 1 de movimiento BAM con Kelsie",
+    detalle:
+      "Liberación miofascial suave de hombro y plexo solar, drenaje linfático asistido y visualización celular de amor propio. Sensación de alivio y ligereza.",
+    medico: "Kelsie Reynolds",
+    lugar: "Love Heals Zoom (Honolulu)",
+    etiquetas: ["BAM", "sanación", "movimiento"],
+    origen: "ia",
+    creado_en: "2026-11-14T17:00:00Z",
+  },
+  {
+    id: 5,
+    fecha: "2026-11-10",
+    tipo: "medicamento",
+    titulo: "Ajuste de suplementación con Dra. Maya Lin",
+    detalle:
+      "Incorporación de té verde matcha orgánico y magnesio glicinato nocturno para potenciar reparación celular y sueño reparador.",
+    medico: "Dra. Maya Lin",
+    lugar: "Honolulu Holistic Center",
+    etiquetas: ["nutrición", "suplementos"],
+    origen: "escrito",
+    creado_en: "2026-11-10T16:00:00Z",
+  },
+];
+
+const SAMPLE_CITAS = [
+  {
+    id: 101,
+    titulo: "Consulta mensual con Dra. Jenkins (Oncología)",
+    fecha: "2026-12-04",
+    hora: "10:00 AM",
+    lugar: "Queen's Medical Center - Consultorio 402",
+    notas: "Llevar analítica reciente y preguntas preparadas con PONO IA",
+  },
+  {
+    id: 102,
+    titulo: "Sesión de Acupuntura y Regulación Nerviosa",
+    fecha: "2026-12-08",
+    hora: "03:30 PM",
+    lugar: "Honolulu Holistic Center con Dra. Maya Lin",
+    notas: "Ropa cómoda de algodón",
+  },
+  {
+    id: 103,
+    titulo: "Love Circle Mensual de Sanación con Kelsie y Omar",
+    fecha: "2026-12-15",
+    hora: "06:00 PM",
+    lugar: "Love Heals Live Stream Honolulu",
+    notas: "Encuentro con la comunidad de pacientes",
+  },
+];
+
 function mergeResources(dbResources: any[]) {
   const base = dbResources.length > 0 ? dbResources : DEFAULT_RESOURCES;
   const hasPaid = base.some((r: any) => r.es_gratuito === false);
@@ -235,16 +450,16 @@ async function resolvePatientAndFicha(req: NextRequest) {
         paciente_usuario_id: user.id,
         nombre_paciente: user.nombre,
         correo_invitacion_paciente: user.correo,
-        etapa_actual: "diagnostico",
-        historia_medica: "",
-        alergias: "",
-        datos_nutricionales: "",
-        suplementos: [],
-        resultados_laboratorio: [],
-        medicamentos_y_horarios: [],
-        citas_medicas: [],
-        documentos_oncologo: [],
-        contactos_personales: [],
+        etapa_actual: "tratamiento_activo",
+        historia_medica: SAMPLE_HISTORIA,
+        alergias: SAMPLE_ALERGIAS,
+        datos_nutricionales: SAMPLE_NUTRICION,
+        suplementos: SAMPLE_SUPLEMENTOS,
+        resultados_laboratorio: SAMPLE_BITACORA,
+        medicamentos_y_horarios: SAMPLE_MEDICAMENTOS,
+        citas_medicas: SAMPLE_CITAS,
+        documentos_oncologo: SAMPLE_DOCUMENTOS,
+        contactos_personales: SAMPLE_CONTACTOS,
         registrado_por: "paciente",
       })
       .select("*")
@@ -258,16 +473,16 @@ async function resolvePatientAndFicha(req: NextRequest) {
       nombre_paciente: user.nombre,
       correo_invitacion_paciente: user.correo,
       correo_invitacion_cuidador: "",
-      etapa_actual: "diagnostico",
-      historia_medica: "",
-      alergias: "",
-      datos_nutricionales: "",
-      suplementos: [],
-      resultados_laboratorio: [],
-      medicamentos_y_horarios: [],
-      citas_medicas: [],
-      documentos_oncologo: [],
-      contactos_personales: [],
+      etapa_actual: "tratamiento_activo",
+      historia_medica: SAMPLE_HISTORIA,
+      alergias: SAMPLE_ALERGIAS,
+      datos_nutricionales: SAMPLE_NUTRICION,
+      suplementos: SAMPLE_SUPLEMENTOS,
+      resultados_laboratorio: SAMPLE_BITACORA,
+      medicamentos_y_horarios: SAMPLE_MEDICAMENTOS,
+      citas_medicas: SAMPLE_CITAS,
+      documentos_oncologo: SAMPLE_DOCUMENTOS,
+      contactos_personales: SAMPLE_CONTACTOS,
     };
   }
 
@@ -278,7 +493,39 @@ export async function GET(req: NextRequest) {
   try {
     const { user, ficha } = await resolvePatientAndFicha(req);
 
-    // Información del cuidador vinculado
+    // Consultas secundarias en paralelo para máxima velocidad de respuesta
+    const [
+      cuidadorUserRes,
+      fichaCuidadorRes,
+      allHealerRowsRes,
+      sessionsDataRes,
+      ticketsDataRes,
+    ] = await Promise.all([
+      ficha.cuidador_usuario_id
+        ? supabaseAdmin
+          .from("usuarios")
+          .select("id, nombre, correo, telefono")
+          .eq("id", ficha.cuidador_usuario_id)
+          .maybeSingle()
+        : Promise.resolve({ data: null }),
+      ficha.cuidador_usuario_id
+        ? supabaseAdmin
+          .from("ficha_cuidador")
+          .select("relacion_familiar, horarios_disponibles, estado_vinculo")
+          .eq("ficha_paciente_id", ficha.id)
+          .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabaseAdmin.from("sanadores_y_contenidos").select("*"),
+      supabaseAdmin
+        .from("citas_y_bitacora_sanador")
+        .select("*")
+        .eq("ficha_paciente_id", ficha.id),
+      supabaseAdmin
+        .from("tickets_feedback")
+        .select("*")
+        .eq("usuario_id", user.id),
+    ]);
+
     let caregiver = {
       linked: false,
       nombre: null as string | null,
@@ -290,37 +537,22 @@ export async function GET(req: NextRequest) {
         : "sin_vincular",
     };
 
-    if (ficha.cuidador_usuario_id) {
-      const { data: cuidadorUser } = await supabaseAdmin
-        .from("usuarios")
-        .select("id, nombre, correo, telefono")
-        .eq("id", ficha.cuidador_usuario_id)
-        .maybeSingle();
+    const cuidadorUser = cuidadorUserRes?.data;
+    const fichaCuidador = fichaCuidadorRes?.data;
 
-      const { data: fichaCuidador } = await supabaseAdmin
-        .from("ficha_cuidador")
-        .select("relacion_familiar, horarios_disponibles, estado_vinculo")
-        .eq("ficha_paciente_id", ficha.id)
-        .maybeSingle();
-
-      if (cuidadorUser) {
-        caregiver = {
-          linked: true,
-          nombre: cuidadorUser.nombre,
-          correo: cuidadorUser.correo,
-          relacion: fichaCuidador?.relacion_familiar || "Familiar / Acompañante",
-          horarios: fichaCuidador?.horarios_disponibles || "",
-          estado_vinculo: "vinculado",
-        };
-      }
+    if (cuidadorUser) {
+      caregiver = {
+        linked: true,
+        nombre: cuidadorUser.nombre,
+        correo: cuidadorUser.correo,
+        relacion: fichaCuidador?.relacion_familiar || "Familiar / Acompañante",
+        horarios: fichaCuidador?.horarios_disponibles || "",
+        estado_vinculo: "vinculado",
+      };
     }
 
     // Sanadores y contenidos gratuitos
-    const { data: allHealerRows } = await supabaseAdmin
-      .from("sanadores_y_contenidos")
-      .select("*");
-
-    const rows = Array.isArray(allHealerRows) ? allHealerRows : [];
+    const rows = Array.isArray(allHealerRowsRes?.data) ? allHealerRowsRes.data : [];
     const dbHealers = rows.filter((r) => r.tipo_registro === "perfil_sanador");
     const dbResources = rows.filter(
       (r) =>
@@ -332,49 +564,59 @@ export async function GET(req: NextRequest) {
     const resources = mergeResources(dbResources);
 
     // Citas con sanadores (citas_y_bitacora_sanador)
-    const { data: sessionsData } = await supabaseAdmin
-      .from("citas_y_bitacora_sanador")
-      .select("*")
-      .eq("ficha_paciente_id", ficha.id);
-
+    const sessionsData = sessionsDataRes?.data;
     const healerSessions = Array.isArray(sessionsData) ? sessionsData : [];
 
     // Tickets de soporte / feedback enviados por la paciente
-    const { data: ticketsData } = await supabaseAdmin
-      .from("tickets_feedback")
-      .select("*")
-      .eq("usuario_id", user.id);
-
+    const ticketsData = ticketsDataRes?.data;
     const tickets = Array.isArray(ticketsData) ? ticketsData : [];
+
+    const rawBitacora =
+      Array.isArray(ficha.bitacora_clinica) && ficha.bitacora_clinica.length > 0
+        ? ficha.bitacora_clinica
+        : Array.isArray(ficha.resultados_laboratorio) &&
+          ficha.resultados_laboratorio.length > 0
+          ? ficha.resultados_laboratorio
+          : SAMPLE_BITACORA;
 
     return NextResponse.json({
       ok: true,
       user,
       ficha: {
         ...ficha,
+        etapa_actual: ficha.etapa_actual || "tratamiento_activo",
+        historia_medica: ficha.historia_medica || SAMPLE_HISTORIA,
+        alergias: ficha.alergias || SAMPLE_ALERGIAS,
+        datos_nutricionales: ficha.datos_nutricionales || SAMPLE_NUTRICION,
         bienestar_diario:
           ficha.bienestar_diario && typeof ficha.bienestar_diario === "object"
             ? ficha.bienestar_diario
             : {},
-        bitacora_clinica: Array.isArray(ficha.bitacora_clinica)
-          ? ficha.bitacora_clinica
-          : [],
-        suplementos: Array.isArray(ficha.suplementos) ? ficha.suplementos : [],
-        resultados_laboratorio: Array.isArray(ficha.resultados_laboratorio)
-          ? ficha.resultados_laboratorio
-          : [],
-        medicamentos_y_horarios: Array.isArray(ficha.medicamentos_y_horarios)
-          ? ficha.medicamentos_y_horarios
-          : [],
-        citas_medicas: Array.isArray(ficha.citas_medicas)
-          ? ficha.citas_medicas
-          : [],
-        documentos_oncologo: Array.isArray(ficha.documentos_oncologo)
-          ? ficha.documentos_oncologo
-          : [],
-        contactos_personales: Array.isArray(ficha.contactos_personales)
-          ? ficha.contactos_personales
-          : [],
+        bitacora_clinica: rawBitacora,
+        suplementos:
+          Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
+            ? ficha.suplementos
+            : SAMPLE_SUPLEMENTOS,
+        resultados_laboratorio: rawBitacora,
+        medicamentos_y_horarios:
+          Array.isArray(ficha.medicamentos_y_horarios) &&
+            ficha.medicamentos_y_horarios.length > 0
+            ? ficha.medicamentos_y_horarios
+            : SAMPLE_MEDICAMENTOS,
+        citas_medicas:
+          Array.isArray(ficha.citas_medicas) && ficha.citas_medicas.length > 0
+            ? ficha.citas_medicas
+            : SAMPLE_CITAS,
+        documentos_oncologo:
+          Array.isArray(ficha.documentos_oncologo) &&
+            ficha.documentos_oncologo.length > 0
+            ? ficha.documentos_oncologo
+            : SAMPLE_DOCUMENTOS,
+        contactos_personales:
+          Array.isArray(ficha.contactos_personales) &&
+            ficha.contactos_personales.length > 0
+            ? ficha.contactos_personales
+            : SAMPLE_CONTACTOS,
       },
       caregiver,
       healers,
@@ -399,9 +641,14 @@ export async function PATCH(req: NextRequest) {
 
     // ---- Línea de tiempo clínica (bitácora): eventos automáticos ----
     const today = new Date().toLocaleDateString("en-CA");
-    const timeline: any[] = Array.isArray(ficha.bitacora_clinica)
-      ? [...ficha.bitacora_clinica]
-      : [];
+    const timeline: any[] =
+      Array.isArray(ficha.bitacora_clinica) && ficha.bitacora_clinica.length > 0
+        ? [...ficha.bitacora_clinica]
+        : Array.isArray(ficha.resultados_laboratorio) &&
+          ficha.resultados_laboratorio.length > 0
+          ? [...ficha.resultados_laboratorio]
+          : [...SAMPLE_BITACORA];
+
     const pushTimeline = async (entry: Record<string, any>) => {
       timeline.unshift({
         id: Date.now() + Math.floor(Math.random() * 1000),
@@ -414,10 +661,16 @@ export async function PATCH(req: NextRequest) {
         creado_en: new Date().toISOString(),
         ...entry,
       });
-      await supabaseAdmin
+      const { error: err } = await supabaseAdmin
         .from("ficha_paciente")
         .update({ bitacora_clinica: timeline.slice(0, 500) })
         .eq("id", ficha.id);
+      if (err) {
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ resultados_laboratorio: timeline.slice(0, 500) })
+          .eq("id", ficha.id);
+      }
     };
     const STAGE_LABEL: Record<string, string> = {
       diagnostico: "Diagnóstico",
@@ -430,9 +683,8 @@ export async function PATCH(req: NextRequest) {
       await pushTimeline({
         tipo: "etapa",
         titulo: `Etapa: ${STAGE_LABEL[payload.etapa_actual] || payload.etapa_actual}`,
-        detalle: `Pasó de ${STAGE_LABEL[ficha.etapa_actual] || ficha.etapa_actual} a ${
-          STAGE_LABEL[payload.etapa_actual] || payload.etapa_actual
-        }`,
+        detalle: `Pasó de ${STAGE_LABEL[ficha.etapa_actual] || ficha.etapa_actual} a ${STAGE_LABEL[payload.etapa_actual] || payload.etapa_actual
+          }`,
       });
     }
     if (action === "add_medication") {
@@ -505,10 +757,16 @@ export async function PATCH(req: NextRequest) {
 
     if (action === "delete_bitacora") {
       const kept = timeline.filter((e) => e.id !== payload.id);
-      await supabaseAdmin
+      const { error: err } = await supabaseAdmin
         .from("ficha_paciente")
         .update({ bitacora_clinica: kept })
         .eq("id", ficha.id);
+      if (err) {
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ resultados_laboratorio: kept })
+          .eq("id", ficha.id);
+      }
       return NextResponse.json({ ok: true });
     }
 

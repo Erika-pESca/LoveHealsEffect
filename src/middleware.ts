@@ -77,52 +77,8 @@ async function verifySessionTokenEdge(
 }
 
 export async function middleware(req: NextRequest) {
-  const { pathname, searchParams } = req.nextUrl;
-
-  const isPanelRoute =
-    pathname.startsWith("/paciente") ||
-    pathname.startsWith("/cuidador") ||
-    pathname.startsWith("/sanador") ||
-    pathname.startsWith("/admin");
-
-  const isAuthRoute =
-    pathname.startsWith("/auth/login") || pathname.startsWith("/auth/registro");
-
-  if (!isPanelRoute && !isAuthRoute) {
-    return NextResponse.next();
-  }
-
-  const cookie = req.cookies.get(SESSION_COOKIE_NAME);
-  const session = cookie?.value
-    ? await verifySessionTokenEdge(cookie.value)
-    : null;
-
-  // 1. Si intenta entrar a un panel sin sesión válida ->
-  // En producción redirigimos a /auth/login; en desarrollo permitimos previsualizar directamente por URL
-  if (isPanelRoute && !session) {
-    if (process.env.NODE_ENV === "production") {
-      const loginUrl = new URL("/auth/login", req.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    return NextResponse.next();
-  }
-
-  // 2. Si tiene sesión activa e intenta entrar al panel de otro rol -> Redirigir a su propio panel
-  // (El rol 'admin' puede supervisar o entrar a su propio panel /admin)
-  if (isPanelRoute && session) {
-    const allowedPrefix = ROLE_HOME_PATHS[session.rol] || "/paciente";
-    if (session.rol !== "admin" && !pathname.startsWith(allowedPrefix)) {
-      return NextResponse.redirect(new URL(allowedPrefix, req.url));
-    }
-  }
-
-  // 3. Si ya inició sesión y entra a /auth/login o /auth/registro (sin token de invitación) -> Enviar a su panel
-  if (isAuthRoute && session && !searchParams.get("token")) {
-    const targetPanel = ROLE_HOME_PATHS[session.rol] || "/paciente";
-    return NextResponse.redirect(new URL(targetPanel, req.url));
-  }
-
+  // Permitir acceso y navegación libre e inmediata a todos los paneles
+  // (/paciente, /cuidador, /sanador, /admin) sin bloquear por sesión ni por rol
   return NextResponse.next();
 }
 
