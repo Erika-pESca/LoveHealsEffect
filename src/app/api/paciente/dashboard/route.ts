@@ -503,17 +503,17 @@ export async function GET(req: NextRequest) {
     ] = await Promise.all([
       ficha.cuidador_usuario_id
         ? supabaseAdmin
-          .from("usuarios")
-          .select("id, nombre, correo, telefono")
-          .eq("id", ficha.cuidador_usuario_id)
-          .maybeSingle()
+            .from("usuarios")
+            .select("id, nombre, correo, telefono")
+            .eq("id", ficha.cuidador_usuario_id)
+            .maybeSingle()
         : Promise.resolve({ data: null }),
       ficha.cuidador_usuario_id
         ? supabaseAdmin
-          .from("ficha_cuidador")
-          .select("relacion_familiar, horarios_disponibles, estado_vinculo")
-          .eq("ficha_paciente_id", ficha.id)
-          .maybeSingle()
+            .from("ficha_cuidador")
+            .select("relacion_familiar, horarios_disponibles, estado_vinculo")
+            .eq("ficha_paciente_id", ficha.id)
+            .maybeSingle()
         : Promise.resolve({ data: null }),
       supabaseAdmin.from("sanadores_y_contenidos").select("*"),
       supabaseAdmin
@@ -576,8 +576,8 @@ export async function GET(req: NextRequest) {
         ? ficha.bitacora_clinica
         : Array.isArray(ficha.resultados_laboratorio) &&
           ficha.resultados_laboratorio.length > 0
-          ? ficha.resultados_laboratorio
-          : SAMPLE_BITACORA;
+        ? ficha.resultados_laboratorio
+        : SAMPLE_BITACORA;
 
     return NextResponse.json({
       ok: true,
@@ -600,7 +600,7 @@ export async function GET(req: NextRequest) {
         resultados_laboratorio: rawBitacora,
         medicamentos_y_horarios:
           Array.isArray(ficha.medicamentos_y_horarios) &&
-            ficha.medicamentos_y_horarios.length > 0
+          ficha.medicamentos_y_horarios.length > 0
             ? ficha.medicamentos_y_horarios
             : SAMPLE_MEDICAMENTOS,
         citas_medicas:
@@ -609,12 +609,12 @@ export async function GET(req: NextRequest) {
             : SAMPLE_CITAS,
         documentos_oncologo:
           Array.isArray(ficha.documentos_oncologo) &&
-            ficha.documentos_oncologo.length > 0
+          ficha.documentos_oncologo.length > 0
             ? ficha.documentos_oncologo
             : SAMPLE_DOCUMENTOS,
         contactos_personales:
           Array.isArray(ficha.contactos_personales) &&
-            ficha.contactos_personales.length > 0
+          ficha.contactos_personales.length > 0
             ? ficha.contactos_personales
             : SAMPLE_CONTACTOS,
       },
@@ -646,8 +646,8 @@ export async function PATCH(req: NextRequest) {
         ? [...ficha.bitacora_clinica]
         : Array.isArray(ficha.resultados_laboratorio) &&
           ficha.resultados_laboratorio.length > 0
-          ? [...ficha.resultados_laboratorio]
-          : [...SAMPLE_BITACORA];
+        ? [...ficha.resultados_laboratorio]
+        : [...SAMPLE_BITACORA];
 
     const pushTimeline = async (entry: Record<string, any>) => {
       timeline.unshift({
@@ -683,8 +683,9 @@ export async function PATCH(req: NextRequest) {
       await pushTimeline({
         tipo: "etapa",
         titulo: `Etapa: ${STAGE_LABEL[payload.etapa_actual] || payload.etapa_actual}`,
-        detalle: `Pasó de ${STAGE_LABEL[ficha.etapa_actual] || ficha.etapa_actual} a ${STAGE_LABEL[payload.etapa_actual] || payload.etapa_actual
-          }`,
+        detalle: `Pasó de ${STAGE_LABEL[ficha.etapa_actual] || ficha.etapa_actual} a ${
+          STAGE_LABEL[payload.etapa_actual] || payload.etapa_actual
+        }`,
       });
     }
     if (action === "add_medication") {
