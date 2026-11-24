@@ -330,12 +330,22 @@ const SAMPLE_BITACORA = [
 
 const SAMPLE_CITAS = [
   {
+    id: 100,
+    titulo: "Control de laboratorio pre-ciclo",
+    fecha: "2026-11-26",
+    hora: "08:30 AM",
+    lugar: "Queen's Medical Center · Laboratorio Central",
+    medico: "Dra. Sarah Jenkins",
+    notas: "Asistir en ayuno ligero con hidratación; resultados compartidos con tu oncóloga.",
+  },
+  {
     id: 101,
     titulo: "Consulta mensual con Dra. Jenkins (Oncología)",
     fecha: "2026-12-04",
     hora: "10:00 AM",
     lugar: "Queen's Medical Center - Consultorio 402",
-    notas: "Llevar analítica reciente y preguntas preparadas con PONO IA",
+    medico: "Dra. Sarah Jenkins",
+    notas: "Llevar analítica reciente y tus preguntas anotadas para la consulta.",
   },
   {
     id: 102,
@@ -343,15 +353,35 @@ const SAMPLE_CITAS = [
     fecha: "2026-12-08",
     hora: "03:30 PM",
     lugar: "Honolulu Holistic Center con Dra. Maya Lin",
-    notas: "Ropa cómoda de algodón",
+    medico: "Dra. Maya Lin",
+    notas: "Ropa cómoda de algodón e hidratación tibia después de la sesión.",
+  },
+];
+
+const SAMPLE_HEALER_SESSIONS = [
+  {
+    id: 9001,
+    sanador_usuario_id: 3,
+    asistente_rol: "paciente",
+    modalidad: "online",
+    fecha_sesion: "2026-11-29T18:00:00-10:00",
+    es_sesion_gratuita_mensual: true,
+    enlace_o_lugar: "Love Circle for Patients · Respirar en paz y soltar tensión (Kelsie & Omar)",
+    zoom_url: "https://zoom.us/j/lovehealseffect-circle",
+    estado_cita: "confirmada",
+    sample: true,
   },
   {
-    id: 103,
-    titulo: "Love Circle Mensual de Sanación con Kelsie y Omar",
-    fecha: "2026-12-15",
-    hora: "06:00 PM",
-    lugar: "Love Heals Live Stream Honolulu",
-    notas: "Encuentro con la comunidad de pacientes",
+    id: 9002,
+    sanador_usuario_id: 3,
+    asistente_rol: "paciente",
+    modalidad: "online",
+    fecha_sesion: "2026-12-02T11:00:00-10:00",
+    es_sesion_gratuita_mensual: true,
+    enlace_o_lugar: "Sesión mensual gratuita 1 a 1 de Coaching y BAM con Kelsie Reynolds",
+    zoom_url: "https://zoom.us/j/lovehealseffect-coaching",
+    estado_cita: "programada",
+    sample: true,
   },
 ];
 
@@ -753,7 +783,10 @@ export async function GET(req: NextRequest) {
 
     // Citas con sanadores (citas_y_bitacora_sanador)
     const sessionsData = sessionsDataRes?.data;
-    const healerSessions = Array.isArray(sessionsData) ? sessionsData : [];
+    const healerSessions =
+      Array.isArray(sessionsData) && sessionsData.length > 0
+        ? sessionsData
+        : SAMPLE_HEALER_SESSIONS;
 
     // Tickets de soporte / feedback enviados por la paciente
     const ticketsData = ticketsDataRes?.data;
@@ -1291,6 +1324,50 @@ export async function PATCH(req: NextRequest) {
         .single();
 
       return NextResponse.json({ ok: true, session: inserted });
+    }
+
+    if (action === "reschedule_healer_session") {
+      if (payload.id && Number(payload.id) < 9000) {
+        await supabaseAdmin
+          .from("citas_y_bitacora_sanador")
+          .update({
+            fecha_sesion: payload.fecha_sesion,
+            estado_cita: "reprogramada",
+          })
+          .eq("id", Number(payload.id));
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    if (action === "cancel_healer_session") {
+      if (payload.id && Number(payload.id) < 9000) {
+        await supabaseAdmin
+          .from("citas_y_bitacora_sanador")
+          .update({ estado_cita: "cancelada" })
+          .eq("id", Number(payload.id));
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    if (action === "update_medical_appointment") {
+      const base =
+        Array.isArray(ficha.citas_medicas) && ficha.citas_medicas.length > 0
+          ? [...ficha.citas_medicas]
+          : [...SAMPLE_CITAS];
+      const idx = Number(payload.index);
+      if (base[idx]) {
+        base[idx] = {
+          ...base[idx],
+          fecha: payload.fecha || base[idx].fecha,
+          hora: payload.hora ?? base[idx].hora,
+          notas: payload.notas ?? base[idx].notas,
+        };
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ citas_medicas: base })
+          .eq("id", ficha.id);
+      }
+      return NextResponse.json({ ok: true, items: base });
     }
 
     if (action === "add_contact") {

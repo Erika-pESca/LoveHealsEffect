@@ -421,22 +421,13 @@ export function MiniCalendar({
   onSelect,
   isEs,
 }: {
-  marks: Record<string, { med: number; ses: number; cir?: number }>;
+  marks: Record<string, { med: number; ses: number }>;
   selected: string;
   onSelect: (k: string) => void;
   isEs: boolean;
 }) {
   const now = new Date();
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
-
-  useEffect(() => {
-    if (!selected || selected.length < 7) return;
-    const y = Number(selected.slice(0, 4));
-    const m = Number(selected.slice(5, 7)) - 1;
-    if (!Number.isNaN(y) && !Number.isNaN(m)) {
-      setCursor((prev) => (prev.y === y && prev.m === m ? prev : { y, m }));
-    }
-  }, [selected]);
 
   const first = new Date(cursor.y, cursor.m, 1);
   const lead = (first.getDay() + 6) % 7; // lunes primero
@@ -514,10 +505,7 @@ export function MiniCalendar({
                   <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white" : "bg-[#239BA2]"}`} />
                 ) : null}
                 {mark?.ses ? (
-                  <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white/85" : "bg-[#F49678]"}`} />
-                ) : null}
-                {mark?.cir ? (
-                  <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white/75" : "bg-[#7A4FD1]"}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white/80" : "bg-[#F49678]"}`} />
                 ) : null}
               </span>
             </button>
@@ -525,7 +513,7 @@ export function MiniCalendar({
         })}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-semibold text-espresso/60">
+      <div className="mt-3 flex items-center gap-4 text-[11px] font-semibold text-espresso/60">
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-[#239BA2]" />
           {isEs ? "Cita médica" : "Medical visit"}
@@ -533,10 +521,6 @@ export function MiniCalendar({
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-[#F49678]" />
           {isEs ? "Sesión con sanador" : "Healer session"}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-[#7A4FD1]" />
-          {isEs ? "Healing Circle gratis" : "Free Healing Circle"}
         </span>
       </div>
     </div>
@@ -947,13 +931,44 @@ function PacienteDashboardInner() {
       (eventsByDay[key] = eventsByDay[key] || []).push(ev);
     };
     (ficha.citas_medicas || []).forEach((c: any, idx: number) =>
-      push(String(c.fecha).slice(0, 10), { kind: "med", idx, title: c.titulo, sub: `${c.hora || ""} ${c.lugar || ""}`.trim(), date: String(c.fecha).slice(0, 10) }, "med")
+      push(
+        String(c.fecha).slice(0, 10),
+        {
+          kind: "med",
+          idx,
+          title: c.titulo,
+          sub: `${c.hora || ""}${c.hora && c.lugar ? " · " : ""}${c.lugar || ""}`.trim(),
+          hora: c.hora || "",
+          lugar: c.lugar || "",
+          medico: c.medico || "",
+          notas: c.notas || "",
+          date: String(c.fecha).slice(0, 10),
+        },
+        "med"
+      )
     );
     (data.healerSessions || [])
       .filter((s: any) => s.estado_cita !== "cancelada")
-      .forEach((s: any) =>
-        push(String(s.fecha_sesion).slice(0, 10), { kind: "ses", title: s.enlace_o_lugar, sub: String(s.modalidad).toUpperCase(), date: String(s.fecha_sesion).slice(0, 10) }, "ses")
-      );
+      .forEach((s: any) => {
+        const rawTime = String(s.fecha_sesion || "");
+        const timePart = rawTime.includes("T") ? rawTime.slice(11, 16) : "";
+        push(
+          rawTime.slice(0, 10),
+          {
+            kind: "ses",
+            sessionId: s.id,
+            sample: Boolean(s.sample),
+            title: s.enlace_o_lugar,
+            sub: `${s.modalidad === "presencial" ? (isEs ? "Presencial Honolulu" : "In-person Honolulu") : "Zoom en vivo"}${timePart ? ` · ${timePart}` : ""}`,
+            modalidad: s.modalidad || "online",
+            estado: s.estado_cita || "programada",
+            gratis: Boolean(s.es_sesion_gratuita_mensual),
+            zoomUrl: s.zoom_url || "https://zoom.us/j/lovehealseffect-circle",
+            date: rawTime.slice(0, 10),
+          },
+          "ses"
+        );
+      });
     const today = todayKey();
     const upcoming = Object.entries(eventsByDay)
       .filter(([k]) => k >= today)
@@ -1154,8 +1169,10 @@ function PacienteDashboardInner() {
             isEs={isEs}
             ficha={ficha}
             caregiver={caregiver}
-            healerSessions={data.healerSessions || []}
             medReminders={medReminders}
+            medsDone={medsDone}
+            medsPct={medsPct}
+            water={water}
             otherReminders={otherReminders}
             todayHabits={todayHabits}
             updateDaily={updateDaily}
@@ -1165,10 +1182,11 @@ function PacienteDashboardInner() {
             selectedDay={selectedDay}
             setSelectedDay={setSelectedDay}
             eventsByDay={eventsByDay}
+            upcoming={upcoming}
+            healerSessions={data.healerSessions || []}
             fmtDate={fmtDate}
             runAction={runAction}
             openSheet={openSheet}
-            openConsult={openConsult}
             goToTab={goToTab}
             healers={healers}
           />

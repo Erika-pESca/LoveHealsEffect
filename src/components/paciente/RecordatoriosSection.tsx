@@ -6,129 +6,64 @@ import {
   Calendar,
   CalendarHeart,
   Check,
+  CheckCircle2,
   ChevronRight,
   Clock,
+  Copy,
+  Droplets,
   ExternalLink,
   HeartHandshake,
   MapPin,
   Moon,
   Pill,
   Plus,
+  RefreshCw,
   Sparkles,
   Stethoscope,
   Sun,
   Sunrise,
   Trash2,
   Users,
+  Video,
   X,
 } from "lucide-react";
-import { Card, PrimaryButton } from "@/components/panel/ui";
-import { MiniCalendar } from "@/components/paciente/PacienteDashboard";
-import { todayKey } from "./types";
+import { Card, inputCls, PrimaryButton } from "@/components/panel/ui";
+import { MiniCalendar, todayKey } from "@/components/paciente/PacienteDashboard";
 
 interface RecordatoriosSectionProps {
   t: (es: string, en: string) => string;
   isEs: boolean;
   ficha?: any;
   caregiver?: any;
-  healerSessions?: any[];
   medReminders: any[];
+  medsDone?: number;
+  medsPct?: number;
+  water?: number;
   otherReminders: any[];
   todayHabits: Record<string, boolean>;
-  updateDaily: (patch: { habits?: Record<string, boolean> }) => void;
+  updateDaily: (patch: { habits?: Record<string, boolean>; water?: number }) => void;
   onReminderClick: (reminder: any) => void;
   reminderIcon: Record<string, any>;
-  marks: Record<string, { med: number; ses: number; cir?: number }>;
+  marks: Record<string, { med: number; ses: number }>;
   selectedDay: string;
   setSelectedDay: (day: string) => void;
   eventsByDay: Record<string, any[]>;
+  upcoming?: any[];
+  healerSessions?: any[];
   fmtDate: (dayKey: string) => string;
   runAction: (action: string, payload?: any, msg?: string, options?: any) => Promise<any>;
   openSheet: (sheet: string, initial?: Record<string, string>) => void;
-  openConsult?: (audience: "medico" | "sanador") => void;
   goToTab?: (tab: string) => void;
   healers: any[];
 }
 
-interface AgendaEvent {
-  id: string;
-  kind: "med" | "ses" | "cir";
-  idx?: number;
-  date: string;
-  time: string;
-  title: string;
-  place: string;
-  notes?: string;
-  host?: string;
-  iso?: string;
-  free?: boolean;
-}
+type ViewBlock = "resumen" | "medicinas" | "citas" | "sesiones";
 
-/** Eventos comunitarios gratuitos del mes visibles también en el calendario. */
-const COMMUNITY_CIRCLE_DATES = [
-  {
-    id: "cir-1",
-    date: "2026-11-29",
-    iso: "2026-11-29T18:00:00-10:00",
-    time: "06:00 PM HST",
-    titleEs: "Love Circle: Respirar en paz y soltar tensión",
-    titleEn: "Love Circle: Breathe in peace, release tension",
-    placeEs: "Zoom en vivo o presencial en Honolulu",
-    placeEn: "Live Zoom or in-person Honolulu",
-    notesEs: "Encuentro 100% gratuito de respiración suave y compañía con Kelsie y Omar.",
-    notesEn: "100% free gentle breathwork & companionship circle with Kelsie & Omar.",
-    host: "Kelsie Reynolds & Omar Melero",
-  },
-  {
-    id: "cir-2",
-    date: "2026-12-06",
-    iso: "2026-12-06T18:00:00-10:00",
-    time: "06:00 PM HST",
-    titleEs: "Healing Circle Familiar: Pacientes y cuidadores juntos",
-    titleEn: "Family Healing Circle: Patients & caregivers together",
-    placeEs: "Zoom en vivo · Células familiares 1 a 1",
-    placeEn: "Live Zoom · 1-on-1 Family cells",
-    notesEs: "Espacio abierto para asistir sola o con tu cuidador y regular juntos el cansancio en casa.",
-    notesEn: "Attend solo or with your caregiver to co-regulate household stress together.",
-    host: "Omar Melero & Kelsie Reynolds",
-  },
-  {
-    id: "cir-3",
-    date: "2026-12-13",
-    iso: "2026-12-13T18:00:00-10:00",
-    time: "06:00 PM HST",
-    titleEs: "Taller Sonoro: Tapping EFT y cuencos de cuarzo",
-    titleEn: "Sound Workshop: EFT Tapping & quartz bowls",
-    placeEs: "Zoom en vivo · Audio 432 Hz",
-    placeEn: "Live Zoom · 432 Hz Audio",
-    notesEs: "Puntos suaves de Tapping para soltar ansiedad e insomnio + baño de cuencos en directo.",
-    notesEn: "Gentle EFT points to release anxiety & insomnia + live quartz sound bath.",
-    host: "Omar Melero & Kelsie Reynolds",
-  },
-  {
-    id: "cir-4",
-    date: "2026-12-20",
-    iso: "2026-12-20T18:00:00-10:00",
-    time: "06:00 PM HST",
-    titleEs: "Open Workshop: Cocina alcalina y cierre en gratitud",
-    titleEn: "Open Workshop: Alkaline kitchen & gratitude circle",
-    placeEs: "Zoom interactivo · Recetario incluido",
-    placeEn: "Interactive Zoom · Recipe guide included",
-    notesEs: "Caldos e infusiones suaves para días de náusea o poco apetito y círculo de gratitud.",
-    notesEn: "Soothing broths & teas for low-appetite days plus closing gratitude circle.",
-    host: "Kelsie Reynolds & Dra. Maya Lin",
-  },
-];
-
-type TabFilter = "todo" | "medicinas" | "citas" | "sanadores";
-
-function classifyMoment(horario: string): "manana" | "tarde" | "noche" {
-  const h = (horario || "").toLowerCase();
-  if (/(noche|cena|dormir|night|dinner|sleep|bed|pm\b)/.test(h) && !/12:00\s*pm/.test(h)) {
-    if (/(mediod|almuerz|tarde|lunch|noon|afternoon|0?[1-5]:)/.test(h)) return "tarde";
-    return "noche";
-  }
-  if (/(mediod|almuerz|tarde|12\s*horas|lunch|noon|afternoon)/.test(h)) return "tarde";
+/** Clasifica cada medicina/suplemento en Mañana, Mediodía/Tarde o Noche según el horario escrito. */
+function slotOf(text: string): "manana" | "tarde" | "noche" {
+  const s = text.toLowerCase();
+  if (/(noche|dormir|cena|pm|20:|21:|22:|night|bed|dinner|evening)/.test(s)) return "noche";
+  if (/(mediod|tarde|almuerzo|12:|13:|14:|15:|16:|17:|lunch|afternoon|noon)/.test(s)) return "tarde";
   return "manana";
 }
 
@@ -137,581 +72,525 @@ export function RecordatoriosSection({
   isEs,
   ficha,
   caregiver,
-  healerSessions = [],
-  otherReminders,
+  medReminders,
+  medsDone = 0,
+  medsPct = 0,
+  water = 0,
   todayHabits,
   updateDaily,
-  onReminderClick,
-  reminderIcon,
+  marks,
   selectedDay,
   setSelectedDay,
+  eventsByDay,
+  upcoming = [],
+  healerSessions = [],
   fmtDate,
   runAction,
   openSheet,
-  openConsult,
   goToTab,
   healers,
 }: RecordatoriosSectionProps) {
-  const [filter, setFilter] = useState<TabFilter>("todo");
-  const [activeEvent, setActiveEvent] = useState<AgendaEvent | null>(null);
+  const [block, setBlock] = useState<ViewBlock>("resumen");
+  const [detailEvent, setDetailEvent] = useState<any | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [copied, setCopied] = useState(false);
 
-  /* ---------------- 1. Medicamentos + Suplementos unificados ---------------- */
-  const dailyDoses = useMemo(() => {
+  /* ---------------- Medicinas + Suplementos unificados para hoy ---------------- */
+  const dailyMedsAndSupps = useMemo(() => {
     const meds = (ficha?.medicamentos_y_horarios || []).map((m: any, i: number) => ({
       key: `med-${m.id ?? i}`,
-      kind: "med" as const,
-      idx: i,
-      name: m.nombre,
-      dose: m.dosis || "",
-      schedule: m.horario || "",
-      notes: m.indicaciones || "",
-      moment: classifyMoment(m.horario || ""),
+      index: i,
+      kind: "medicamento" as const,
+      nombre: m.nombre,
+      dosis: m.dosis || "",
+      horario: m.horario || (isEs ? "Mañana" : "Morning"),
+      indicaciones: m.indicaciones || "",
+      slot: slotOf(`${m.horario || ""} ${m.indicaciones || ""}`),
     }));
-    const sups = (ficha?.suplementos || []).map((s: any, i: number) => ({
-      key: `sup-${i}`,
-      kind: "sup" as const,
-      idx: i,
-      name: s.nombre,
-      dose: s.dosis || "",
-      schedule: s.horario || "",
-      notes: "",
-      moment: classifyMoment(s.horario || ""),
+    const supps = (ficha?.suplementos || []).map((s: any, i: number) => ({
+      key: `supp-${i}`,
+      index: i,
+      kind: "suplemento" as const,
+      nombre: s.nombre,
+      dosis: s.dosis || "",
+      horario: s.horario || (isEs ? "Con comidas" : "With meals"),
+      indicaciones: "",
+      slot: slotOf(s.horario || ""),
     }));
-    return [...meds, ...sups];
+    return meds.length > 0 || supps.length > 0
+      ? [...meds, ...supps]
+      : medReminders.map((m: any, i: number) => ({
+          key: m.key,
+          index: i,
+          kind: "medicamento" as const,
+          nombre: m.label,
+          dosis: String(m.sub || "").split("·")[0]?.trim() || "",
+          horario: String(m.sub || "").split("·")[1]?.trim() || "",
+          indicaciones: "",
+          slot: slotOf(m.sub || ""),
+        }));
+  }, [ficha, medReminders, isEs]);
+
+  const totalDailyDone = dailyMedsAndSupps.filter((item) => Boolean(todayHabits[item.key])).length;
+  const totalDailyPct = dailyMedsAndSupps.length
+    ? Math.round((totalDailyDone / dailyMedsAndSupps.length) * 100)
+    : medsPct;
+
+  /* ---------------- Citas médicas ordenadas ---------------- */
+  const medicalVisits = useMemo(() => {
+    const raw = Array.isArray(ficha?.citas_medicas) ? ficha.citas_medicas : [];
+    return raw
+      .map((c: any, idx: number) => ({
+        kind: "med" as const,
+        idx,
+        title: c.titulo,
+        date: String(c.fecha || "").slice(0, 10),
+        hora: c.hora || "09:30 AM",
+        lugar: c.lugar || "",
+        medico: c.medico || "",
+        notas: c.notas || "",
+        sub: `${c.hora || ""}${c.hora && c.lugar ? " · " : ""}${c.lugar || ""}`.trim(),
+      }))
+      .sort((a: any, b: any) => a.date.localeCompare(b.date));
   }, [ficha]);
 
-  const dosesDone = dailyDoses.filter((d) => Boolean(todayHabits[d.key])).length;
-  const dosesPct = dailyDoses.length ? Math.round((dosesDone / dailyDoses.length) * 100) : 0;
-
-  /* ---------------- 2. Calendario unificado (Citas + Sanadores + Circles) ---------------- */
-  const { enrichedMarks, allEventsByDay, upcomingAll, medicalVisits, wellnessEvents } = useMemo(() => {
-    const marksMap: Record<string, { med: number; ses: number; cir: number }> = {};
-    const byDay: Record<string, AgendaEvent[]> = {};
-
-    const add = (ev: AgendaEvent) => {
-      if (!ev.date) return;
-      marksMap[ev.date] = marksMap[ev.date] || { med: 0, ses: 0, cir: 0 };
-      marksMap[ev.date][ev.kind]++;
-      (byDay[ev.date] = byDay[ev.date] || []).push(ev);
-    };
-
-    // Citas médicas
-    (ficha?.citas_medicas || []).forEach((c: any, idx: number) => {
-      add({
-        id: `med-visit-${c.id ?? idx}`,
-        kind: "med",
-        idx,
-        date: String(c.fecha || "").slice(0, 10),
-        time: c.hora || "09:30 AM",
-        title: c.titulo,
-        place: c.lugar || t("Centro médico", "Medical center"),
-        notes: c.notas || "",
-      });
-    });
-
-    // Sesiones reservadas con sanadores
-    (healerSessions || [])
+  /* ---------------- Sesiones con sanadores y Love Circles reservados ---------------- */
+  const activeBookings = useMemo(() => {
+    return (healerSessions || [])
       .filter((s: any) => s.estado_cita !== "cancelada")
-      .forEach((s: any, idx: number) => {
-        const d = String(s.fecha_sesion || "").slice(0, 10);
-        const h = String(s.fecha_sesion || "").includes("T")
-          ? new Date(s.fecha_sesion).toLocaleTimeString(isEs ? "es-ES" : "en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "06:00 PM";
-        add({
-          id: `ses-${s.id ?? idx}`,
-          kind: "ses",
-          date: d,
-          time: h,
-          title: s.enlace_o_lugar || t("Sesión con sanador", "Healer session"),
-          place:
+      .map((s: any) => {
+        const raw = String(s.fecha_sesion || "");
+        const date = raw.slice(0, 10);
+        const hora = raw.includes("T") ? raw.slice(11, 16) : "18:00";
+        const isCircle = /circle|círculo/i.test(String(s.enlace_o_lugar || ""));
+        return {
+          kind: "ses" as const,
+          sessionId: s.id,
+          sample: Boolean(s.sample),
+          isCircle,
+          title: s.enlace_o_lugar || "Sesión Love Heals Effect",
+          date,
+          hora: `${hora} HST`,
+          modalidad: s.modalidad || "online",
+          estado: s.estado_cita || "programada",
+          gratis: Boolean(s.es_sesion_gratuita_mensual),
+          zoomUrl: s.zoom_url || "https://zoom.us/j/lovehealseffect-circle",
+          sub:
             s.modalidad === "presencial"
-              ? t("En persona · Honolulu", "In person · Honolulu")
-              : t("En línea · Zoom", "Online · Zoom"),
-          notes: s.es_sesion_gratuita_mensual
-            ? t("Sesión mensual gratuita incluida en tu acompañamiento.", "Free monthly session included in your care.")
-            : "",
-          free: Boolean(s.es_sesion_gratuita_mensual),
-        });
-      });
+              ? isEs
+                ? "Presencial en Honolulu, O'ahu"
+                : "In person in Honolulu, O'ahu"
+              : isEs
+                ? "En línea · Zoom en vivo"
+                : "Online · Live Zoom",
+        };
+      })
+      .sort((a: any, b: any) => a.date.localeCompare(b.date));
+  }, [healerSessions, isEs]);
 
-    // Healing & Love Circles gratuitos del mes
-    COMMUNITY_CIRCLE_DATES.forEach((c) => {
-      add({
-        id: c.id,
-        kind: "cir",
-        date: c.date,
-        iso: c.iso,
-        time: c.time,
-        title: isEs ? c.titleEs : c.titleEn,
-        place: isEs ? c.placeEs : c.placeEn,
-        notes: isEs ? c.notesEs : c.notesEn,
-        host: c.host,
-        free: true,
-      });
-    });
+  /* ---------------- Sugerencias automáticas preventivas (CERO mención a IA) ---------------- */
+  const nextVisit = medicalVisits.find((v: any) => v.date >= todayKey()) || medicalVisits[0];
+  const nextBooking = activeBookings.find((b: any) => b.date >= todayKey()) || activeBookings[0];
 
-    const today = todayKey();
-    const allSorted = Object.entries(byDay)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .flatMap(([, list]) => list);
+  const openDetail = (ev: any) => {
+    setDetailEvent(ev);
+    setRescheduleDate(ev.date || todayKey());
+    setRescheduleTime(ev.hora?.replace(" HST", "") || "10:00 AM");
+    setCopied(false);
+  };
 
-    const upcomingList = allSorted.filter((e) => e.date >= today);
-    return {
-      enrichedMarks: marksMap,
-      allEventsByDay: byDay,
-      upcomingAll: upcomingList,
-      medicalVisits: allSorted.filter((e) => e.kind === "med"),
-      wellnessEvents: allSorted.filter((e) => e.kind === "ses" || e.kind === "cir"),
-    };
-  }, [ficha, healerSessions, isEs]);
+  const selectedDayEvents = eventsByDay[selectedDay] || [];
 
-  const nextMedical = upcomingAll.find((e) => e.kind === "med") || medicalVisits[0] || null;
-  const nextWellness = upcomingAll.find((e) => e.kind === "ses" || e.kind === "cir") || null;
-  const selectedEvents = allEventsByDay[selectedDay] || [];
-
-  const momentGroups = [
+  const SLOTS = [
     {
       id: "manana" as const,
       icon: Sunrise,
-      color: "text-[#D97706] bg-[#FEF3C7]",
-      label: t("Por la mañana", "Morning"),
+      labelEs: "Mañana",
+      labelEn: "Morning",
+      accent: "text-[#D97706] bg-[#FEF3C7]",
     },
     {
       id: "tarde" as const,
       icon: Sun,
-      color: "text-[#239BA2] bg-[#CFEDE8]",
-      label: t("Al mediodía / tarde", "Midday / afternoon"),
+      labelEs: "Mediodía y tarde",
+      labelEn: "Midday & afternoon",
+      accent: "text-[#239BA2] bg-[#CFEDE8]",
     },
     {
       id: "noche" as const,
       icon: Moon,
-      color: "text-[#7A4FD1] bg-[#EAE2F5]",
-      label: t("Por la noche", "Evening / bedtime"),
+      labelEs: "Noche y descanso",
+      labelEn: "Evening & rest",
+      accent: "text-[#7A4FD1] bg-[#EAE2F5]",
     },
   ];
 
-  const eventMeta = (kind: AgendaEvent["kind"]) => {
-    if (kind === "med")
-      return {
-        icon: Stethoscope,
-        badge: t("Cita médica", "Medical visit"),
-        bg: "bg-[#D7F3EA] text-[#1E747A]",
-        pill: "bg-[#239BA2]/10 text-[#1E747A]",
-      };
-    if (kind === "ses")
-      return {
-        icon: CalendarHeart,
-        badge: t("Sesión con sanador", "Healer session"),
-        bg: "bg-[#FFE7D6] text-[#C85A17]",
-        pill: "bg-[#F49678]/20 text-[#B84C0E]",
-      };
-    return {
-      icon: Users,
-      badge: t("Healing Circle · Gratis", "Healing Circle · Free"),
-      bg: "bg-[#EAE2F5] text-[#7A4FD1]",
-      pill: "bg-[#7A4FD1]/10 text-[#7A4FD1]",
-    };
-  };
-
   return (
-    <main className="mt-6 space-y-7 pb-10">
-      {/* ===================== ENCABEZADO + SINCRONIZACIÓN 1:1 ===================== */}
-      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end animate-fade-in">
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#CFEDE8]/75 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#1E747A]">
-            <Bell className="h-3.5 w-3.5" />
-            {t("Planificador y Agenda Compartida", "Shared Planner & Schedule")}
-          </span>
-          <h2 className="mt-2 text-3xl font-semibold leading-tight tracking-[-0.03em] text-[#2D2B2A] sm:text-4xl">
-            {isEs ? "Tus recordatorios " : "Your reminders "}
-            <span className="font-light italic text-[#E8809A]">
-              {isEs ? "día a día y sin estrés." : "day by day, stress-free."}
+    <main className="mt-6 space-y-6 pb-10">
+      {/* ===================== 1. ENCABEZADO + SINCRONIZACIÓN 1 A 1 CON CUIDADOR ===================== */}
+      <section className="animate-fade-in space-y-4">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8809A]/15 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
+              <Bell className="h-3.5 w-3.5" />
+              {t("Agenda y Cuidado Compartido 1 a 1", "Shared 1-on-1 Care Schedule")}
             </span>
-          </h2>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-espresso/65">
-            {t(
-              "Medicinas, suplementos, consultas médicas, sesiones con sanadores y Healing Circles organizados en un solo lugar para ti y quien te cuida.",
-              "Medications, supplements, medical visits, healer sessions, and Healing Circles organized in one calm space for you and your caregiver."
-            )}
-          </p>
+            <h2 className="mt-2 text-3xl font-semibold leading-tight tracking-[-0.03em] text-[#2D2B2A] sm:text-4xl">
+              {isEs ? "Tus recordatorios y " : "Your reminders & "}
+              <span className="font-light italic text-[#E8809A]">
+                {isEs ? "acompañamiento diario." : "daily accompaniment."}
+              </span>
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-espresso/65">
+              {t(
+                "Organiza tus medicinas, citas médicas y sesiones con sanadores en un solo lugar, sincronizado automáticamente con quien te cuida.",
+                "Organize your medications, medical visits, and healer sessions in one place, automatically synced with your caregiver."
+              )}
+            </p>
+          </div>
+
+          {/* Botones rápidos superiores */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" })}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:brightness-105 active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              {t("Nueva cita médica", "New medical visit")}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                openSheet("book", {
+                  healer: String(healers[0]?.id ?? ""),
+                  modalidad: "online",
+                  fecha: selectedDay,
+                  gratis: "1",
+                })
+              }
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#E8809A] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:brightness-105 active:scale-95"
+            >
+              <CalendarHeart className="h-4 w-4" />
+              {t("Reservar con sanador", "Book with healer")}
+            </button>
+          </div>
         </div>
 
-        {/* Estado de Célula Familiar 1:1 */}
-        <button
-          type="button"
-          onClick={() =>
-            openSheet("caregiver", { correo: ficha?.correo_invitacion_cuidador || "" })
-          }
-          className="flex shrink-0 items-center gap-2.5 self-start rounded-2xl border border-espresso/8 bg-white px-4 py-2.5 text-left shadow-sm transition hover:shadow-md sm:self-auto"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FCECEE] text-[#C94A6A]">
-            <HeartHandshake className="h-4 w-4" />
-          </span>
-          <span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-wider text-espresso/45">
-              {t("Agenda familiar 1 a 1", "1-on-1 Family sync")}
+        {/* Tarjeta de Sincronización 1 a 1 Paciente ↔ Cuidador */}
+        <div className="flex flex-col justify-between gap-3 rounded-[26px] border border-[#239BA2]/20 bg-gradient-to-r from-[#EAF6F4] via-white to-[#FFF5EE] p-4 shadow-sm sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#239BA2] text-white shadow-sm">
+              <HeartHandshake className="h-6 w-6" />
             </span>
-            <span className="block text-xs font-bold text-espresso">
-              {caregiver?.linked
-                ? `${t("Compartida con", "Shared with")} ${caregiver.nombre}`
-                : t("Invitar a mi cuidador/a →", "Invite my caregiver →")}
-            </span>
-          </span>
-        </button>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold text-espresso">
+                  {caregiver?.linked
+                    ? t(` Agenda compartida 1 a 1 con ${caregiver.nombre}`, `1-on-1 schedule synced with ${caregiver.nombre}`)
+                    : t("Sincroniza tu agenda 1 a 1 con tu cuidador", "Sync your schedule 1-on-1 with your caregiver")}
+                </span>
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                    caregiver?.linked
+                      ? "bg-[#5C8D67]/15 text-[#2A5C35]"
+                      : "bg-[#FFF1B8] text-[#8A6A00]"
+                  }`}
+                >
+                  {caregiver?.linked
+                    ? `✓ ${t("Activo en tiempo real", "Live sync active")}`
+                    : t("Invitación disponible", "Invite available")}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs leading-relaxed text-espresso/65">
+                {caregiver?.linked
+                  ? t(
+                      `${caregiver.relacion || "Tu acompañante"} recibe visibilidad automática de tus próximas citas médicas, horarios de medicinas y Love Circles.`,
+                      `${caregiver.relacion || "Your caregiver"} automatically sees your upcoming medical visits, medication schedule, and Love Circles.`
+                    )
+                  : t(
+                      "Cuando vinculas a tu familiar o acompañante, ambos ven las mismas citas, tomas del día y recordatorios preventivos sin tener que repetir información.",
+                      "When you link your family caregiver, you both see the same visits, daily meds, and preventive reminders effortlessly."
+                    )}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              openSheet("caregiver", { correo: ficha?.correo_invitacion_cuidador || "" })
+            }
+            className="shrink-0 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#239BA2] shadow-sm ring-1 ring-[#239BA2]/25 transition hover:bg-[#239BA2] hover:text-white"
+          >
+            {caregiver?.linked
+              ? t("Ver vínculo familiar", "View family link")
+              : t("Vincular cuidador", "Link caregiver")}
+          </button>
+        </div>
       </section>
 
-      {/* ===================== 3 TARJETAS DE RESUMEN RÁPIDO ===================== */}
-      <section className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-        {/* 1. Tomas del día */}
-        <button
-          type="button"
-          onClick={() => setFilter("medicinas")}
-          className="rounded-[26px] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
-              <Pill className="h-3.5 w-3.5" />
-              {t("Tomas de hoy", "Today's doses")}
-            </span>
-            <span className="rounded-full bg-[#FCECEE] px-2.5 py-0.5 text-[11px] font-bold text-[#C94A6A]">
-              {dosesPct}%
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-semibold tracking-[-0.025em] text-espresso">
-            {dosesDone} <span className="text-sm font-normal text-espresso/50">/ {dailyDoses.length}</span>
-          </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#FAF7F2]">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#F48EA6] to-[#DC5678] transition-all duration-500"
-              style={{ width: `${dosesPct}%` }}
-            />
-          </div>
-          <p className="mt-1.5 text-[11px] text-espresso/55">
-            {dosesDone === dailyDoses.length && dailyDoses.length > 0
-              ? t("¡Todas tus tomas de hoy listas! ✨", "All doses completed today! ✨")
-              : t("Toca para marcar medicinas y suplementos", "Tap to check off meds & supplements")}
-          </p>
-        </button>
-
-        {/* 2. Próxima cita médica */}
-        <button
-          type="button"
-          onClick={() => {
-            if (nextMedical) {
-              setSelectedDay(nextMedical.date);
-              setActiveEvent(nextMedical);
-            } else {
-              openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" });
-            }
-          }}
-          className="rounded-[26px] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#239BA2]">
-            <Stethoscope className="h-3.5 w-3.5" />
-            {t("Próxima consulta médica", "Next medical visit")}
-          </span>
-          {nextMedical ? (
-            <>
-              <p className="mt-2 truncate text-base font-semibold tracking-[-0.015em] text-espresso">
-                {nextMedical.title}
-              </p>
-              <p className="mt-0.5 text-xs font-semibold text-[#239BA2]">
-                {fmtDate(nextMedical.date)} · {nextMedical.time}
-              </p>
-              <p className="mt-1 truncate text-[11px] text-espresso/55">📍 {nextMedical.place}</p>
-            </>
-          ) : (
-            <>
-              <p className="mt-2 text-sm font-semibold text-espresso">
-                {t("Sin citas médicas registradas", "No medical visits yet")}
-              </p>
-              <p className="mt-1 text-xs font-bold text-[#239BA2]">+ {t("Agendar nueva cita", "Add visit")}</p>
-            </>
-          )}
-        </button>
-
-        {/* 3. Próxima sesión holística / Healing Circle */}
-        <button
-          type="button"
-          onClick={() => {
-            if (nextWellness) {
-              setSelectedDay(nextWellness.date);
-              setActiveEvent(nextWellness);
-            } else {
-              openSheet("circle_rsvp");
-            }
-          }}
-          className="rounded-[26px] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#7A4FD1]">
-            <Sparkles className="h-3.5 w-3.5" />
-            {t("Próximo círculo o sanador", "Next circle or healer")}
-          </span>
-          {nextWellness ? (
-            <>
-              <p className="mt-2 truncate text-base font-semibold tracking-[-0.015em] text-espresso">
-                {nextWellness.title}
-              </p>
-              <p className="mt-0.5 text-xs font-semibold text-[#7A4FD1]">
-                {fmtDate(nextWellness.date)} · {nextWellness.time}
-              </p>
-              <p className="mt-1 truncate text-[11px] text-espresso/55">✨ {nextWellness.place}</p>
-            </>
-          ) : (
-            <p className="mt-2 text-sm text-espresso/60">
-              {t("Explora los próximos Healing Circles", "Explore upcoming Healing Circles")}
-            </p>
-          )}
-        </button>
-      </section>
-
-      {/* ===================== PESTAÑAS INTERACTIVAS DE FILTRO ===================== */}
-      <div className="-mx-4 flex items-center justify-between gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
-        <div className="flex gap-2">
-          {(
-            [
-              ["todo", t("Todo mi plan", "All my plan")],
-              ["medicinas", `💊 ${t("Medicinas y suplementos", "Meds & supplements")} (${dailyDoses.length})`],
-              ["citas", `🩺 ${t("Citas y chequeos", "Medical visits")} (${medicalVisits.length})`],
-              ["sanadores", `✨ ${t("Sanadores y Circles", "Healers & Circles")} (${wellnessEvents.length})`],
-            ] as const
-          ).map(([id, label]) => (
+      {/* ===================== 2. PESTAÑAS INTEGRADAS POR BLOQUES ===================== */}
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
+        {(
+          [
+            {
+              id: "resumen" as const,
+              label: t("✨ Todo integrado", "✨ All-in-one"),
+              badge: null,
+            },
+            {
+              id: "medicinas" as const,
+              label: t("💊 Hoy: Medicinas y hábitos", "💊 Today: Meds & habits"),
+              badge: `${totalDailyDone}/${dailyMedsAndSupps.length}`,
+            },
+            {
+              id: "citas" as const,
+              label: t("🩺 Citas médicas", "🩺 Medical visits"),
+              badge: String(medicalVisits.length),
+            },
+            {
+              id: "sesiones" as const,
+              label: t("🌺 Sesiones y Love Circles", "🌺 Sessions & Love Circles"),
+              badge: String(activeBookings.length),
+            },
+          ]
+        ).map((tab) => {
+          const active = block === tab.id;
+          return (
             <button
-              key={id}
+              key={tab.id}
               type="button"
-              onClick={() => setFilter(id)}
-              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition active:scale-95 ${
-                filter === id
-                  ? "bg-espresso text-white shadow-sm"
-                  : "bg-white text-espresso/65 shadow-sm hover:bg-espresso/5"
+              onClick={() => setBlock(tab.id)}
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold transition active:scale-95 ${
+                active
+                  ? "bg-espresso text-white shadow-md"
+                  : "bg-white text-espresso/70 shadow-sm hover:bg-espresso/5"
               }`}
             >
-              {label}
+              <span>{tab.label}</span>
+              {tab.badge && (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                    active ? "bg-white/20 text-white" : "bg-[#FAF7F2] text-espresso/65"
+                  }`}
+                >
+                  {tab.badge}
+                </span>
+              )}
             </button>
-          ))}
-        </div>
-
-        {/* Acciones rápidas */}
-        <div className="hidden items-center gap-2 lg:flex">
-          <button
-            type="button"
-            onClick={() => openSheet("add-med", { kind: "med" })}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-espresso shadow-sm transition hover:bg-espresso/5"
-          >
-            <Plus className="h-3.5 w-3.5 text-[#C94A6A]" />
-            {t("Medicina", "Medication")}
-          </button>
-          <button
-            type="button"
-            onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" })}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:brightness-105"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {t("Nueva cita", "New visit")}
-          </button>
-        </div>
+          );
+        })}
       </div>
 
-      {/* ======================================================================== */}
-      {/* VISTA 1: TODO MI PLAN (2 COLUMNAS EN COMPUTADOR, APILADO EN CELULAR)     */}
-      {/* ======================================================================== */}
-      {filter === "todo" && (
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Columna izquierda: Rutina de medicinas de hoy + Sugerencias preventivas */}
+      {/* ================================================================== */}
+      {/*  BLOQUE 1: VISTA INTEGRAL (2 COLUMNAS EN ESCRITORIO)               */}
+      {/* ================================================================== */}
+      {block === "resumen" && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 animate-fade-in">
+          {/* Columna Izquierda (7 cols): Hoy (Medicinas + Hidratación) + Sugerencias preventivas */}
           <div className="space-y-5 lg:col-span-7">
+            {/* Tarjeta de Tomas y Hábitos de Hoy */}
             <Card className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
-                    {t("Rutina diaria", "Daily routine")}
+                    {t("Planificador de hoy", "Today's planner")}
                   </span>
                   <h3 className="text-xl font-semibold tracking-[-0.02em] text-espresso">
-                    {t("Medicinas y suplementos de hoy", "Today's medications & supplements")}
+                    {t("Medicinas, suplementos y cuidado diario", "Medications, supplements & daily care")}
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => openSheet("add-med", { kind: "med" })}
-                  className="inline-flex items-center gap-1 rounded-full bg-[#FCECEE] px-3 py-1.5 text-xs font-bold text-[#C94A6A] transition hover:brightness-95"
+                  className="inline-flex items-center gap-1 rounded-full bg-[#FCECEE] px-3.5 py-1.5 text-xs font-bold text-[#C94A6A] transition hover:bg-[#E8809A] hover:text-white"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   {t("Agregar", "Add")}
                 </button>
               </div>
 
-              {dailyDoses.length === 0 ? (
-                <p className="rounded-2xl bg-[#FAF7F2] p-4 text-sm text-espresso/60">
-                  {t("Aún no has registrado medicamentos o suplementos.", "No medications or supplements added yet.")}
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {momentGroups.map((group) => {
-                    const items = dailyDoses.filter((d) => d.moment === group.id);
-                    if (items.length === 0) return null;
-                    const GroupIcon = group.icon;
-                    return (
-                      <div key={group.id} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`flex h-6 w-6 items-center justify-center rounded-lg ${group.color}`}>
-                            <GroupIcon className="h-3.5 w-3.5" />
-                          </span>
-                          <span className="text-xs font-bold uppercase tracking-wider text-espresso/55">
-                            {group.label}
-                          </span>
-                        </div>
-
-                        <div className="space-y-2">
-                          {items.map((item) => {
-                            const done = Boolean(todayHabits[item.key]);
-                            return (
-                              <button
-                                key={item.key}
-                                type="button"
-                                onClick={() => updateDaily({ habits: { [item.key]: !done } })}
-                                className={`flex w-full items-start gap-3 rounded-2xl border p-3.5 text-left transition active:scale-[0.99] ${
-                                  done
-                                    ? "border-[#5C8D67]/25 bg-[#F2F8F4] opacity-75"
-                                    : "border-espresso/5 bg-[#FAF7F2] hover:bg-white hover:shadow-sm"
-                                }`}
-                              >
-                                <span
-                                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                                    done
-                                      ? "border-[#5C8D67] bg-[#5C8D67] text-white"
-                                      : "border-espresso/25 bg-white"
-                                  }`}
-                                >
-                                  {done && <Check className="h-3.5 w-3.5" />}
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                  <span className="flex flex-wrap items-center gap-2">
-                                    <strong
-                                      className={`text-sm font-semibold text-espresso ${
-                                        done ? "line-through" : ""
-                                      }`}
-                                    >
-                                      {item.name}
-                                    </strong>
-                                    {item.dose && (
-                                      <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#C94A6A]">
-                                        {item.dose}
-                                      </span>
-                                    )}
-                                    <span className="rounded-full bg-espresso/5 px-2 py-0.5 text-[10px] font-semibold text-espresso/55">
-                                      {item.kind === "med"
-                                        ? t("Medicina", "Medication")
-                                        : t("Suplemento", "Supplement")}
-                                    </span>
-                                  </span>
-                                  {item.schedule && (
-                                    <span className="mt-0.5 block text-xs text-espresso/65">
-                                      🕐 {item.schedule}
-                                    </span>
-                                  )}
-                                  {item.notes && (
-                                    <span className="mt-0.5 block text-[11px] text-[#239BA2]">
-                                      💡 {item.notes}
-                                    </span>
-                                  )}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-
-            {/* Sugerencias preventivas de acompañamiento (según ANEXO oficial) */}
-            <Card className="bg-gradient-to-br from-[#FFF8F4] via-white to-[#F2FAF9] space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#239BA2] text-white">
-                  <Sparkles className="h-4 w-4" />
-                </span>
-                <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-wider text-[#239BA2]">
-                    {t("Apoyo preventivo sugerido", "Preventive care suggestions")}
+              {/* Barra de progreso */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-espresso/70">
+                  <span>
+                    {totalDailyDone} {t("de", "of")} {dailyMedsAndSupps.length}{" "}
+                    {t("completados hoy", "completed today")}
                   </span>
-                  <h4 className="text-sm font-semibold text-espresso">
-                    {t("Pequeños pasos para sentirte acompañada esta semana", "Gentle steps to feel supported this week")}
-                  </h4>
+                  <span className="text-[#239BA2]">{totalDailyPct}%</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-[#FAF7F2]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#E8809A] to-[#239BA2] transition-all duration-500"
+                    style={{ width: `${totalDailyPct}%` }}
+                  />
                 </div>
               </div>
 
+              {/* Lista resumida interactiva por horario */}
               <div className="space-y-2">
-                {otherReminders.map((r: any) => {
-                  const Icon = reminderIcon[r.kind] || Bell;
+                {dailyMedsAndSupps.slice(0, 5).map((m) => {
+                  const done = Boolean(todayHabits[m.key]);
                   return (
                     <button
-                      key={r.id}
+                      key={m.key}
                       type="button"
-                      onClick={() => onReminderClick(r)}
-                      className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm transition hover:shadow"
+                      onClick={() => updateDaily({ habits: { [m.key]: !done } })}
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left transition ${
+                        done ? "bg-[#EAF6F4]/70 opacity-70" : "bg-[#FAF7F2] hover:bg-[#F4EFE6]"
+                      }`}
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EAE2F5] text-[#7A4FD1]">
-                        <Icon className="h-4 w-4" />
+                      <span
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition ${
+                          done
+                            ? "border-[#239BA2] bg-[#239BA2] text-white"
+                            : "border-espresso/25 bg-white"
+                        }`}
+                      >
+                        {done && <Check className="h-3.5 w-3.5" />}
                       </span>
+                      <Pill className="h-4 w-4 shrink-0 text-[#C94A6A]" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-espresso">{r.title}</span>
-                        <span className="block truncate text-[11px] text-espresso/60">{r.sub}</span>
+                        <span className={`block truncate text-sm font-semibold text-espresso ${done ? "line-through" : ""}`}>
+                          {m.nombre} {m.dosis && <span className="font-normal text-espresso/60">· {m.dosis}</span>}
+                        </span>
+                        <span className="block truncate text-xs text-espresso/55">{m.horario}</span>
                       </span>
-                      <ChevronRight className="h-4 w-4 text-espresso/35" />
+                      <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-espresso/60">
+                        {done ? t("Tomada", "Taken") : t("Marcar", "Mark")}
+                      </span>
                     </button>
                   );
                 })}
-
-                <button
-                  type="button"
-                  onClick={() => openSheet("circle_rsvp")}
-                  className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm transition hover:shadow"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#CFEDE8] text-[#1E747A]">
-                    <Users className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-xs font-bold text-espresso">
-                      {t("Reserva tu lugar en el próximo Love Circle gratuito", "Save your spot in the next free Love Circle")}
-                    </span>
-                    <span className="block text-[11px] text-espresso/60">
-                      {t("Sábados 6:00 PM HST · Puedes asistir sola o con tu cuidador", "Saturdays 6:00 PM HST · Join solo or with your caregiver")}
-                    </span>
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-espresso/35" />
-                </button>
-
-                {openConsult && nextMedical && (
+                {dailyMedsAndSupps.length > 5 && (
                   <button
                     type="button"
-                    onClick={() => openConsult("medico")}
-                    className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm transition hover:shadow"
+                    onClick={() => setBlock("medicinas")}
+                    className="w-full pt-1 text-center text-xs font-bold text-[#C94A6A] hover:underline"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FCECEE] text-[#C94A6A]">
-                      <Stethoscope className="h-4 w-4" />
+                    {t(`Ver las ${dailyMedsAndSupps.length} tomas por horario (Mañana / Tarde / Noche) →`, `See all ${dailyMedsAndSupps.length} items by time of day →`)}
+                  </button>
+                )}
+              </div>
+
+              {/* Hidratación rápida */}
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F2FAF9] px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <Droplets className="h-5 w-5 text-[#239BA2]" />
+                  <div>
+                    <p className="text-xs font-bold text-espresso">
+                      {t("Hidratación suave del día", "Gentle daily hydration")}
+                    </p>
+                    <p className="text-[11px] text-espresso/60">
+                      {water}/8 {t("vasos de agua o infusión", "glasses of water or herbal tea")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {Array.from({ length: 8 }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => updateDaily({ water: idx + 1 === water ? idx : idx + 1 })}
+                      className={`h-6 w-3.5 rounded-full transition ${
+                        idx < water ? "bg-[#239BA2]" : "bg-[#239BA2]/20 hover:bg-[#239BA2]/40"
+                      }`}
+                      aria-label={`${idx + 1} vasos`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Recordatorios preventivos y sugerencias automáticas de la plataforma */}
+            <Card className="space-y-3 bg-gradient-to-br from-[#FFF9F2] via-white to-[#F6F3FF]">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#E8809A]/20 text-[#C94A6A]">
+                  <Sparkles className="h-4 w-4" />
+                </span>
+                <div>
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
+                    {t("Acompañamiento preventivo automático", "Automatic preventive reminders")}
+                  </span>
+                  <h3 className="text-base font-semibold text-espresso">
+                    {t("Sugerencias para tu semana", "Suggestions for your week")}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                {nextVisit && (
+                  <button
+                    type="button"
+                    onClick={() => openDetail(nextVisit)}
+                    className="flex w-full items-center gap-3 rounded-2xl bg-white p-3.5 text-left shadow-sm transition hover:shadow-md"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#D7F3EA] text-[#239BA2]">
+                      <Stethoscope className="h-5 w-5" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-xs font-bold text-espresso">
-                        {t("Preparar preguntas para mi próxima consulta", "Prepare questions for my next doctor visit")}
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-[#239BA2]">
+                        {t("Próximo control médico", "Next medical visit")} · {fmtDate(nextVisit.date)}
                       </span>
-                      <span className="block truncate text-[11px] text-espresso/60">{nextMedical.title}</span>
+                      <span className="block truncate text-sm font-semibold text-espresso">{nextVisit.title}</span>
+                      <span className="block truncate text-xs text-espresso/60">
+                        {nextVisit.notas || nextVisit.sub}
+                      </span>
                     </span>
-                    <ChevronRight className="h-4 w-4 text-espresso/35" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-espresso/35" />
+                  </button>
+                )}
+
+                {nextBooking && (
+                  <button
+                    type="button"
+                    onClick={() => openDetail(nextBooking)}
+                    className="flex w-full items-center gap-3 rounded-2xl bg-white p-3.5 text-left shadow-sm transition hover:shadow-md"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#C94A6A]">
+                      <Users className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
+                        {t("Reserva confirmada", "Confirmed booking")} · {fmtDate(nextBooking.date)}
+                      </span>
+                      <span className="block truncate text-sm font-semibold text-espresso">{nextBooking.title}</span>
+                      <span className="block truncate text-xs text-espresso/60">{nextBooking.sub}</span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-espresso/35" />
+                  </button>
+                )}
+
+                {goToTab && (
+                  <button
+                    type="button"
+                    onClick={() => goToTab("recursos")}
+                    className="flex w-full items-center gap-3 rounded-2xl bg-white p-3.5 text-left shadow-sm transition hover:shadow-md"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#FFF5DA] text-[#B98A00]">
+                      <CalendarHeart className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-espresso">
+                        {t("Explorar próximos Love Circles gratuitos", "Explore upcoming free Love Circles")}
+                      </span>
+                      <span className="block text-xs text-espresso/60">
+                        {t("Inscríbete sola o junto a tu cuidador a los encuentros del mes", "Sign up solo or with your caregiver for this month's circles")}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-espresso/35" />
                   </button>
                 )}
               </div>
             </Card>
           </div>
 
-          {/* Columna derecha: Calendario mensual + Día seleccionado + Próximos eventos */}
+          {/* Columna Derecha (5 cols): Calendario interactivo + Agenda del día + Próximas fechas */}
           <div className="space-y-5 lg:col-span-5">
             <Card>
               <MiniCalendar
-                marks={enrichedMarks}
+                marks={marks}
                 selected={selectedDay}
                 onSelect={setSelectedDay}
                 isEs={isEs}
@@ -725,207 +604,207 @@ export function RecordatoriosSection({
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-espresso/45">
                     {t("Día seleccionado", "Selected day")}
                   </span>
-                  <h3 className="text-lg font-semibold capitalize tracking-[-0.02em] text-espresso">
+                  <h3 className="text-base font-semibold capitalize text-espresso">
                     {fmtDate(selectedDay)}
                   </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" })}
-                  className="rounded-full bg-[#FAF7F2] px-3 py-1.5 text-xs font-bold text-[#239BA2] transition hover:bg-[#CFEDE8]/60"
+                  onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "10:00 AM" })}
+                  className="rounded-full bg-[#FAF7F2] px-3 py-1.5 text-xs font-bold text-[#239BA2] transition hover:bg-[#EAF6F4]"
                 >
                   + {t("Agendar aquí", "Add here")}
                 </button>
               </div>
 
-              {selectedEvents.length === 0 ? (
-                <p className="rounded-2xl bg-[#FAF7F2] px-4 py-3 text-xs text-espresso/60">
+              {selectedDayEvents.length === 0 ? (
+                <p className="rounded-2xl bg-[#FAF7F2] p-4 text-xs leading-relaxed text-espresso/60">
                   {t(
-                    "No tienes citas ni eventos este día. Debajo puedes ver tus próximas fechas o tocar otro punto del calendario. 🌿",
-                    "Nothing scheduled on this day. See your upcoming dates below or tap any marked day on the calendar. 🌿"
+                    "No tienes citas ni sesiones este día. Toca un día marcado en el calendario o revisa tus próximas fechas abajo. 🌿",
+                    "No visits or sessions on this day. Tap a marked day on the calendar or see your upcoming dates below. 🌿"
                   )}
                 </p>
               ) : (
-                <div className="space-y-2.5">
-                  {selectedEvents.map((ev) => {
-                    const meta = eventMeta(ev.kind);
-                    const Icon = meta.icon;
-                    return (
-                      <button
-                        key={ev.id}
-                        type="button"
-                        onClick={() => setActiveEvent(ev)}
-                        className="flex w-full items-center gap-3 rounded-2xl bg-[#FAF7F2] p-3.5 text-left transition hover:bg-white hover:shadow-sm"
+                <div className="space-y-2">
+                  {selectedDayEvents.map((ev: any, i: number) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => openDetail(ev)}
+                      className="flex w-full items-center gap-3 rounded-2xl bg-[#FAF7F2] p-3 text-left transition hover:bg-[#F3EEE6]"
+                    >
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                          ev.kind === "med"
+                            ? "bg-[#D7F3EA] text-[#239BA2]"
+                            : "bg-[#FCECEE] text-[#C94A6A]"
+                        }`}
                       >
-                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${meta.bg}`}>
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-espresso">{ev.title}</span>
-                          <span className="block truncate text-xs text-espresso/60">
-                            {ev.time} · {ev.place}
-                          </span>
-                        </span>
-                        <ChevronRight className="h-4 w-4 text-espresso/35" />
-                      </button>
-                    );
-                  })}
+                        {ev.kind === "med" ? (
+                          <Stethoscope className="h-5 w-5" />
+                        ) : (
+                          <CalendarHeart className="h-5 w-5" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-espresso">{ev.title}</span>
+                        <span className="block truncate text-xs text-espresso/60">{ev.sub}</span>
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-espresso/35" />
+                    </button>
+                  ))}
                 </div>
               )}
             </Card>
 
-            {/* Próximos en tu agenda (nunca deja a la paciente a ciegas) */}
-            <Card className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-[-0.015em] text-espresso">
-                  {t("Próximas fechas en tu agenda", "Upcoming on your schedule")}
-                </h3>
-                <span className="text-xs font-semibold text-espresso/45">{upcomingAll.length}</span>
-              </div>
-              <div className="space-y-2">
-                {upcomingAll.slice(0, 5).map((ev) => {
-                  const meta = eventMeta(ev.kind);
-                  const Icon = meta.icon;
-                  return (
-                    <button
-                      key={ev.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDay(ev.date);
-                        setActiveEvent(ev);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-espresso/5 bg-[#FAF7F2]/70 p-3 text-left transition hover:bg-white hover:shadow-sm"
+            {/* Próximos eventos cercanos siempre visibles */}
+            {upcoming.length > 0 && (
+              <Card className="space-y-2.5">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#239BA2]">
+                  {t("Próximos en tu calendario", "Coming up on your calendar")}
+                </span>
+                {upcoming.slice(0, 4).map((ev: any, i: number) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDay(ev.date);
+                      openDetail(ev);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-espresso/5 bg-[#FAF7F2]/60 p-3 text-left transition hover:bg-[#FAF7F2]"
+                  >
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold ${
+                        ev.kind === "med"
+                          ? "bg-[#D7F3EA] text-[#1E747A]"
+                          : "bg-[#FCECEE] text-[#C94A6A]"
+                      }`}
                     >
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}>
-                        <Icon className="h-4 w-4" />
+                      {ev.date.slice(8, 10)}/{ev.date.slice(5, 7)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-espresso">{ev.title}</span>
+                      <span className="block truncate text-xs text-espresso/55">
+                        {fmtDate(ev.date)} · {ev.sub}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-espresso">{ev.title}</span>
-                        <span className="block truncate text-[11px] text-espresso/60">
-                          {fmtDate(ev.date)} · {ev.time}
-                        </span>
-                      </span>
-                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${meta.pill}`}>
-                        {t("Ver", "View")}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-
-            {/* Botones principales de reserva */}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <PrimaryButton
-                color="from-[#4DB6B0] to-[#239BA2]"
-                onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" })}
-              >
-                <Stethoscope className="h-4 w-4" />
-                {t("Nueva cita médica", "New medical visit")}
-              </PrimaryButton>
-              <PrimaryButton
-                onClick={() =>
-                  openSheet("book", {
-                    healer: String(healers[0]?.id ?? ""),
-                    modalidad: "online",
-                    fecha: selectedDay,
-                    gratis: "1",
-                  })
-                }
-              >
-                <CalendarHeart className="h-4 w-4" />
-                {t("Reservar sanador", "Book healer")}
-              </PrimaryButton>
-            </div>
+                    </span>
+                    <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-espresso/65 shadow-sm">
+                      {t("Ver", "View")}
+                    </span>
+                  </button>
+                ))}
+              </Card>
+            )}
           </div>
-        </section>
+        </div>
       )}
 
-      {/* ======================================================================== */}
-      {/* VISTA 2: SOLO MEDICINAS Y SUPLEMENTOS                                    */}
-      {/* ======================================================================== */}
-      {filter === "medicinas" && (
-        <section className="space-y-4 animate-fade-in">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-espresso/70">
-              {t(
-                "Marca cada toma realizada hoy. Tu progreso queda guardado y visible también para tu cuidador.",
-                "Check off each dose taken today. Your progress is saved and synced with your caregiver."
-              )}
-            </p>
-            <div className="flex gap-2">
+      {/* ================================================================== */}
+      {/*  BLOQUE 2: MEDICINAS Y SUPLEMENTOS POR MOMENTO DEL DÍA             */}
+      {/* ================================================================== */}
+      {block === "medicinas" && (
+        <section className="space-y-5 animate-fade-in">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[26px] bg-white p-5 shadow-sm">
+            <div>
+              <h3 className="text-xl font-semibold tracking-[-0.02em] text-espresso">
+                {t("Horario diario de medicinas y suplementos", "Daily medication & supplement schedule")}
+              </h3>
+              <p className="text-xs text-espresso/60">
+                {t(
+                  "Marca cada toma realizada. Tu progreso se guarda automáticamente en tu registro del día.",
+                  "Check off each dose taken. Your progress is automatically saved to your daily log."
+                )}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => openSheet("add-med", { kind: "med" })}
-                className="rounded-full bg-[#C94A6A] px-4 py-2 text-xs font-bold text-white shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#E8809A] px-4 py-2 text-xs font-bold text-white shadow-sm"
               >
-                + {t("Agregar medicina", "Add medication")}
+                <Plus className="h-3.5 w-3.5" />
+                {t("Nueva medicina", "New medication")}
               </button>
               <button
                 type="button"
-                onClick={() => openSheet("add-med", { kind: "sup" })}
-                className="rounded-full bg-white px-4 py-2 text-xs font-bold text-espresso shadow-sm"
+                onClick={() => openSheet("add-med", { kind: "supp" })}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#FAF7F2] px-4 py-2 text-xs font-bold text-espresso"
               >
-                + {t("Agregar suplemento", "Add supplement")}
+                <Plus className="h-3.5 w-3.5" />
+                {t("Nuevo suplemento", "New supplement")}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {momentGroups.map((group) => {
-              const items = dailyDoses.filter((d) => d.moment === group.id);
-              const GroupIcon = group.icon;
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {SLOTS.map((s) => {
+              const Icon = s.icon;
+              const items = dailyMedsAndSupps.filter((m) => m.slot === s.id);
               return (
-                <Card key={group.id} className="space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${group.color}`}>
-                      <GroupIcon className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <h3 className="text-base font-semibold text-espresso">{group.label}</h3>
-                      <p className="text-[11px] text-espresso/50">
-                        {items.length} {t("programados", "scheduled")}
-                      </p>
+                <Card key={s.id} className="flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${s.accent}`}>
+                        <Icon className="h-3.5 w-3.5" />
+                        {isEs ? s.labelEs : s.labelEn}
+                      </span>
+                      <span className="text-xs font-semibold text-espresso/45">
+                        {items.filter((i) => todayHabits[i.key]).length}/{items.length}
+                      </span>
                     </div>
-                  </div>
-                  {items.length === 0 ? (
-                    <p className="rounded-2xl bg-[#FAF7F2] p-3 text-xs text-espresso/55">
-                      {t("Sin tomas en este horario.", "No doses in this slot.")}
-                    </p>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {items.map((item) => {
-                        const done = Boolean(todayHabits[item.key]);
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            onClick={() => updateDaily({ habits: { [item.key]: !done } })}
-                            className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left transition ${
-                              done ? "bg-[#F2F8F4] opacity-75" : "bg-[#FAF7F2] hover:bg-espresso/5"
-                            }`}
-                          >
-                            <span
-                              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                                done ? "border-[#5C8D67] bg-[#5C8D67] text-white" : "border-espresso/25 bg-white"
+
+                    <div className="mt-3 space-y-2.5">
+                      {items.length === 0 ? (
+                        <p className="rounded-2xl bg-[#FAF7F2] p-4 text-xs text-espresso/50">
+                          {t("Sin tomas asignadas en este horario.", "No doses scheduled for this time.")}
+                        </p>
+                      ) : (
+                        items.map((m) => {
+                          const done = Boolean(todayHabits[m.key]);
+                          return (
+                            <div
+                              key={m.key}
+                              className={`rounded-2xl border p-3.5 transition ${
+                                done
+                                  ? "border-[#239BA2]/30 bg-[#EAF6F4]/50"
+                                  : "border-espresso/5 bg-[#FAF7F2]"
                               }`}
                             >
-                              {done && <Check className="h-3 w-3" />}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-sm font-semibold text-espresso">
-                                {item.name} {item.dose ? `· ${item.dose}` : ""}
-                              </span>
-                              <span className="block text-xs text-espresso/60">{item.schedule}</span>
-                              {item.notes && (
-                                <span className="mt-1 block text-[11px] text-[#239BA2]">💡 {item.notes}</span>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
+                              <div className="flex items-start gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => updateDaily({ habits: { [m.key]: !done } })}
+                                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition ${
+                                    done
+                                      ? "border-[#239BA2] bg-[#239BA2] text-white"
+                                      : "border-espresso/25 bg-white"
+                                  }`}
+                                >
+                                  {done && <Check className="h-3.5 w-3.5" />}
+                                </button>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className={`text-sm font-semibold text-espresso ${done ? "line-through opacity-70" : ""}`}>
+                                      {m.nombre}
+                                    </span>
+                                    {m.dosis && (
+                                      <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-[#C94A6A]">
+                                        {m.dosis}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="mt-0.5 text-xs text-espresso/65">{m.horario}</p>
+                                  {m.indicaciones && (
+                                    <p className="mt-1 text-[11px] text-espresso/55">{m.indicaciones}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
-                  )}
+                  </div>
                 </Card>
               );
             })}
@@ -933,101 +812,116 @@ export function RecordatoriosSection({
         </section>
       )}
 
-      {/* ======================================================================== */}
-      {/* VISTA 3: CITAS Y CHEQUEOS MÉDICOS                                        */}
-      {/* ======================================================================== */}
-      {filter === "citas" && (
+      {/* ================================================================== */}
+      {/*  BLOQUE 3: CITAS MÉDICAS Y CONTROLES                               */}
+      {/* ================================================================== */}
+      {block === "citas" && (
         <section className="space-y-4 animate-fade-in">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-espresso/70">
-              {t(
-                "Consultas oncológicas, controles, laboratorios y terapias clínicas programadas.",
-                "Scheduled oncology consultations, checkups, lab work, and clinical therapies."
-              )}
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[26px] bg-white p-5 shadow-sm">
+            <div>
+              <h3 className="text-xl font-semibold tracking-[-0.02em] text-espresso">
+                {t("Citas médicas, controles y laboratorios", "Medical visits, checkups & labs")}
+              </h3>
+              <p className="text-xs text-espresso/60">
+                {t(
+                  "Toca cualquier cita para ver sus indicaciones, reprogramarla o compartir detalles con tu cuidador.",
+                  "Tap any appointment to see notes, reschedule, or coordinate with your caregiver."
+                )}
+              </p>
+            </div>
             <button
               type="button"
               onClick={() => openSheet("add-cita", { fecha: selectedDay, hora: "09:30 AM" })}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-5 py-2.5 text-xs font-bold text-white shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-4 py-2.5 text-xs font-bold text-white shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              {t("Nueva cita o chequeo", "New medical visit")}
+              {t("Agendar cita médica", "Add medical visit")}
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {medicalVisits.map((ev) => (
-              <div
-                key={ev.id}
-                className="flex flex-col justify-between rounded-[26px] bg-white p-5 shadow-sm transition hover:shadow-md"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D7F3EA] px-3 py-1 text-[11px] font-bold text-[#1E747A]">
-                      <Stethoscope className="h-3.5 w-3.5" />
-                      {fmtDate(ev.date)} · {ev.time}
-                    </span>
-                    {typeof ev.idx === "number" && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          runAction("delete_medical_appointment", { index: ev.idx }, t("Cita eliminada", "Removed"))
-                        }
-                        className="text-espresso/35 transition hover:text-[#C94A6A]"
-                        aria-label={t("Eliminar", "Delete")}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+          {medicalVisits.length === 0 ? (
+            <Card className="py-10 text-center text-sm text-espresso/60">
+              {t("Aún no tienes citas médicas registradas. 🌿", "No medical visits scheduled yet. 🌿")}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {medicalVisits.map((c: any) => (
+                <div
+                  key={`${c.idx}-${c.date}`}
+                  className="flex flex-col justify-between rounded-[26px] bg-white p-5 shadow-sm transition hover:shadow-md"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D7F3EA] px-3 py-1 text-[11px] font-bold text-[#1E747A]">
+                        <Stethoscope className="h-3.5 w-3.5" />
+                        {fmtDate(c.date)} · {c.hora}
+                      </span>
+                      <span className="text-[11px] font-semibold text-[#5C8D67]">
+                        ✓ {t("Visible para cuidador", "Visible to caregiver")}
+                      </span>
+                    </div>
+                    <h4 className="mt-3 text-lg font-semibold leading-snug tracking-[-0.015em] text-espresso">
+                      {c.title}
+                    </h4>
+                    {c.lugar && (
+                      <p className="mt-1 flex items-center gap-1.5 text-xs text-espresso/65">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 text-[#239BA2]" />
+                        <span>{c.lugar}</span>
+                      </p>
+                    )}
+                    {c.notas && (
+                      <p className="mt-2 rounded-2xl bg-[#FAF7F2] p-3 text-xs leading-relaxed text-espresso/75">
+                        📋 {c.notas}
+                      </p>
                     )}
                   </div>
-                  <h4 className="mt-3 text-lg font-semibold tracking-[-0.015em] text-espresso">{ev.title}</h4>
-                  <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-espresso/65">
-                    <MapPin className="h-3.5 w-3.5 text-[#239BA2]" />
-                    {ev.place}
-                  </p>
-                  {ev.notes && (
-                    <p className="mt-2.5 rounded-2xl bg-[#FAF7F2] p-3 text-xs leading-relaxed text-espresso/75">
-                      📋 <strong>{t("Recordatorio:", "Note:")}</strong> {ev.notes}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2 border-t border-espresso/5 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setActiveEvent(ev)}
-                    className="rounded-full bg-[#FAF7F2] px-3.5 py-1.5 text-xs font-bold text-espresso hover:bg-espresso/10"
-                  >
-                    {t("Ver detalles", "View details")}
-                  </button>
-                  {openConsult && (
+                  <div className="mt-4 flex items-center justify-between border-t border-espresso/5 pt-3">
                     <button
                       type="button"
-                      onClick={() => openConsult("medico")}
-                      className="rounded-full bg-[#EAE2F5] px-3.5 py-1.5 text-xs font-bold text-[#7A4FD1]"
+                      onClick={() => openDetail(c)}
+                      className="text-xs font-bold text-[#239BA2] hover:underline"
                     >
-                      ✨ {t("Preparar resumen para el médico", "Prepare visit summary")}
+                      {t("Ver ficha / Reprogramar", "Details / Reschedule")} →
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        runAction(
+                          "delete_medical_appointment",
+                          { index: c.idx },
+                          t("Cita médica eliminada", "Medical visit removed")
+                        )
+                      }
+                      className="text-espresso/35 transition hover:text-[#C94A6A]"
+                      aria-label={t("Eliminar", "Delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
-      {/* ======================================================================== */}
-      {/* VISTA 4: SESIONES CON SANADORES Y HEALING CIRCLES                        */}
-      {/* ======================================================================== */}
-      {filter === "sanadores" && (
+      {/* ================================================================== */}
+      {/*  BLOQUE 4: SESIONES CON SANADORES Y LOVE CIRCLES RESERVADOS        */}
+      {/* ================================================================== */}
+      {block === "sesiones" && (
         <section className="space-y-4 animate-fade-in">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-espresso/70">
-              {t(
-                "Tus sesiones 1 a 1 con sanadores y todos los encuentros gratuitos del mes en Honolulu y Zoom.",
-                "Your 1-on-1 healer sessions and all free monthly community gatherings in Honolulu & Zoom."
-              )}
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[26px] bg-white p-5 shadow-sm">
+            <div>
+              <h3 className="text-xl font-semibold tracking-[-0.02em] text-espresso">
+                {t("Mis reservas: Sesiones 1 a 1 y Love Circles", "My bookings: 1-on-1 Sessions & Love Circles")}
+              </h3>
+              <p className="text-xs text-espresso/60">
+                {t(
+                  "Accede a tu enlace directo de Zoom, revisa tus confirmaciones o reprograma tu horario.",
+                  "Access your direct Zoom link, check confirmations, or reschedule your session."
+                )}
+              </p>
+            </div>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -1039,172 +933,252 @@ export function RecordatoriosSection({
                     gratis: "1",
                   })
                 }
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#E8809A] px-4 py-2 text-xs font-bold text-white shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#E8809A] px-4 py-2.5 text-xs font-bold text-white shadow-sm"
               >
-                <CalendarHeart className="h-4 w-4" />
-                {t("Reservar sesión 1 a 1", "Book 1-on-1 session")}
+                <Plus className="h-4 w-4" />
+                {t("Reservar con sanador", "Book with healer")}
               </button>
-              {goToTab && (
-                <button
-                  type="button"
-                  onClick={() => goToTab("recursos")}
-                  className="rounded-full bg-white px-4 py-2 text-xs font-bold text-espresso shadow-sm"
-                >
-                  {t("Explorar en Recursos →", "Explore in Resources →")}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => openSheet("circle_rsvp")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#FAF7F2] px-4 py-2.5 text-xs font-bold text-espresso"
+              >
+                <Users className="h-4 w-4 text-[#239BA2]" />
+                {t("Inscribirme a Love Circle", "Join a Love Circle")}
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {wellnessEvents.map((ev) => {
-              const meta = eventMeta(ev.kind);
-              const Icon = meta.icon;
-              return (
+          {activeBookings.length === 0 ? (
+            <Card className="py-10 text-center text-sm text-espresso/60">
+              {t("Aún no tienes sesiones ni Love Circles reservados. 🌿", "No sessions or Love Circles booked yet. 🌿")}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {activeBookings.map((b: any) => (
                 <div
-                  key={ev.id}
+                  key={`${b.sessionId}-${b.date}`}
                   className="flex flex-col justify-between rounded-[26px] bg-white p-5 shadow-sm transition hover:shadow-md"
                 >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${meta.pill}`}>
-                        <Icon className="h-3.5 w-3.5" />
-                        {meta.badge}
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FCECEE] px-3 py-1 text-[11px] font-bold text-[#C94A6A]">
+                        {b.isCircle ? <Users className="h-3.5 w-3.5" /> : <CalendarHeart className="h-3.5 w-3.5" />}
+                        {fmtDate(b.date)} · {b.hora}
                       </span>
-                      <span className="text-xs font-bold text-espresso/60">
-                        {fmtDate(ev.date)} · {ev.time}
+                      <span className="rounded-full bg-[#5C8D67]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#2A5C35]">
+                        ✓ {b.gratis ? t("Incluida gratis", "Included free") : t("Confirmada", "Confirmed")}
                       </span>
                     </div>
-                    <h4 className="mt-3 text-lg font-semibold tracking-[-0.015em] text-espresso">{ev.title}</h4>
-                    <p className="mt-1 text-xs font-medium text-espresso/60">📍 {ev.place}</p>
-                    {ev.host && (
-                      <p className="mt-0.5 text-xs font-semibold text-[#C94A6A]">
-                        {t("Con", "With")} {ev.host}
-                      </p>
-                    )}
-                    {ev.notes && (
-                      <p className="mt-2.5 text-xs leading-relaxed text-espresso/75">{ev.notes}</p>
-                    )}
+
+                    <h4 className="mt-3 text-lg font-semibold leading-snug tracking-[-0.015em] text-espresso">
+                      {b.title}
+                    </h4>
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-espresso/65">
+                      <Video className="h-3.5 w-3.5 text-[#239BA2]" />
+                      <span>{b.sub}</span>
+                    </p>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2 border-t border-espresso/5 pt-3">
-                    {ev.kind === "cir" ? (
-                      <button
-                        type="button"
-                        onClick={() => openSheet("circle_rsvp", ev.iso ? { fecha_circle: ev.iso } : {})}
-                        className="rounded-full bg-[#239BA2] px-4 py-2 text-xs font-bold text-white shadow-sm"
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-espresso/5 pt-3">
+                    {b.modalidad === "online" && (
+                      <a
+                        href={b.zoomUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-3.5 py-1.5 text-xs font-bold text-white transition hover:brightness-105"
                       >
-                        {t("Inscribirme gratis a esta fecha", "Sign up free for this date")}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setActiveEvent(ev)}
-                        className="rounded-full bg-[#FAF7F2] px-4 py-2 text-xs font-bold text-espresso"
-                      >
-                        {t("Ver acceso y detalles", "View link & details")}
-                      </button>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        {t("Abrir Zoom", "Open Zoom")}
+                      </a>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => openDetail(b)}
+                      className="text-xs font-bold text-[#C94A6A] hover:underline"
+                    >
+                      {t("Ver detalles / Reprogramar", "Details / Reschedule")} →
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
-      {/* ===================== FICHA INTERACTIVA DE EVENTO / CITA ===================== */}
-      {activeEvent && (
+      {/* ================================================================== */}
+      {/*  MODAL INTERACTIVO DE DETALLE / REPROGRAMACIÓN DE CITA O SESIÓN    */}
+      {/* ================================================================== */}
+      {detailEvent && (
         <div className="fixed inset-0 z-[65] flex items-end justify-center p-0 sm:items-center sm:p-4">
           <button
             type="button"
             aria-label={t("Cerrar", "Close")}
-            onClick={() => setActiveEvent(null)}
+            onClick={() => setDetailEvent(null)}
             className="absolute inset-0 bg-espresso/50 backdrop-blur-sm"
           />
-          <div className="relative z-10 w-full max-w-lg rounded-t-[32px] bg-white p-6 shadow-2xl animate-sheet-up sm:rounded-[32px] space-y-4">
+          <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-t-[32px] bg-white p-6 shadow-2xl animate-sheet-up sm:rounded-[32px]">
             <div className="flex items-start justify-between gap-3">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${eventMeta(activeEvent.kind).pill}`}>
-                {eventMeta(activeEvent.kind).badge}
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${
+                  detailEvent.kind === "med"
+                    ? "bg-[#D7F3EA] text-[#1E747A]"
+                    : "bg-[#FCECEE] text-[#C94A6A]"
+                }`}
+              >
+                {detailEvent.kind === "med" ? (
+                  <Stethoscope className="h-3.5 w-3.5" />
+                ) : (
+                  <CalendarHeart className="h-3.5 w-3.5" />
+                )}
+                {detailEvent.kind === "med"
+                  ? t("Cita médica", "Medical visit")
+                  : t("Sesión / Love Circle", "Session / Love Circle")}
               </span>
               <button
                 type="button"
-                onClick={() => setActiveEvent(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAF7F2] text-espresso/70"
+                onClick={() => setDetailEvent(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAF7F2] text-espresso/70 hover:bg-[#FCECEE]"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div>
-              <h3 className="text-xl font-semibold leading-tight tracking-[-0.02em] text-espresso">
-                {activeEvent.title}
-              </h3>
-              {activeEvent.host && (
-                <p className="mt-1 text-xs font-semibold text-[#C94A6A]">
-                  {t("Facilitado por", "Facilitated by")} {activeEvent.host}
+            <h3 className="mt-3 text-xl font-semibold leading-snug tracking-[-0.02em] text-espresso">
+              {detailEvent.title}
+            </h3>
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#239BA2]">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>
+                {fmtDate(detailEvent.date)}
+                {detailEvent.hora ? ` · ${detailEvent.hora}` : ""}
+              </span>
+            </p>
+
+            {detailEvent.lugar && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-espresso/70">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-[#C94A6A]" />
+                <span>{detailEvent.lugar}</span>
+              </p>
+            )}
+
+            {detailEvent.notas && (
+              <div className="mt-3 rounded-2xl bg-[#FAF7F2] p-3.5 text-xs leading-relaxed text-espresso/80">
+                <strong className="block font-bold text-espresso">
+                  {t("Indicaciones y notas:", "Notes & preparation:")}
+                </strong>
+                {detailEvent.notas}
+              </div>
+            )}
+
+            {/* Si es sesión online, acceso rápido al enlace de Zoom */}
+            {detailEvent.kind === "ses" && detailEvent.modalidad !== "presencial" && (
+              <div className="mt-3 rounded-2xl border border-[#239BA2]/20 bg-[#EAF6F4]/70 p-3.5">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#1E747A]">
+                  {t("Acceso a tu sesión virtual", "Virtual session access")}
                 </p>
-              )}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <a
+                    href={detailEvent.zoomUrl || "https://zoom.us/j/lovehealseffect-circle"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-4 py-2 text-xs font-bold text-white shadow-sm"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {t("Entrar a Zoom", "Join Zoom")}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(
+                        detailEvent.zoomUrl || "https://zoom.us/j/lovehealseffect-circle"
+                      );
+                      setCopied(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-espresso shadow-sm"
+                  >
+                    {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-[#5C8D67]" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? t("Enlace copiado", "Link copied") : t("Copiar enlace", "Copy link")}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Reprogramar fecha */}
+            <div className="mt-4 rounded-2xl bg-[#FAF7F2] p-4 space-y-2.5">
+              <p className="flex items-center gap-1.5 text-xs font-bold text-espresso">
+                <RefreshCw className="h-3.5 w-3.5 text-[#239BA2]" />
+                {t("¿Necesitas reprogramar la fecha?", "Need to reschedule?")}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="date"
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  className={inputCls}
+                />
+                <input
+                  type="text"
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
+                  placeholder="10:00 AM"
+                  className={inputCls}
+                />
+              </div>
+              <PrimaryButton
+                color="from-[#4DB6B0] to-[#239BA2]"
+                onClick={async () => {
+                  if (detailEvent.kind === "med") {
+                    await runAction(
+                      "update_medical_appointment",
+                      { index: detailEvent.idx, fecha: rescheduleDate, hora: rescheduleTime },
+                      t("Cita reprogramada y sincronizada con tu cuidador", "Visit rescheduled & synced with your caregiver")
+                    );
+                  } else {
+                    await runAction(
+                      "reschedule_healer_session",
+                      { id: detailEvent.sessionId, fecha_sesion: `${rescheduleDate}T18:00:00-10:00` },
+                      t("Sesión reprogramada con éxito", "Session rescheduled")
+                    );
+                  }
+                  setSelectedDay(rescheduleDate);
+                  setDetailEvent(null);
+                }}
+              >
+                <Clock className="h-4 w-4" />
+                {t("Guardar nueva fecha", "Save new date")}
+              </PrimaryButton>
             </div>
 
-            <div className="space-y-2 rounded-2xl bg-[#FAF7F2] p-4 text-xs text-espresso/80">
-              <p className="flex items-center gap-2 font-semibold text-espresso">
-                <Calendar className="h-4 w-4 text-[#239BA2]" />
-                <span className="capitalize">{fmtDate(activeEvent.date)}</span>
-                <span>·</span>
-                <Clock className="h-4 w-4 text-[#E8809A]" />
-                <span>{activeEvent.time}</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0 text-[#239BA2]" />
-                <span>{activeEvent.place}</span>
-              </p>
-              {activeEvent.notes && (
-                <p className="border-t border-espresso/5 pt-2 leading-relaxed text-espresso/75">
-                  {activeEvent.notes}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-2.5 pt-1">
-              {activeEvent.kind === "cir" && (
-                <PrimaryButton
-                  color="from-[#239BA2] to-[#1D8389]"
-                  onClick={() => {
-                    const iso = activeEvent.iso;
-                    setActiveEvent(null);
-                    openSheet("circle_rsvp", iso ? { fecha_circle: iso } : {});
-                  }}
-                >
-                  <Calendar className="h-4 w-4" />
-                  {t("Inscribirme gratis a este encuentro", "Sign up free for this gathering")}
-                </PrimaryButton>
-              )}
-
-              {activeEvent.kind === "med" && openConsult && (
-                <PrimaryButton
-                  color="from-[#7A4FD1] to-[#5E38B5]"
-                  onClick={() => {
-                    setActiveEvent(null);
-                    openConsult("medico");
-                  }}
-                >
-                  <Sparkles className="h-4 w-4" />
-                  {t("Preparar resumen y preguntas para mi médico", "Prepare summary & questions for my doctor")}
-                </PrimaryButton>
-              )}
-
-              {activeEvent.kind === "ses" && activeEvent.title.startsWith("http") && (
-                <a
-                  href={activeEvent.title.split(" ")[0]}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#239BA2] px-5 py-3 text-sm font-bold text-white"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  {t("Entrar a la sala virtual", "Join online room")}
-                </a>
-              )}
+            <div className="mt-4 flex items-center justify-between text-xs">
+              <span className="text-espresso/50">
+                ✓ {t("Sincronizado con tu célula familiar 1 a 1", "Synced with your 1-on-1 family cell")}
+              </span>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (detailEvent.kind === "med") {
+                    await runAction(
+                      "delete_medical_appointment",
+                      { index: detailEvent.idx },
+                      t("Cita eliminada", "Visit removed")
+                    );
+                  } else {
+                    await runAction(
+                      "cancel_healer_session",
+                      { id: detailEvent.sessionId },
+                      t("Reserva cancelada", "Booking cancelled")
+                    );
+                  }
+                  setDetailEvent(null);
+                }}
+                className="font-bold text-[#C94A6A] hover:underline"
+              >
+                {detailEvent.kind === "med"
+                  ? t("Eliminar cita", "Delete visit")
+                  : t("Cancelar reserva", "Cancel booking")}
+              </button>
             </div>
           </div>
         </div>
