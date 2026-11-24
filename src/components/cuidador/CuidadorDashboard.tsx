@@ -74,6 +74,9 @@ function CuidadorDashboardInner() {
   const [diary, setDiary] = useState<Record<string, any>>({});
   const [sheet, setSheet] = useState<string | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docError, setDocError] = useState("");
   const [playerItem, setPlayerItem] = useState<any>(null);
   const [resourceFilter, setResourceFilter] = useState("todos");
   const [saludView, setSaludView] = useState<
@@ -184,6 +187,8 @@ function CuidadorDashboardInner() {
       setForm((p) => ({ ...p, [k]: e.target.value }));
   const openSheet = (name: string, initial: Record<string, string> = {}) => {
     setForm(initial);
+    setDocFile(null);
+    setDocError("");
     setSheet(name);
   };
   const showToast = (msg: string) => {
@@ -601,8 +606,44 @@ function CuidadorDashboardInner() {
           className="space-y-4"
           onSubmit={async (e) => {
             e.preventDefault();
-            const ok = await runAction("add_document", { titulo: fv("titulo"), tipo: fv("tipo"), notas: fv("notas"), archivoNombre: fv("archivo") || "documento.pdf" }, t("Documento guardado", "Document saved"));
-            if (ok) setSheet(null);
+            setDocError("");
+            if (!docFile) {
+              setDocError(t("Adjunta un archivo PDF, Word o imagen (máx. 10 MB).", "Please attach a PDF, Word, or image file (max 10 MB)."));
+              return;
+            }
+            setDocUploading(true);
+            try {
+              const fd = new FormData();
+              fd.append("file", docFile);
+              const upRes = await fetch("/api/documentos/upload", { method: "POST", body: fd });
+              const upData = await upRes.json();
+              if (!upRes.ok || !upData.ok) {
+                setDocError(upData.error || t("No se pudo subir el archivo.", "Could not upload file."));
+                return;
+              }
+              const ok = await runAction(
+                "add_document",
+                {
+                  titulo: fv("titulo"),
+                  tipo: fv("tipo"),
+                  notas: fv("notas"),
+                  archivoNombre: upData.archivoNombre,
+                  archivoStorageName: upData.archivoStorageName,
+                  archivoRuta: upData.archivoRuta,
+                  mimeType: upData.mimeType,
+                  sizeBytes: upData.sizeBytes,
+                },
+                t("Documento guardado", "Document saved")
+              );
+              if (ok) {
+                setDocFile(null);
+                setSheet(null);
+              }
+            } catch {
+              setDocError(t("Error de conexión al subir el archivo.", "Connection error while uploading."));
+            } finally {
+              setDocUploading(false);
+            }
           }}
         >
           <Field label={t("Título", "Title")}>
@@ -615,15 +656,43 @@ function CuidadorDashboardInner() {
               <option value="Estudio de Imagen / Patología">{t("Imagen / patología", "Imaging / pathology")}</option>
             </select>
           </Field>
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#239BA2]/40 bg-[#E3F1EF]/60 px-4 py-5 text-sm font-bold text-[#239BA2]">
+          <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-[#239BA2]/40 bg-[#E3F1EF]/60 px-4 py-5 text-center text-sm font-bold text-[#239BA2] transition hover:bg-[#E3F1EF]">
             <Upload className="h-5 w-5" />
-            <span className="truncate">{fv("archivo") || t("Elegir PDF, Word o foto", "Choose PDF, Word or photo")}</span>
-            <input type="file" accept=".pdf,.doc,.docx,image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) setForm((p) => ({ ...p, archivo: file.name })); }} />
+            <span className="max-w-full truncate">
+              {docFile ? docFile.name : t("Elegir PDF, Word o foto (máx. 10 MB)", "Choose PDF, Word or photo (max 10 MB)")}
+            </span>
+            {docFile && (
+              <span className="text-[11px] font-medium text-espresso/60">
+                {docFile.size >= 1024 * 1024
+                  ? `${(docFile.size / (1024 * 1024)).toFixed(1)} MB`
+                  : `${Math.max(1, Math.round(docFile.size / 1024))} KB`}
+              </span>
+            )}
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                setDocError("");
+                if (file) {
+                  setDocFile(file);
+                  setForm((p) => ({ ...p, archivo: file.name }));
+                }
+              }}
+            />
           </label>
+          {docError && (
+            <p className="rounded-xl bg-[#FCECEE] px-3 py-2 text-xs font-semibold text-[#C94A6A]">
+              {docError}
+            </p>
+          )}
           <Field label={t("Lo más importante que dijo el médico", "Key points from the doctor")}>
             <textarea rows={3} className={inputCls} value={fv("notas")} onChange={fs("notas")} />
           </Field>
-          <PrimaryButton type="submit" color={TEAL}>{t("Guardar documento", "Save document")}</PrimaryButton>
+          <PrimaryButton type="submit" color={TEAL} disabled={docUploading}>
+            {docUploading ? t("Subiendo archivo...", "Uploading file...") : t("Guardar documento", "Save document")}
+          </PrimaryButton>
         </form>
       </Sheet>
 

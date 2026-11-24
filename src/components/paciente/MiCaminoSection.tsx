@@ -2,22 +2,43 @@
 
 import React from "react";
 import {
+  ArrowUpRight,
   Check,
   ChevronRight,
   FileText,
+  Leaf,
+  Pill,
+  ScanSearch,
+  Sun,
+  Syringe,
   Plus,
   Sparkles,
+  Stethoscope,
   Trash2,
   Upload,
   X,
 } from "lucide-react";
 import { Card, PrimaryButton, SectionTitle } from "@/components/panel/ui";
+import { DocumentCardsList } from "@/components/panel/DocumentCardsList";
 import {
   HABIT_COLORS,
   STAGES,
   TIMELINE_META,
   todayKey,
 } from "./types";
+
+const STAGE_IMAGES = [
+  // Diagnóstico: consulta médica cercana
+  "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=700&q=80",
+  // Tratamiento: cuidado clínico oncológico
+  "https://images.unsplash.com/photo-1631558553280-fa082c260e15?auto=format&fit=crop&w=700&q=80",
+  // Recuperación: respiración, calma y autocuidado
+  "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=700&q=80",
+  // Post-tratamiento: bienestar, sol y nueva etapa
+  "https://images.unsplash.com/photo-1544507888-56d73eb6046e?auto=format&fit=crop&w=700&q=80",
+];
+
+const STAGE_ICONS = [ScanSearch, Syringe, Leaf, Sun];
 
 export interface MiCaminoSectionProps {
   ficha: any;
@@ -58,82 +79,220 @@ export function MiCaminoSection({
   t,
   isEs,
 }: MiCaminoSectionProps) {
+  const medCount = ficha.medicamentos_y_horarios?.length || 0;
+  const docCount = ficha.documentos_oncologo?.length || 0;
+  const stageIdx = Math.max(0, STAGES.findIndex((s) => s.id === ficha.etapa_actual));
+  const activeStage = STAGES[stageIdx] || STAGES[0];
+  const ActiveStageIcon = STAGE_ICONS[stageIdx] || STAGE_ICONS[0];
+  const meds: any[] = ficha.medicamentos_y_horarios || [];
+  const takenToday = meds.filter((m, idx) => todayHabits[`med-${m.id ?? idx}`]).length;
+  const nextMed = meds.find((m, idx) => !todayHabits[`med-${m.id ?? idx}`]);
+
   return (
-    <main className="mt-6 space-y-6">
-      <div className="animate-fade-in">
-        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">{t("Mi camino", "My journey")}</h2>
-        <p className="mt-1 text-sm text-espresso/60">
-          {t("Todo tu proceso en un solo lugar, para que nunca se te olvide nada.", "Your whole process in one place, so you never forget anything.")}
-        </p>
-      </div>
+    <main className="mt-5 space-y-6">
+      {/* Panel resumen con el lenguaje visual de la landing (crema + rosa + serif ligera) */}
+      <section className="animate-fade-in relative overflow-hidden rounded-[32px] bg-[#F9F8F3] p-5 shadow-[0_18px_44px_rgba(45,43,42,0.07)] sm:p-7">
+        <div aria-hidden="true" className="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-[#E8809A]/[0.18] blur-[60px]" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 right-0 h-64 w-64 rounded-full bg-veranda-blue/[0.16] blur-[60px]" />
 
-      {/* Etapa actual del paciente */}
-      <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1">
-        {STAGES.map((s) => {
-          const active = s.id === ficha.etapa_actual;
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => runAction("update_stage", { etapa_actual: s.id }, t(`Etapa: ${s.es}`, `Stage: ${s.en}`))}
-              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition active:scale-95 ${
-                active ? "bg-espresso text-white shadow-md" : "bg-white text-espresso/70 shadow-sm"
-              }`}
-            >
-              <span>{s.emoji}</span>
-              {isEs ? s.es : s.en}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Preparar cita con IA */}
-      <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[#E4E0FA] via-[#F6E6FA] to-[#DDF1EE] p-5 shadow-sm">
-        <span className="absolute -right-1 top-2 text-6xl opacity-90">📋</span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#7A4FD1]">
-          <Sparkles className="h-3 w-3" />PONO IA
-        </span>
-        <h3 className="mt-2 max-w-[72%] text-xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
-          {t("Prepara tu próxima cita sin olvidar nada", "Prepare your next visit without forgetting anything")}
-        </h3>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-sky-cloud/35 bg-white/85 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#2D2B2A]/75 shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#5C8D67]" />
+              {t("Mi camino", "My journey")}
+            </span>
+            <h2 className="mt-3 text-[28px] font-semibold leading-[1.08] tracking-[-0.03em] text-[#2D2B2A] sm:text-[36px]">
+              {t("Hoy en tu ", "Today in your ")}
+              <span className="font-light italic text-[#E8809A]">{t("proceso", "process")}</span>
+            </h2>
+          </div>
           <button
             type="button"
             onClick={() => openConsult("medico")}
-            className="rounded-full bg-[#7A4FD1] px-4 py-2.5 text-xs font-bold text-white shadow-md transition active:scale-95"
+            className="group inline-flex items-center gap-3 rounded-full bg-[#E8809A] py-2 pl-5 pr-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(232,128,154,0.28)] transition hover:bg-veranda-blue"
           >
-            🩺 {t("Para mi médico", "For my doctor")}
-          </button>
-          <button
-            type="button"
-            onClick={() => openConsult("sanador")}
-            className="rounded-full bg-white px-4 py-2.5 text-xs font-bold text-[#7A4FD1] shadow-sm transition active:scale-95"
-          >
-            ✨ {t("Para mi sanador", "For my healer")}
+            <span>{t("Preparar mi cita", "Prepare my visit")}</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2D2B2A] text-white transition-transform group-hover:rotate-12">
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
           </button>
         </div>
-      </div>
 
-      {/* Subsecciones de Mi Camino */}
-      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
-        {([
-          ["linea", t("Bitácora", "Journal")],
-          ["medicinas", t("Medicinas", "Meds")],
-          ["medicos", t("Médicos", "Doctors")],
-          ["ficha", t("Mi ficha", "My chart")],
-          ["documentos", t("Documentos", "Documents")],
-        ] as const).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setSaludView(id)}
-            className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-bold transition ${
-              saludView === id ? "bg-espresso text-white shadow" : "bg-white text-espresso/60 shadow-sm"
-            }`}
-          >
-            {label}
+        {/* Tarjetas intuitivas de acceso rápido */}
+        <div className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Etapa + progreso */}
+          <div className="rounded-[24px] bg-white p-4 shadow-sm sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-veranda-blue">{t("Etapa", "Stage")}</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#E8809A]">
+                <ActiveStageIcon className="h-4 w-4" />
+              </span>
+            </div>
+            <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-espresso">{isEs ? activeStage.es : activeStage.en}</p>
+            <div className="mt-3 flex gap-1.5">
+              {STAGES.map((s, i) => (
+                <span key={s.id} className={`h-1.5 flex-1 rounded-full ${i <= stageIdx ? "bg-[#E8809A]" : "bg-[#FCECEE]"}`} />
+              ))}
+            </div>
+            <p className="mt-1.5 text-[11px] text-espresso/55">{t(`Paso ${stageIdx + 1} de ${STAGES.length}`, `Step ${stageIdx + 1} of ${STAGES.length}`)}</p>
+          </div>
+
+          {/* Medicinas */}
+          <button type="button" onClick={() => setSaludView("medicinas")} className="group rounded-[24px] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#E8809A]"><Pill className="h-4 w-4" /></span>
+              <ChevronRight className="h-4 w-4 text-espresso/30 transition group-hover:translate-x-0.5 group-hover:text-[#E8809A]" />
+            </div>
+            <p className="mt-3 text-2xl font-semibold text-espresso">{takenToday}<span className="text-sm font-medium text-espresso/45">/{medCount}</span></p>
+            <p className="text-xs font-semibold text-espresso/65">{t("Medicinas tomadas hoy", "Meds taken today")}</p>
+            <p className="mt-1 truncate text-[11px] text-espresso/50">{nextMed ? `${t("Próxima", "Next")}: ${nextMed.nombre}` : t("Sin medicinas aún", "No meds yet")}</p>
           </button>
-        ))}
+
+          {/* Médicos */}
+          <button type="button" onClick={() => setSaludView("medicos")} className="group rounded-[24px] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#E5F2F1] text-veranda-blue"><Stethoscope className="h-4 w-4" /></span>
+              <ChevronRight className="h-4 w-4 text-espresso/30 transition group-hover:translate-x-0.5 group-hover:text-veranda-blue" />
+            </div>
+            <p className="mt-3 text-2xl font-semibold text-espresso">{doctors?.length || 0}</p>
+            <p className="text-xs font-semibold text-espresso/65">{t("Médicos tratantes", "Treating doctors")}</p>
+            <p className="mt-1 truncate text-[11px] text-espresso/50">{doctors?.[0]?.name || t("Agrega tu oncólogo", "Add your oncologist")}</p>
+          </button>
+
+          {/* Documentos */}
+          <button type="button" onClick={() => setSaludView("documentos")} className="group rounded-[24px] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#F4F2E6] text-[#B8913A]"><FileText className="h-4 w-4" /></span>
+              <ChevronRight className="h-4 w-4 text-espresso/30 transition group-hover:translate-x-0.5 group-hover:text-[#B8913A]" />
+            </div>
+            <p className="mt-3 text-2xl font-semibold text-espresso">{docCount}</p>
+            <p className="text-xs font-semibold text-espresso/65">{t("Documentos clínicos", "Clinical documents")}</p>
+            <p className="mt-1 truncate text-[11px] text-espresso/50">{ficha.documentos_oncologo?.[0]?.titulo || t("Sube tu primer documento", "Upload your first document")}</p>
+          </button>
+        </div>
+
+        {/* Acceso secundario para sanador */}
+        <button
+          type="button"
+          onClick={() => openConsult("sanador")}
+          className="relative mt-4 flex w-full items-center gap-3 rounded-[20px] border border-dashed border-[#E8809A]/40 bg-white/70 px-4 py-3 text-left transition hover:bg-white"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FCECEE] text-[#E8809A]"><Sparkles className="h-4 w-4" /></span>
+          <span className="flex-1 text-xs text-espresso/70">
+            <span className="font-bold text-espresso">{t("Resumen para mi sanador", "Summary for my healer")}</span>
+            {" · "}{t("Omar, Kelsey y terapias integrativas", "Omar, Kelsey & integrative therapies")}
+          </span>
+          <ChevronRight className="h-4 w-4 text-espresso/30" />
+        </button>
+      </section>
+
+      {/* Etapas como tarjetas con imagen (estilo tarjetas de la landing) */}
+      <section>
+        <div className="mb-3 flex items-end justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-veranda-blue">
+              {t("Tu etapa actual", "Your current stage")}
+            </span>
+            <h3 className="mt-0.5 text-xl font-semibold tracking-[-0.025em] text-espresso">
+              {t("¿En qué momento estás?", "Where are you right now?")}
+            </h3>
+          </div>
+        </div>
+
+        <div className="-mx-5 flex gap-3 overflow-x-auto px-5 py-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 sm:py-1">
+          {STAGES.map((s, idx) => {
+            const active = s.id === ficha.etapa_actual;
+            const img = STAGE_IMAGES[idx % STAGE_IMAGES.length];
+            const StageIcon = STAGE_ICONS[idx % STAGE_ICONS.length];
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => runAction("update_stage", { etapa_actual: s.id }, t(`Etapa: ${s.es}`, `Stage: ${s.en}`))}
+                className={`group relative h-36 w-44 shrink-0 overflow-hidden rounded-[24px] text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E6748E] active:scale-[0.98] sm:w-auto ${
+                  active
+                    ? "z-10 scale-[1.02] ring-[3px] ring-[#E6748E] ring-offset-2 ring-offset-[#FAF7F2] shadow-[0_14px_30px_rgba(230,116,142,0.35)]"
+                    : "opacity-75 saturate-[0.75] hover:opacity-100 hover:saturate-100 hover:-translate-y-0.5"
+                }`}
+              >
+                <img src={img} alt={isEs ? s.es : s.en} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                <div
+                  className={`absolute inset-0 bg-gradient-to-t ${
+                    active
+                      ? "from-[#8F2442]/92 via-[#C9526D]/45 to-transparent"
+                      : "from-espresso/80 via-espresso/25 to-transparent"
+                  }`}
+                />
+                <span
+                  className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold shadow-sm ${
+                    active
+                      ? "bg-[#E6748E] text-white"
+                      : "bg-white/90 text-[#2D2B2A]"
+                  }`}
+                >
+                  {active ? (
+                    <>
+                      <Check className="h-3 w-3 stroke-[3]" />
+                      {t("Etapa actual", "Current")}
+                    </>
+                  ) : (
+                    t(`Paso ${idx + 1}`, `Step ${idx + 1}`)
+                  )}
+                </span>
+                <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <span
+                    className={`mb-1.5 flex h-8 w-8 items-center justify-center rounded-xl backdrop-blur-md ${
+                      active
+                        ? "bg-white text-[#C9526D] shadow-sm"
+                        : "bg-white/20 text-white ring-1 ring-white/40"
+                    }`}
+                  >
+                    <StageIcon className="h-4 w-4" />
+                  </span>
+                  <p className="text-sm font-bold leading-tight drop-shadow-sm">{isEs ? s.es : s.en}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Pestañas en cápsula */}
+      <div className="-mx-5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0">
+        <div className="inline-flex min-w-full items-center gap-1 rounded-full border border-white/80 bg-white/85 p-1.5 shadow-[0_10px_28px_rgba(232,128,154,0.12)] backdrop-blur-xl sm:min-w-0">
+          {([
+            ["linea", t("Bitácora", "Journal"), null],
+            ["medicinas", t("Medicinas", "Meds"), medCount],
+            ["medicos", t("Médicos", "Doctors"), doctors?.length || 0],
+            ["ficha", t("Mi ficha", "My chart"), null],
+            ["documentos", t("Documentos", "Documents"), docCount],
+          ] as const).map(([id, label, count]) => {
+            const active = saludView === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setSaludView(id)}
+                className={`inline-flex flex-1 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition sm:flex-initial ${
+                  active
+                    ? "bg-[#E8809A] text-white shadow-[0_6px_16px_rgba(232,128,154,0.35)]"
+                    : "text-espresso/70 hover:text-espresso"
+                }`}
+              >
+                <span>{label}</span>
+                {count !== null && count > 0 && (
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                      active ? "bg-white/25 text-white" : "bg-[#FCECEE] text-[#D8326B]"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* --- 1. Bitácora / línea de tiempo --- */}
@@ -414,38 +573,40 @@ export function MiCaminoSection({
 
       {/* --- 5. Documentos médicos --- */}
       {saludView === "documentos" && (
-        <div className="space-y-3">
-          {ficha.documentos_oncologo.length === 0 && (
-            <Card className="text-center text-sm text-espresso/60">
-              {t("Sube recetas, laboratorios o notas de tu oncólogo.", "Upload prescriptions, labs or notes from your oncologist.")}
-            </Card>
-          )}
-          {ficha.documentos_oncologo.map((d: any, idx: number) => (
-            <div key={idx} className="flex items-start gap-3 rounded-3xl bg-white p-4 shadow-sm">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FAD4DC] text-[#C94A6A]">
-                <FileText className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-espresso">{d.titulo}</p>
-                <p className="text-xs text-espresso/55">
-                  {d.tipo} · {d.fecha}
-                </p>
-                {d.notas && <p className="mt-1 text-xs text-espresso/75">{d.notas}</p>}
-              </div>
-              <button
-                type="button"
-                onClick={() => runAction("delete_document", { index: idx }, t("Documento eliminado", "Removed"))}
-                className="text-espresso/35 transition hover:text-[#C94A6A]"
-                aria-label={t("Eliminar", "Delete")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/90 bg-white/85 px-5 py-3.5 shadow-sm">
+            <div>
+              <h3 className="text-lg font-semibold tracking-[-0.025em] text-espresso">
+                {t("Documentos clínicos", "Clinical documents")}
+              </h3>
+              <p className="text-xs text-espresso/60">
+                {t(
+                  "Selecciona un documento para previsualizarlo a la derecha o sube uno nuevo.",
+                  "Select a document to preview it on the right or upload a new one."
+                )}
+              </p>
             </div>
-          ))}
-          <PrimaryButton onClick={() => openSheet("add-doc", { tipo: "Receta / Indicaciones del Oncólogo" })}>
-            <Upload className="h-5 w-5" />
-            {t("Subir documento", "Upload document")}
-          </PrimaryButton>
+            <button
+              type="button"
+              onClick={() => openSheet("add-doc", { tipo: "Receta / Indicaciones del Oncólogo" })}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#F48EA6] via-[#E6748E] to-[#C9526D] px-5 py-2.5 text-xs font-bold text-white shadow-[0_8px_20px_rgba(230,116,142,0.28)] transition hover:brightness-105 active:scale-95"
+            >
+              <Upload className="h-4 w-4" />
+              <span>{t("Subir documento", "Upload document")}</span>
+            </button>
+          </div>
+
+          <DocumentCardsList
+            documents={ficha.documentos_oncologo}
+            emptyText={t(
+              "Sube recetas, laboratorios o notas de tu oncólogo.",
+              "Upload prescriptions, labs or notes from your oncologist."
+            )}
+            onDelete={(idx) =>
+              runAction("delete_document", { index: idx }, t("Documento eliminado", "Removed"))
+            }
+            t={t}
+          />
         </div>
       )}
     </main>

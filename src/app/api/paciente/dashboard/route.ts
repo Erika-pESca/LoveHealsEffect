@@ -8,6 +8,7 @@ import {
 import { sendCaregiverInvitationEmail } from "@/lib/email";
 import { comparePassword, hashPassword } from "@/lib/auth";
 import { validatePassword } from "@/lib/validation";
+import { deleteLocalDocument } from "@/lib/local-documents";
 import {
   aiBriefing,
   aiConsultSummary,
@@ -1130,6 +1131,11 @@ export async function PATCH(req: NextRequest) {
           fecha: payload.fecha || new Date().toISOString().slice(0, 10),
           notas: payload.notas || "",
           archivoNombre: payload.archivoNombre || "documento-clinico.pdf",
+          archivoStorageName: payload.archivoStorageName || "",
+          archivoRuta: payload.archivoRuta || "",
+          mimeType: payload.mimeType || "",
+          sizeBytes: payload.sizeBytes || 0,
+          subidoPor: "paciente",
         },
         ...current,
       ];
@@ -1144,6 +1150,10 @@ export async function PATCH(req: NextRequest) {
       const current = Array.isArray(ficha.documentos_oncologo)
         ? ficha.documentos_oncologo
         : [];
+      const targetDoc = current[payload.index];
+      if (targetDoc?.archivoStorageName) {
+        await deleteLocalDocument(ficha.id, targetDoc.archivoStorageName);
+      }
       const updated = current.filter(
         (_: any, idx: number) => idx !== payload.index
       );

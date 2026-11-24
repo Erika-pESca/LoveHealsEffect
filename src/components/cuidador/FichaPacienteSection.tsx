@@ -3,13 +3,13 @@
 import React from "react";
 import {
   Check,
-  FileText,
   Plus,
   Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
 import { Card, PrimaryButton, SectionTitle } from "@/components/panel/ui";
+import { DocumentCardsList } from "@/components/panel/DocumentCardsList";
 import { HABIT_COLORS, todayKey } from "@/components/paciente/PacienteDashboard";
 import { TEAL } from "./types";
 
@@ -299,37 +299,21 @@ export function FichaPacienteSection({
 
       {saludView === "documentos" && (
         <div className="space-y-3">
-          {fp.documentos_oncologo.length === 0 && (
-            <Card className="text-center text-sm text-espresso/60">
-              {t("Sube recetas o notas del oncólogo.", "Upload prescriptions or oncologist notes.")}
-            </Card>
-          )}
-          {fp.documentos_oncologo.map((d: any, idx: number) => (
-            <div key={idx} className="flex items-start gap-3 rounded-3xl bg-white p-4 shadow-sm">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FAD4DC] text-[#C94A6A]">
-                <FileText className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-espresso">{d.titulo}</p>
-                <p className="text-xs text-espresso/55">{d.tipo} · {d.fecha}</p>
-                {d.notas && <p className="mt-1 text-xs text-espresso/75">{d.notas}</p>}
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  runAction(
-                    "delete_document",
-                    { index: idx },
-                    t("Documento eliminado", "Removed")
-                  )
-                }
-                className="text-espresso/35 transition hover:text-[#C94A6A]"
-                aria-label={t("Eliminar", "Delete")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+          <DocumentCardsList
+            documents={fp.documentos_oncologo}
+            emptyText={t(
+              "Sube recetas o notas del oncólogo.",
+              "Upload prescriptions or oncologist notes."
+            )}
+            onDelete={(idx) =>
+              runAction(
+                "delete_document",
+                { index: idx },
+                t("Documento eliminado", "Removed")
+              )
+            }
+            t={t}
+          />
           <PrimaryButton
             color={TEAL}
             onClick={() => openSheet("add-doc", { tipo: "Receta / Indicaciones del Oncólogo" })}

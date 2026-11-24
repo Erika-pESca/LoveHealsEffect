@@ -88,18 +88,21 @@ export function PrimaryButton({
   type = "button",
   color = "from-[#F48EA6] via-[#DC5678] to-[#B03052]",
   className = "",
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   type?: "button" | "submit";
   color?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r ${color} px-6 py-3.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(216,86,120,0.3)] transition active:scale-[0.98] hover:brightness-105 ${className}`}
+      disabled={disabled}
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r ${color} px-6 py-3.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(216,86,120,0.3)] transition active:scale-[0.98] hover:brightness-105 disabled:opacity-60 disabled:pointer-events-none ${className}`}
     >
       {children}
     </button>
