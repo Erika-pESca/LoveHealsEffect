@@ -55,6 +55,7 @@ import {
 import { InicioSection } from "./InicioSection";
 import { RecursosSection } from "./RecursosSection";
 import { MiCaminoSection } from "./MiCaminoSection";
+import { ConsultSummarySheet } from "@/components/panel/ConsultSummarySheet";
 import { RecordatoriosSection } from "./RecordatoriosSection";
 import { PerfilSection } from "./PerfilSection";
 
@@ -754,11 +755,9 @@ function PacienteDashboardInner() {
     setReco(res ? { mood: moodId, loading: false, message: res.message, picks: res.picks } : { mood: moodId, loading: false, message: "", picks: [] });
   };
 
-  const openConsult = async (audience: "medico" | "sanador") => {
-    setConsult({ loading: true, audience, summary: "", questions: [] });
+  const openConsult = (audience: "medico" | "sanador") => {
+    setConsult({ audience });
     setSheet("consult");
-    const res = await callAI("ai_consult_summary", { audience });
-    setConsult(res ? { loading: false, audience, summary: res.summary, questions: res.questions } : { loading: false, audience, summary: "", questions: [] });
   };
 
   const organizeWithAI = async () => {
@@ -808,7 +807,7 @@ function PacienteDashboardInner() {
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
         if (ev.results[i].isFinal) txt += `${ev.results[i][0].transcript} `;
       }
-      if (txt.trim()) setForm((p) => ({ ...p, relato: p.relato ? `${p.relato} ${txt.trim()}` : txt.trim() }));
+      if (txt.trim()) setForm((p) => ({ ...p, detalle: p.detalle ? `${p.detalle} ${txt.trim()}` : txt.trim() }));
     };
     rec.onerror = () => setRecording(false);
     rec.onend = () => setRecording(false);
@@ -1522,130 +1521,155 @@ function PacienteDashboardInner() {
       </Sheet>
 
       {/* Resumen para la cita (IA) */}
-      <Sheet open={sheet === "consult"} onClose={() => setSheet(null)} title={t("Resumen para mi cita", "Summary for my visit")}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#FAF7F2] p-1.5">
-            {([["medico", `🩺 ${t("Médico", "Doctor")}`], ["sanador", `✨ ${t("Sanador", "Healer")}`]] as const).map(([id, label]) => (
-              <button key={id} type="button" onClick={() => openConsult(id)} className={`rounded-full py-2 text-xs font-bold ${consult?.audience === id ? "bg-espresso text-white" : "text-espresso/60"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
+      <ConsultSummarySheet
+        open={sheet === "consult"}
+        onClose={() => setSheet(null)}
+        audience={consult?.audience === "sanador" ? "sanador" : "medico"}
+        onChangeAudience={(aud) => setConsult({ audience: aud })}
+        patientName={data?.user?.nombre || t("Paciente", "Patient")}
+        ficha={ficha}
+        timeline={timeline}
+        onToast={showToast}
+        t={t}
+        isEs={isEs}
+      />
 
-          {consult?.loading ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <div className="flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-[#7A4FD1] text-white"><Sparkles className="h-6 w-6" /></div>
-              <p className="text-sm font-semibold text-espresso/70">{t("PONO está armando tu resumen…", "PONO is putting your summary together…")}</p>
-            </div>
-          ) : (
-            <>
-              <pre className="whitespace-pre-wrap rounded-3xl bg-[#F4F8F8] p-4 font-sans text-xs leading-relaxed text-espresso">{consult?.summary || t("No se pudo generar el resumen.", "The summary could not be generated.")}</pre>
-              {consult?.questions?.length > 0 && (
-                <div className="rounded-3xl bg-[#FFF6D6] p-4">
-                  <p className="text-xs font-extrabold uppercase tracking-wider text-[#8A6A00]">{t("Preguntas que podrías hacer", "Questions you could ask")}</p>
-                  <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-espresso/85">
-                    {consult.questions.map((q: string, i: number) => (<li key={i}>• {q}</li>))}
-                  </ul>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = `${consult?.summary || ""}\n\n${t("Preguntas", "Questions")}:\n${(consult?.questions || []).map((q: string) => `• ${q}`).join("\n")}`;
-                    navigator.clipboard?.writeText(text);
-                    showToast(t("Resumen copiado", "Summary copied"));
-                  }}
-                  className="flex items-center justify-center gap-2 rounded-full border border-espresso/15 py-3 text-sm font-bold text-espresso/75"
-                >
-                  <Copy className="h-4 w-4" />{t("Copiar", "Copy")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = consult?.summary || "";
-                    if (navigator.share) navigator.share({ title: "Love Heals Effect", text }).catch(() => { });
-                    else { navigator.clipboard?.writeText(text); showToast(t("Resumen copiado", "Summary copied")); }
-                  }}
-                  className="flex items-center justify-center gap-2 rounded-full bg-[#7A4FD1] py-3 text-sm font-bold text-white"
-                >
-                  <Share2 className="h-4 w-4" />{t("Compartir", "Share")}
-                </button>
-              </div>
-              <p className="text-center text-[11px] text-espresso/50">{t("Generado por PONO IA con lo que has registrado. No sustituye la atención médica.", "Generated by PONO AI from what you've recorded. It does not replace medical care.")}</p>
-            </>
-          )}
-        </div>
-      </Sheet>
-
-      {/* Bitácora asistida por IA */}
-      <Sheet open={sheet === "bitacora"} onClose={() => { recognitionRef.current?.stop(); setRecording(false); setSheet(null); }} title={t("Agregar a mi bitácora", "Add to my journal")}>
+      {/* Bitácora: crear o editar entrada */}
+      <Sheet
+        open={sheet === "bitacora"}
+        onClose={() => {
+          recognitionRef.current?.stop();
+          setRecording(false);
+          setSheet(null);
+        }}
+        title={
+          fv("id")
+            ? t("Editar entrada de bitácora", "Edit journal entry")
+            : t("Agregar a mi bitácora", "Add to my journal")
+        }
+      >
         <form
-          className="space-y-4"
+          className="space-y-3.5"
           onSubmit={async (e) => {
             e.preventDefault();
+            const isEditing = Boolean(fv("id"));
             const ok = await runAction(
-              "add_bitacora",
+              isEditing ? "update_bitacora" : "add_bitacora",
               {
+                ...(isEditing ? { id: fv("id") } : {}),
                 tipo: fv("tipo", "nota"),
-                titulo: fv("titulo") || fv("relato").slice(0, 60),
-                detalle: fv("detalle") || fv("relato"),
+                titulo: fv("titulo") || fv("detalle").slice(0, 60) || t("Nota clínica", "Clinical note"),
+                detalle: fv("detalle"),
                 fecha: fv("fecha", todayKey()),
                 medico: fv("medico"),
                 lugar: fv("lugar"),
-                etiquetas: fv("etiquetas").split(",").map((x) => x.trim()).filter(Boolean),
-                origen: fv("origen") === "ia" ? "ia" : "manual",
+                etiquetas: fv("etiquetas")
+                  .split(",")
+                  .map((x) => x.trim())
+                  .filter(Boolean),
               },
-              t("Guardado en tu bitácora", "Saved to your journal")
+              isEditing
+                ? t("Entrada actualizada", "Entry updated")
+                : t("Guardado en tu bitácora", "Saved to your journal")
             );
             if (ok) setSheet(null);
           }}
         >
-          <div className="rounded-3xl bg-gradient-to-br from-[#F6E6FA] to-[#DDF1EE] p-4">
-            <p className="flex items-center gap-1.5 text-xs font-bold text-[#7A4FD1]"><Sparkles className="h-3.5 w-3.5" />{t("Cuéntame qué pasó con tus palabras", "Tell me what happened in your own words")}</p>
-            <textarea rows={3} className={`${inputCls} mt-2`} value={fv("relato")} onChange={fs("relato")} placeholder={t("Ej. Ayer fui con la Dra. López, me dijo que siga con tamoxifeno y tuve náuseas toda la tarde…", "E.g. Yesterday I saw Dr. Lee, she said to continue tamoxifen and I had nausea all afternoon…")} />
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button type="button" onClick={toggleVoice} className={`flex items-center justify-center gap-2 rounded-full py-2.5 text-xs font-bold transition ${recording ? "animate-pulse bg-[#C94A6A] text-white" : "bg-white text-[#C94A6A]"}`}>
-                {recording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                {recording ? t("Detener", "Stop") : t("Dictar", "Dictate")}
-              </button>
-              <button type="button" disabled={organizing} onClick={organizeWithAI} className="flex items-center justify-center gap-2 rounded-full bg-[#7A4FD1] py-2.5 text-xs font-bold text-white disabled:opacity-60">
-                <Sparkles className={`h-4 w-4 ${organizing ? "animate-spin" : ""}`} />
-                {organizing ? t("Organizando…", "Organizing…") : t("Organizar con PONO", "Organize with PONO")}
-              </button>
-            </div>
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("Tipo", "Type")}>
               <select className={inputCls} value={fv("tipo", "nota")} onChange={fs("tipo")}>
-                {Object.entries(TIMELINE_META).filter(([k]) => k !== "etapa").map(([k, m]) => (
-                  <option key={k} value={k}>{m.emoji} {isEs ? m.es : m.en}</option>
-                ))}
+                {Object.entries(TIMELINE_META)
+                  .filter(([k]) => k !== "etapa")
+                  .map(([k, m]) => (
+                    <option key={k} value={k}>
+                      {m.emoji} {isEs ? m.es : m.en}
+                    </option>
+                  ))}
               </select>
             </Field>
             <Field label={t("Fecha", "Date")}>
-              <input type="date" className={inputCls} value={fv("fecha", todayKey())} onChange={fs("fecha")} />
+              <input
+                type="date"
+                className={inputCls}
+                value={fv("fecha", todayKey())}
+                onChange={fs("fecha")}
+              />
             </Field>
           </div>
+
           <Field label={t("Título", "Title")}>
-            <input className={inputCls} value={fv("titulo")} onChange={fs("titulo")} placeholder={t("Se llena solo con PONO", "PONO fills it in")} />
+            <input
+              required
+              className={inputCls}
+              value={fv("titulo")}
+              onChange={fs("titulo")}
+              placeholder={t("Ej. Control con oncología o síntoma del día", "E.g. Oncology checkup or symptom")}
+            />
           </Field>
+
           <div className="grid grid-cols-2 gap-3">
-            <Field label={t("Médico", "Doctor")}>
-              <input className={inputCls} value={fv("medico")} onChange={fs("medico")} placeholder="Dra. López" />
+            <Field label={t("Médico / Especialista", "Doctor / Specialist")}>
+              <input
+                className={inputCls}
+                value={fv("medico")}
+                onChange={fs("medico")}
+                placeholder="Dra. López"
+              />
             </Field>
             <Field label={t("Lugar", "Place")}>
-              <input className={inputCls} value={fv("lugar")} onChange={fs("lugar")} />
+              <input
+                className={inputCls}
+                value={fv("lugar")}
+                onChange={fs("lugar")}
+                placeholder={t("Clínica o casa", "Clinic or home")}
+              />
             </Field>
           </div>
-          <Field label={t("Detalle", "Details")}>
-            <textarea rows={2} className={inputCls} value={fv("detalle")} onChange={fs("detalle")} />
-          </Field>
+
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-xs font-bold text-espresso/80">
+                {t("Detalle", "Details")}
+              </span>
+              <button
+                type="button"
+                onClick={toggleVoice}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+                  recording
+                    ? "animate-pulse bg-[#C94A6A] text-white"
+                    : "bg-[#E5F2F1] text-[#239BA2] hover:bg-[#d2eae8]"
+                }`}
+              >
+                {recording ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                <span>{recording ? t("Detener dictado", "Stop dictation") : t("Dictar por voz", "Voice dictate")}</span>
+              </button>
+            </div>
+            <textarea
+              rows={3}
+              className={inputCls}
+              value={fv("detalle")}
+              onChange={fs("detalle")}
+              placeholder={t(
+                "Describe síntomas, indicaciones del médico o cómo te sentiste…",
+                "Describe symptoms, doctor notes, or how you felt…"
+              )}
+            />
+          </div>
+
           <Field label={t("Etiquetas (separadas por coma)", "Tags (comma separated)")}>
-            <input className={inputCls} value={fv("etiquetas")} onChange={fs("etiquetas")} placeholder="náuseas, tamoxifeno" />
+            <input
+              className={inputCls}
+              value={fv("etiquetas")}
+              onChange={fs("etiquetas")}
+              placeholder="náuseas, tamoxifeno, descanso"
+            />
           </Field>
-          <PrimaryButton type="submit">{t("Guardar en mi bitácora", "Save to my journal")}</PrimaryButton>
+
+          <PrimaryButton type="submit">
+            {fv("id")
+              ? t("Guardar cambios", "Save changes")
+              : t("Guardar en mi bitácora", "Save to my journal")}
+          </PrimaryButton>
         </form>
       </Sheet>
 

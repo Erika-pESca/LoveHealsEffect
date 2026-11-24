@@ -224,68 +224,107 @@ const SAMPLE_DOCUMENTOS = [
 const SAMPLE_BITACORA = [
   {
     id: 1,
-    fecha: "2026-11-20",
+    fecha: "2026-11-22",
     tipo: "cita",
     titulo: "Consulta de seguimiento con Oncología Médica",
     detalle:
-      "Revisión de analítica sanguínea. Neutrófilos y plaquetas en niveles estables para continuar ciclo. Tolerancia al tratamiento favorable. Se autorizan caminatas suaves y sesiones BAM.",
+      "Revisión de analítica sanguínea previa al ciclo. Neutrófilos y plaquetas en niveles estables para continuar tratamiento. Tolerancia favorable; se autorizan caminatas suaves y movimiento BAM.",
     medico: "Dra. Sarah Jenkins",
     lugar: "Queen's Medical Center, Honolulu",
     etiquetas: ["oncología", "laboratorio", "seguimiento"],
-    origen: "ia",
-    creado_en: "2026-11-20T10:30:00Z",
+    origen: "manual",
+    creado_en: "2026-11-22T10:30:00Z",
   },
   {
     id: 2,
-    fecha: "2026-11-19",
+    fecha: "2026-11-21",
     tipo: "sintoma",
-    titulo: "Cansancio leve por la tarde y ligera náusea matutina",
+    titulo: "Cansancio leve por la tarde y náusea matutina suave",
     detalle:
-      "Disminuyó tras infusión tibia de jengibre y descanso con respiración 4-7-8 recomendada por PONO. Buen apetito al mediodía y buen ánimo.",
+      "Disminuyó tras infusión tibia de jengibre, hidratación con electrolitos y 10 minutos de respiración 4-7-8. Buen apetito al mediodía y descanso reparador por la noche.",
     medico: "",
     lugar: "Casa",
-    etiquetas: ["síntomas", "náuseas", "autocuidado"],
-    origen: "escrito",
-    creado_en: "2026-11-19T14:15:00Z",
+    etiquetas: ["fatiga", "náuseas", "autocuidado"],
+    origen: "manual",
+    creado_en: "2026-11-21T14:15:00Z",
   },
   {
     id: 3,
-    fecha: "2026-11-16",
+    fecha: "2026-11-19",
     tipo: "procedimiento",
-    titulo: "Ecografía mamaria de control post-ciclo 2",
+    titulo: "Ecografía mamaria de control y hemograma completo",
     detalle:
-      "Respuesta tumoral favorable con reducción milimétrica observada en mama izquierda. Ganglios axilares sin variaciones adversas.",
+      "Respuesta tumoral favorable con reducción milimétrica observada en mama izquierda. Ganglios axilares sin variaciones adversas y valores hepáticos dentro de rango normal.",
     medico: "Dr. Michael Chen",
     lugar: "Kapi'olani Medical Center",
-    etiquetas: ["ecografía", "control", "imágenes"],
-    origen: "auto",
-    creado_en: "2026-11-16T11:00:00Z",
+    etiquetas: ["ecografía", "hemograma", "control"],
+    origen: "manual",
+    creado_en: "2026-11-19T11:00:00Z",
   },
   {
     id: 4,
-    fecha: "2026-11-14",
+    fecha: "2026-11-17",
     tipo: "sanador",
-    titulo: "Sesión holística 1 a 1 de movimiento BAM con Kelsie",
+    titulo: "Sesión 1 a 1 de movimiento BAM y cuencos con Kelsie",
     detalle:
-      "Liberación miofascial suave de hombro y plexo solar, drenaje linfático asistido y visualización celular de amor propio. Sensación de alivio y ligereza.",
+      "Liberación miofascial suave de hombro y plexo solar, respiración consciente y baño de sonido con cuencos tibetanos. Sensación de calma profunda y mejor movilidad del brazo.",
     medico: "Kelsie Reynolds",
     lugar: "Love Heals Zoom (Honolulu)",
-    etiquetas: ["BAM", "sanación", "movimiento"],
-    origen: "ia",
-    creado_en: "2026-11-14T17:00:00Z",
+    etiquetas: ["BAM", "sonoterapia", "sanación"],
+    origen: "manual",
+    creado_en: "2026-11-17T17:00:00Z",
   },
   {
     id: 5,
-    fecha: "2026-11-10",
+    fecha: "2026-11-15",
     tipo: "medicamento",
-    titulo: "Ajuste de suplementación con Dra. Maya Lin",
+    titulo: "Inicio de Tamoxifeno 20 mg y ajuste de Magnesio nocturno",
     detalle:
-      "Incorporación de té verde matcha orgánico y magnesio glicinato nocturno para potenciar reparación celular y sueño reparador.",
-    medico: "Dra. Maya Lin",
-    lugar: "Honolulu Holistic Center",
-    etiquetas: ["nutrición", "suplementos"],
-    origen: "escrito",
+      "Toma de Tamoxifeno cada mañana con el desayuno y Magnesio Glicinato 400 mg antes de dormir para mejorar la calidad del sueño. Sin efectos adversos relevantes en los primeros días.",
+    medico: "Dra. Sarah Jenkins",
+    lugar: "Queen's Medical Center, Honolulu",
+    etiquetas: ["tamoxifeno", "magnesio", "dosis"],
+    origen: "manual",
+    creado_en: "2026-11-15T09:00:00Z",
+  },
+  {
+    id: 6,
+    fecha: "2026-11-13",
+    tipo: "nota",
+    titulo: "Reflexión semanal y organización con mi cuidador",
+    detalle:
+      "Coordinamos los horarios de comidas antiinflamatorias y las dos citas de la próxima semana. Me sentí muy acompañada en el Love Circle del jueves; quiero repetir la meditación de gratitud.",
+    medico: "",
+    lugar: "Casa",
+    etiquetas: ["gratitud", "familia", "love-circle"],
+    origen: "manual",
+    creado_en: "2026-11-13T19:20:00Z",
+  },
+  {
+    id: 7,
+    fecha: "2026-11-10",
+    tipo: "sanador",
+    titulo: "Acompañamiento emocional familiar con Omar",
+    detalle:
+      "Conversación abierta sobre cómo distribuir tareas en casa durante los días de mayor fatiga y herramientas prácticas de autorregulación para evitar sobrecarga.",
+    medico: "Omar Melero",
+    lugar: "Love Heals Zoom (Honolulu)",
+    etiquetas: ["coaching", "célula-familiar", "apoyo"],
+    origen: "manual",
     creado_en: "2026-11-10T16:00:00Z",
+  },
+  {
+    id: 8,
+    fecha: "2026-11-08",
+    tipo: "sintoma",
+    titulo: "Ligera rigidez en hombro izquierdo al despertar",
+    detalle:
+      "Cedió tras estiramientos suaves de 5 minutos y compresa tibia. Anotar para comentarlo en la próxima sesión de fisioterapia y BAM.",
+    medico: "Dra. Maya Lin",
+    lugar: "Casa",
+    etiquetas: ["movilidad", "estiramientos"],
+    origen: "manual",
+    creado_en: "2026-11-08T08:45:00Z",
   },
 ];
 
@@ -890,7 +929,7 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    // ---- Bitácora manual / asistida por IA ----
+    // ---- Bitácora manual ----
     if (action === "add_bitacora") {
       await pushTimeline({
         fecha: String(payload.fecha || today).slice(0, 10),
@@ -900,9 +939,39 @@ export async function PATCH(req: NextRequest) {
         medico: payload.medico || "",
         lugar: payload.lugar || "",
         etiquetas: Array.isArray(payload.etiquetas) ? payload.etiquetas : [],
-        origen: payload.origen === "ia" ? "ia" : "manual",
+        origen: "manual",
       });
       return NextResponse.json({ ok: true });
+    }
+
+    if (action === "update_bitacora") {
+      const updated = timeline.map((e) =>
+        e.id === payload.id
+          ? {
+              ...e,
+              fecha: String(payload.fecha || e.fecha || today).slice(0, 10),
+              tipo: payload.tipo || e.tipo || "nota",
+              titulo: String(payload.titulo || e.titulo || "Nota").slice(0, 120),
+              detalle: payload.detalle ?? e.detalle ?? "",
+              medico: payload.medico ?? e.medico ?? "",
+              lugar: payload.lugar ?? e.lugar ?? "",
+              etiquetas: Array.isArray(payload.etiquetas)
+                ? payload.etiquetas
+                : e.etiquetas || [],
+            }
+          : e
+      );
+      const { error: err } = await supabaseAdmin
+        .from("ficha_paciente")
+        .update({ bitacora_clinica: updated })
+        .eq("id", ficha.id);
+      if (err) {
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ resultados_laboratorio: updated })
+          .eq("id", ficha.id);
+      }
+      return NextResponse.json({ ok: true, timeline: updated });
     }
 
     if (action === "delete_bitacora") {
@@ -917,7 +986,7 @@ export async function PATCH(req: NextRequest) {
           .update({ resultados_laboratorio: kept })
           .eq("id", ficha.id);
       }
-      return NextResponse.json({ ok: true });
+      return NextResponse.json({ ok: true, timeline: kept });
     }
 
     // ---- Perfil: datos, contraseña y cambio de cuidador ----

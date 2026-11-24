@@ -1,14 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
+  AlertTriangle,
   ArrowUpRight,
   Check,
   ChevronRight,
   FileText,
   Leaf,
+  Pencil,
   Pill,
   ScanSearch,
+  Search,
   Sun,
   Syringe,
   Plus,
@@ -79,6 +82,9 @@ export function MiCaminoSection({
   t,
   isEs,
 }: MiCaminoSectionProps) {
+  const [journalSearch, setJournalSearch] = useState("");
+  const [pendingDeleteEntry, setPendingDeleteEntry] = useState<any | null>(null);
+
   const medCount = ficha.medicamentos_y_horarios?.length || 0;
   const docCount = ficha.documentos_oncologo?.length || 0;
   const stageIdx = Math.max(0, STAGES.findIndex((s) => s.id === ficha.etapa_actual));
@@ -87,6 +93,24 @@ export function MiCaminoSection({
   const meds: any[] = ficha.medicamentos_y_horarios || [];
   const takenToday = meds.filter((m, idx) => todayHabits[`med-${m.id ?? idx}`]).length;
   const nextMed = meds.find((m, idx) => !todayHabits[`med-${m.id ?? idx}`]);
+
+  const searchedTimeline = useMemo(() => {
+    const q = journalSearch.trim().toLowerCase();
+    if (!q) return visibleTimeline;
+    return visibleTimeline.filter((e: any) => {
+      const hay = [
+        e.titulo,
+        e.detalle,
+        e.medico,
+        e.lugar,
+        ...(Array.isArray(e.etiquetas) ? e.etiquetas : []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [visibleTimeline, journalSearch]);
 
   return (
     <main className="mt-5 space-y-6">
@@ -298,12 +322,53 @@ export function MiCaminoSection({
       {/* --- 1. Bitácora / línea de tiempo --- */}
       {saludView === "linea" && (
         <div className="space-y-4">
-          <PrimaryButton onClick={() => openSheet("bitacora", { tipo: "nota", fecha: todayKey() })}>
-            <Plus className="h-5 w-5" />
-            {t("Agregar a mi bitácora", "Add to my journal")}
-          </PrimaryButton>
+          {/* Cabecera moderna con buscador y botón Nueva entrada */}
+          <div className="flex flex-col gap-3 rounded-3xl border border-white/90 bg-white/85 px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold tracking-[-0.025em] text-espresso">
+                {t("Bitácora clínica y personal", "Clinical & personal journal")}
+              </h3>
+              <p className="text-xs text-espresso/60">
+                {t(
+                  "Registra síntomas, citas, procedimientos y notas compartidas con tu cuidador.",
+                  "Track symptoms, visits, procedures, and notes shared with your caregiver."
+                )}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative flex-1 sm:w-56 sm:flex-initial">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-espresso/40" />
+                <input
+                  type="text"
+                  value={journalSearch}
+                  onChange={(e) => setJournalSearch(e.target.value)}
+                  placeholder={t("Buscar en bitácora...", "Search journal...")}
+                  className="w-full rounded-full border border-espresso/10 bg-[#FAF7F2] py-2 pl-9 pr-8 text-xs text-espresso placeholder:text-espresso/45 focus:border-[#239BA2] focus:bg-white focus:outline-none"
+                />
+                {journalSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setJournalSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-espresso/40 hover:text-espresso"
+                    aria-label={t("Limpiar", "Clear")}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => openSheet("bitacora", { tipo: "nota", fecha: todayKey() })}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F48EA6] via-[#E6748E] to-[#C9526D] px-4 py-2 text-xs font-bold text-white shadow-[0_8px_20px_rgba(230,116,142,0.28)] transition hover:brightness-105 active:scale-95"
+              >
+                <Plus className="h-4 w-4" />
+                <span>{t("Nueva entrada", "New entry")}</span>
+              </button>
+            </div>
+          </div>
 
-          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+          {/* Filtros de categoría con la paleta oficial */}
+          <div className="-mx-5 flex items-center gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0">
             {[
               ["todo", t("Todo", "All")],
               ["sintoma", t("Síntomas", "Symptoms")],
@@ -317,87 +382,191 @@ export function MiCaminoSection({
                 key={id}
                 type="button"
                 onClick={() => setTimelineFilter(id)}
-                className={`shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold transition ${
-                  timelineFilter === id ? "bg-[#7A4FD1] text-white" : "bg-white text-espresso/60 shadow-sm"
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+                  timelineFilter === id
+                    ? "bg-[#239BA2] text-white shadow-sm"
+                    : "border border-espresso/10 bg-white text-espresso/70 hover:border-[#6BB1AD]/50"
                 }`}
               >
                 {label}
               </button>
             ))}
+
+            {doctorFilter && (
+              <button
+                type="button"
+                onClick={() => setDoctorFilter("")}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#E5F2F1] px-3.5 py-1.5 text-xs font-bold text-[#239BA2]"
+              >
+                🩺 {doctorFilter} <X className="h-3 w-3" />
+              </button>
+            )}
           </div>
 
-          {doctorFilter && (
-            <button
-              type="button"
-              onClick={() => setDoctorFilter("")}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#D9E8FB] px-3.5 py-1.5 text-xs font-bold text-[#3D7BD6]"
-            >
-              🩺 {doctorFilter} <X className="h-3 w-3" />
-            </button>
-          )}
+          {/* Cuadrícula moderna de 2 columnas en escritorio */}
+          {searchedTimeline.length === 0 ? (
+            <Card className="border border-dashed border-[#6BB1AD]/35 bg-white/80 py-10 text-center text-sm text-espresso/60">
+              {journalSearch
+                ? t("No se encontraron registros con esa búsqueda.", "No entries match your search.")
+                : t("Aún no hay registros aquí. Toca «Nueva entrada» para empezar.", "No entries here yet. Tap «New entry» to begin.")}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+              {searchedTimeline.map((e: any) => {
+                const meta = TIMELINE_META[e.tipo] || TIMELINE_META.nota;
+                return (
+                  <div
+                    key={e.id}
+                    className="flex flex-col justify-between rounded-3xl border border-white/90 bg-white p-4 shadow-sm transition hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <span
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${meta.bg} text-lg`}
+                          >
+                            {meta.emoji}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-bold text-espresso/50">
+                              {fmtDate(e.fecha)} · {isEs ? meta.es : meta.en}
+                            </p>
+                            <p className="mt-0.5 text-sm font-bold leading-snug text-espresso">
+                              {e.titulo}
+                            </p>
+                          </div>
+                        </div>
 
-          <div className="relative space-y-3 pl-1">
-            {visibleTimeline.length === 0 && (
-              <Card className="text-center text-sm text-espresso/60">
-                {t("Aún no hay registros aquí.", "No entries here yet.")}
-              </Card>
-            )}
-            {visibleTimeline.map((e: any) => {
-              const meta = TIMELINE_META[e.tipo] || TIMELINE_META.nota;
-              return (
-                <div key={e.id} className="flex gap-3">
-                  <span className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${meta.bg} text-lg`}>
-                    {meta.emoji}
-                  </span>
-                  <div className="min-w-0 flex-1 rounded-3xl bg-white p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-espresso/50">
-                          {fmtDate(e.fecha)} · {isEs ? meta.es : meta.en}
-                        </p>
-                        <p className="mt-0.5 text-sm font-bold leading-snug text-espresso">{e.titulo}</p>
+                        {!e.readonly && (
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openSheet("bitacora", {
+                                  id: String(e.id),
+                                  tipo: e.tipo || "nota",
+                                  fecha: e.fecha || todayKey(),
+                                  titulo: e.titulo || "",
+                                  detalle: e.detalle || "",
+                                  medico: e.medico || "",
+                                  lugar: e.lugar || "",
+                                  etiquetas: Array.isArray(e.etiquetas)
+                                    ? e.etiquetas.join(", ")
+                                    : "",
+                                })
+                              }
+                              className="flex h-7 w-7 items-center justify-center rounded-full text-espresso/40 transition hover:bg-[#E5F2F1] hover:text-[#239BA2]"
+                              aria-label={t("Editar", "Edit")}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPendingDeleteEntry(e)}
+                              className="flex h-7 w-7 items-center justify-center rounded-full text-espresso/40 transition hover:bg-[#FCECEE] hover:text-[#C94A6A]"
+                              aria-label={t("Eliminar", "Delete")}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      {!e.readonly && (
-                        <button
-                          type="button"
-                          onClick={() => runAction("delete_bitacora", { id: e.id }, t("Entrada eliminada", "Entry removed"))}
-                          className="text-espresso/30 transition hover:text-[#C94A6A]"
-                          aria-label={t("Eliminar", "Delete")}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+
+                      {e.detalle && (
+                        <p className="mt-2.5 text-xs leading-relaxed text-espresso/75">
+                          {e.detalle}
+                        </p>
                       )}
                     </div>
-                    {e.detalle && <p className="mt-1.5 text-xs leading-relaxed text-espresso/70">{e.detalle}</p>}
-                    <div className="mt-2 flex flex-wrap gap-1.5">
+
+                    <div className="mt-3 flex flex-wrap gap-1.5 border-t border-espresso/5 pt-2.5">
                       {e.medico && (
-                        <span className="rounded-full bg-[#D9E8FB] px-2.5 py-0.5 text-[10px] font-bold text-[#3D7BD6]">
+                        <span className="rounded-full bg-[#E5F2F1] px-2.5 py-0.5 text-[10px] font-bold text-[#239BA2]">
                           🩺 {e.medico}
                         </span>
                       )}
                       {e.lugar && (
-                        <span className="rounded-full bg-[#EFEAE2] px-2.5 py-0.5 text-[10px] font-bold text-espresso/70">
+                        <span className="rounded-full bg-[#FAF7F2] px-2.5 py-0.5 text-[10px] font-bold text-espresso/70">
                           📍 {e.lugar}
                         </span>
                       )}
                       {(e.etiquetas || []).map((tag: string) => (
-                        <span key={tag} className="rounded-full bg-[#FFE0D2] px-2.5 py-0.5 text-[10px] font-bold text-espresso/70">
-                          {tag}
+                        <span
+                          key={tag}
+                          className="rounded-full bg-[#FDF3EF] px-2.5 py-0.5 text-[10px] font-bold text-[#C9526D]"
+                        >
+                          #{tag}
                         </span>
                       ))}
-                      <span className="rounded-full bg-[#F1ECF5] px-2.5 py-0.5 text-[10px] font-bold text-[#7A4FD1]">
-                        {e.origen === "ia"
-                          ? `✨ ${t("Organizado por PONO", "Organized by PONO")}`
-                          : e.origen === "auto"
+                      <span className="ml-auto rounded-full bg-espresso/5 px-2.5 py-0.5 text-[10px] font-semibold text-espresso/55">
+                        {e.origen === "auto"
                           ? t("Automático", "Automatic")
-                          : t("Escrito por ti", "Written by you")}
+                          : e.readonly
+                            ? t("Sesión sanador", "Healer session")
+                            : t("Escrito por ti", "Written by you")}
                       </span>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Modal de confirmación para eliminar entrada de bitácora */}
+          {pendingDeleteEntry && (
+            <div
+              className="fixed inset-0 z-[70] flex items-center justify-center bg-espresso/45 p-4 backdrop-blur-sm"
+              onClick={() => setPendingDeleteEntry(null)}
+            >
+              <div
+                className="w-full max-w-sm rounded-[28px] border border-white/90 bg-white p-6 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#C94A6A]">
+                    <AlertTriangle className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-bold text-espresso">
+                      {t("¿Eliminar registro?", "Delete entry?")}
+                    </h3>
+                    <p className="mt-1 text-xs leading-relaxed text-espresso/70">
+                      {t("Estás a punto de eliminar", "You are about to delete")}{" "}
+                      <span className="font-bold text-espresso">
+                        “{pendingDeleteEntry.titulo}”
+                      </span>
+                      . {t("Esta acción no se puede deshacer.", "This action cannot be undone.")}
+                    </p>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+                <div className="mt-5 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setPendingDeleteEntry(null)}
+                    className="rounded-full bg-[#FAF7F2] px-4 py-2 text-xs font-bold text-espresso/75 transition hover:bg-espresso/10"
+                  >
+                    {t("Cancelar", "Cancel")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const idToDelete = pendingDeleteEntry.id;
+                      setPendingDeleteEntry(null);
+                      void runAction(
+                        "delete_bitacora",
+                        { id: idToDelete },
+                        t("Entrada eliminada", "Entry removed")
+                      );
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#C94A6A] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#b53d5c] active:scale-95"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>{t("Sí, eliminar", "Yes, delete")}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
