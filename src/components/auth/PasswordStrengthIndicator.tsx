@@ -59,7 +59,7 @@ export function PasswordStrengthIndicator({
       : "text-espresso/50";
 
   return (
-    <div className="mt-2.5 space-y-2.5 rounded-2xl border border-espresso/10 bg-[#FAF9F6] p-3.5 text-xs transition-all">
+    <div className="mt-1.5 space-y-2 rounded-2xl border border-espresso/10 bg-[#FAF9F6] p-2.5 text-xs transition-all">
       {/* 1. Barra visual de progreso dividida en segmentos ("la ralla") */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px] font-semibold text-espresso/70">
@@ -83,7 +83,7 @@ export function PasswordStrengthIndicator({
       </div>
 
       {/* 2. Lista interactiva de opciones que se deben cumplir */}
-      <div className="space-y-1.5 pt-0.5">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
         <div
           className={`flex items-center gap-2 text-[11px] transition-colors ${
             hasMinLength ? "font-bold text-[#5C8D67]" : "text-espresso/60"

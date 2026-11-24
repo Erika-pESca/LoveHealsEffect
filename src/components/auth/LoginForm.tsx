@@ -89,7 +89,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-24 pb-16 sm:pt-28">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 pt-[84px] pb-4">
       {/* Video de fondo luminoso de olas en Hawái */}
       <video
         autoPlay
@@ -105,7 +105,7 @@ export function LoginForm() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-lychee/35" />
 
       {/* Tarjeta Light Glassmorphism (luminosa y pastel) */}
-      <div className="relative z-10 w-full max-w-[395px] rounded-[30px] border border-white/80 bg-white/75 p-7 text-espresso shadow-[0_24px_60px_rgba(107,177,173,0.22)] backdrop-blur-xl sm:p-8">
+      <div className="relative z-10 w-full max-w-[395px] rounded-[28px] border border-white/80 bg-white/75 p-5 text-espresso shadow-[0_24px_60px_rgba(107,177,173,0.22)] backdrop-blur-xl sm:p-6">
         <div className="flex items-center justify-between">
           <span className="rounded-full bg-[#E5F2F1] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-veranda-blue">
             {t.badge}
@@ -123,20 +123,20 @@ export function LoginForm() {
           </div>
         </div>
 
-        <h1 className="mt-5 font-serif text-3xl font-bold tracking-tight text-espresso">
+        <h1 className="mt-3.5 font-serif text-2xl font-bold leading-tight tracking-tight text-espresso sm:text-[26px]">
           {t.title}
         </h1>
-        <p className="mt-1.5 text-xs leading-relaxed text-espresso/70">
+        <p className="mt-1 text-xs leading-relaxed text-espresso/70">
           {t.subtitle}
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-3.5">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-2.5">
           {/* Selector de rol de primeras */}
           <div className="grid grid-cols-2 gap-1.5 rounded-2xl bg-white/90 p-1 shadow-sm">
             <button
               type="button"
               onClick={() => setRole("paciente")}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition ${
+              className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition ${
                 role === "paciente"
                   ? "bg-[#E8809A] text-white shadow-sm"
                   : "text-espresso/70 hover:text-espresso"
@@ -148,7 +148,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => setRole("cuidador")}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition ${
+              className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition ${
                 role === "cuidador"
                   ? "bg-[#E8809A] text-white shadow-sm"
                   : "text-espresso/70 hover:text-espresso"
@@ -167,7 +167,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.emailPlaceholder}
-              className="w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-3.5 pl-4 pr-11 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15"
+              className="w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-2.5 pl-4 pr-11 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15"
             />
             <Mail className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-veranda-blue" />
           </div>
@@ -180,7 +180,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.passwordPlaceholder}
-              className="w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-3.5 pl-4 pr-11 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15"
+              className="w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-2.5 pl-4 pr-11 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15"
             />
             <button
               type="button"
@@ -230,7 +230,7 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#E8809A] py-3.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(232,128,154,0.35)] transition hover:bg-[#df6f8a] active:scale-[0.99] disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#E8809A] py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(232,128,154,0.35)] transition hover:bg-[#df6f8a] active:scale-[0.99] disabled:opacity-60"
           >
             <span>
               {loading
@@ -243,7 +243,7 @@ export function LoginForm() {
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-espresso/75">
+        <p className="mt-3 text-center text-xs text-espresso/75">
           {t.noAccount}{" "}
           <Link
             href="/auth/registro"

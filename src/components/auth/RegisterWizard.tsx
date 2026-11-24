@@ -252,10 +252,10 @@ export function RegisterWizard() {
       : ["Mornings", "Afternoons", "Weekends", "Full-time"];
 
   const lightInput =
-    "w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-3.5 pl-4 pr-11 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15";
+    "w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-2.5 pl-4 pr-11 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15";
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-24 pb-16 sm:pt-28">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 pt-[84px] pb-4">
       {/* Video de fondo luminoso de olas en Hawái */}
       <video
         autoPlay
@@ -271,7 +271,11 @@ export function RegisterWizard() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-lychee/35" />
 
       {/* Tarjeta Light Glassmorphism con ancho adaptable */}
-      <div className="relative z-10 w-full max-w-[430px] rounded-[32px] border border-white/80 bg-white/85 p-6 text-espresso shadow-[0_24px_60px_rgba(107,177,173,0.22)] backdrop-blur-xl sm:p-8">
+      <div
+        className={`relative z-10 w-full ${
+          step === 0 ? "max-w-[430px]" : "max-w-[580px]"
+        } rounded-[28px] border border-white/80 bg-white/85 p-5 text-espresso shadow-[0_24px_60px_rgba(107,177,173,0.22)] backdrop-blur-xl sm:p-6`}
+      >
         {/* Cabecera de pasos y login toggle */}
         <div className="flex items-center justify-between">
           <span className="rounded-full bg-[#FCECEE] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#E8809A]">
@@ -295,17 +299,17 @@ export function RegisterWizard() {
 
         {/* PASO 0: PRIMERO LA OPCIÓN (Soy Paciente o Soy Cuidador) */}
         {step === 0 && (
-          <div className="mt-5">
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-espresso sm:text-3xl">
+          <div className="mt-3.5">
+            <h1 className="font-serif text-2xl font-bold leading-tight tracking-tight text-espresso sm:text-[26px]">
               {isEs ? "¿Cómo deseas unirte?" : "How would you like to join?"}
             </h1>
-            <p className="mt-1.5 text-xs leading-relaxed text-espresso/70">
+            <p className="mt-1 text-xs leading-relaxed text-espresso/70">
               {isEs
                 ? "Elige primero tu rol para personalizar tu registro y tu acompañamiento dentro de la comunidad:"
                 : "Choose your role first to personalize your registration and care within the community:"}
             </p>
 
-            <div className="mt-6 space-y-3.5">
+            <div className="mt-3.5 space-y-2.5">
               {/* Opción 1: Soy la Paciente */}
               <button
                 type="button"
@@ -313,10 +317,10 @@ export function RegisterWizard() {
                   setRole("paciente");
                   setStep(1);
                 }}
-                className="group flex w-full items-start gap-4 rounded-2xl border-2 border-transparent bg-white/90 p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#E8809A] hover:bg-white hover:shadow-md active:scale-[0.99]"
+                className="group flex w-full items-start gap-3.5 rounded-2xl border-2 border-transparent bg-white/90 p-3.5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#E8809A] hover:bg-white hover:shadow-md active:scale-[0.99]"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#E8809A] shadow-xs transition-transform group-hover:scale-110">
-                  <Heart className="h-6 w-6" />
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#E8809A] shadow-xs transition-transform group-hover:scale-110">
+                  <Heart className="h-5 w-5" />
                 </span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -332,7 +336,7 @@ export function RegisterWizard() {
                       ? "Estoy transitando un diagnóstico o tratamiento y busco acompañamiento médico integrativo, meditaciones y apoyo amoroso."
                       : "Navigating diagnosis or cancer treatment and seeking holistic, compassionate care."}
                   </p>
-                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#E8809A]">
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#E8809A]">
                     {isEs ? "Elegir esta opción →" : "Choose this option →"}
                   </span>
                 </div>
@@ -345,10 +349,10 @@ export function RegisterWizard() {
                   setRole("cuidador");
                   setStep(1);
                 }}
-                className="group flex w-full items-start gap-4 rounded-2xl border-2 border-transparent bg-white/90 p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#5C8D67] hover:bg-white hover:shadow-md active:scale-[0.99]"
+                className="group flex w-full items-start gap-3.5 rounded-2xl border-2 border-transparent bg-white/90 p-3.5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#5C8D67] hover:bg-white hover:shadow-md active:scale-[0.99]"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E5F2F1] text-[#5C8D67] shadow-xs transition-transform group-hover:scale-110">
-                  <Users className="h-6 w-6" />
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E5F2F1] text-[#5C8D67] shadow-xs transition-transform group-hover:scale-110">
+                  <Users className="h-5 w-5" />
                 </span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -364,7 +368,7 @@ export function RegisterWizard() {
                       ? "Acompaño y sostengo a un ser querido. Busco soporte emocional, autorregulación y seguimiento compartido sin quemarme."
                       : "Supporting a loved one through illness. Seeking grounding, self-regulation, and shared care."}
                   </p>
-                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#5C8D67]">
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#5C8D67]">
                     {isEs ? "Elegir esta opción →" : "Choose this option →"}
                   </span>
                 </div>
@@ -375,9 +379,9 @@ export function RegisterWizard() {
 
         {/* PASO 1: AHORA SÍ LA INFORMACIÓN PARA EL LOGIN Y EL REGISTRO */}
         {step === 1 && (
-          <div className="mt-5 space-y-4">
+          <div className="mt-3 space-y-2.5">
             {/* Indicador de rol seleccionado con botón para cambiar */}
-            <div className="flex items-center justify-between rounded-2xl border border-espresso/10 bg-white/90 px-3.5 py-2.5 shadow-sm">
+            <div className="flex items-center justify-between rounded-2xl border border-espresso/10 bg-white/90 px-3.5 py-2 shadow-sm">
               <div className="flex items-center gap-2">
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-xl text-white ${
@@ -428,17 +432,17 @@ export function RegisterWizard() {
             )}
 
             <div>
-              <h1 className="font-serif text-2xl font-bold tracking-tight text-espresso sm:text-3xl">
+              <h1 className="font-serif text-2xl font-bold leading-tight tracking-tight text-espresso sm:text-[26px]">
                 {isEs ? "Tus datos de cuenta" : "Your Account Details"}
               </h1>
-              <p className="mt-1 text-xs leading-relaxed text-espresso/70">
+              <p className="mt-0.5 text-xs leading-relaxed text-espresso/70">
                 {isEs
                   ? "Ingresa tus credenciales personales para crear tu acceso:"
                   : "Enter your personal credentials to create your account:"}
               </p>
             </div>
 
-            <div className="space-y-3 pt-1">
+            <div className="space-y-2.5 pt-0.5">
               <div className="relative">
                 <input
                   type="text"
@@ -463,38 +467,40 @@ export function RegisterWizard() {
                 <Mail className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-veranda-blue" />
               </div>
 
-              <div className="relative">
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
-                  placeholder={isEs ? "Teléfono / Celular (solo dígitos)" : "Phone (digits only)"}
-                  className={lightInput}
-                />
-                <Phone className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-espresso/45" />
-              </div>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div className="relative">
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
+                    placeholder={isEs ? "Teléfono / Celular (solo dígitos)" : "Phone (digits only)"}
+                    className={lightInput}
+                  />
+                  <Phone className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-espresso/45" />
+                </div>
 
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t.fields.password}
-                  className="w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-3.5 pl-4 pr-12 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cupid-pink transition hover:text-espresso p-1"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t.fields.password}
+                    className="w-full rounded-2xl border border-sky-cloud/35 bg-white/80 py-2.5 pl-4 pr-12 text-sm text-espresso placeholder:text-espresso/45 transition focus:border-veranda-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-veranda-blue/15"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cupid-pink transition hover:text-espresso p-1"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Ralla visual de fuerza y opciones que se deben cumplir */}
@@ -502,16 +508,16 @@ export function RegisterWizard() {
             </div>
 
             {step1Error && (
-              <div className="rounded-2xl border border-[#E8809A]/30 bg-[#FCECEE] p-3 text-xs text-[#C4546A]">
+              <div className="rounded-2xl border border-[#E8809A]/30 bg-[#FCECEE] p-2.5 text-xs text-[#C4546A]">
                 {step1Error}
               </div>
             )}
 
-            <div className="flex items-center gap-2.5 pt-2">
+            <div className="flex items-center gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={() => setStep(0)}
-                className="inline-flex items-center gap-1.5 rounded-2xl bg-white/85 px-4 py-3.5 text-xs font-bold text-espresso shadow-sm transition hover:bg-lychee"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-white/85 px-4 py-2.5 text-xs font-bold text-espresso shadow-sm transition hover:bg-lychee"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 <span>{t.buttons.back}</span>
@@ -519,7 +525,7 @@ export function RegisterWizard() {
               <button
                 type="button"
                 onClick={handleProceedToStep2}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#E8809A] py-3.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(232,128,154,0.35)] transition hover:bg-[#df6f8a] active:scale-[0.99]"
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#E8809A] py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(232,128,154,0.35)] transition hover:bg-[#df6f8a] active:scale-[0.99]"
               >
                 <span>{t.buttons.next}</span>
                 <ArrowRight className="h-4 w-4" />
@@ -1062,7 +1068,7 @@ export function RegisterWizard() {
         )}
 
         {step !== 3 && (
-          <p className="mt-4 text-center text-xs text-espresso/75">
+          <p className="mt-3 text-center text-xs text-espresso/75">
             {t.hasAccount}{" "}
             <Link
               href="/auth/login"

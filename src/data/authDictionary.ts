@@ -68,7 +68,7 @@ export const authDictionary = {
       },
       buttons: {
         next: "Continue →",
-        back: "← Back",
+        back: "Back",
         finish: "Create 1-to-1 Family Cell",
         goToLogin: "Go to Sign In",
       },
@@ -149,7 +149,7 @@ export const authDictionary = {
       },
       buttons: {
         next: "Continuar →",
-        back: "← Atrás",
+        back: "Atrás",
         finish: "Crear Célula Familiar 1 a 1",
         goToLogin: "Ir a Iniciar Sesión",
       },
