@@ -202,13 +202,13 @@ function resolveCurrentRole(pathname: string): RoleKey | null {
 /* ========================================================================== */
 /*  FÍSICA DEL TRAMPOLÍN LÍQUIDO V2 - liquid-tab-bar (1).html                 */
 /* ========================================================================== */
-const TOP = 28; // Espacio sobre la barra para que la cuna respire (px)
-const BAR_H = 88; // Alto de la barra navegadora (px)
-const H = TOP + BAR_H; // Alto total del SVG (116px)
-const R = 28; // Radio de la burbuja (56px de diámetro)
-const CORNER_R = 24; // Radio de las esquinas de la barra flotante
-const HALF = 64; // Medio ancho de la cuna (px) -> liquid-tab-bar (1).html
-const DEPTH = 38; // Profundidad de la cuna bajo la esfera
+const TOP = 22; // Espacio sobre la barra para que la cuna respire (px)
+const BAR_H = 68; // Alto de la barra navegadora (px)
+const H = TOP + BAR_H; // Alto total del SVG (90px)
+const R = 24; // Radio de la burbuja (48px de diámetro)
+const CORNER_R = 22; // Radio de las esquinas de la barra flotante
+const HALF = 58; // Medio ancho de la cuna (px) -> liquid-tab-bar (1).html
+const DEPTH = 31; // Profundidad de la cuna bajo la esfera
 const STEP = 3; // Resolución horizontal de la curva del borde
 
 const PRESS = 60; // ms de carga previa al disparo
@@ -624,11 +624,11 @@ function MobileBottomNavInner() {
   const ActiveBubbleIcon = tabs[bubbleIconIdx]?.icon || Home;
 
   return (
-    <div className="pointer-events-none fixed bottom-3 left-0 right-0 z-50 flex justify-center px-3 sm:bottom-5">
+    <div className="pointer-events-none fixed bottom-2.5 left-0 right-0 z-50 flex justify-center px-3 sm:bottom-4">
       <nav
         ref={navRef}
         aria-label={isEs ? "Navegación del panel" : "Panel navigation"}
-        className="pointer-events-auto relative w-full max-w-[420px] select-none"
+        className="pointer-events-auto relative w-full max-w-[560px] select-none"
         style={{ height: `${H}px` }}
       >
         {/* 1. Fondo de la barra con la curva en coseno elevado de liquid-tab-bar (1).html */}
@@ -652,11 +652,11 @@ function MobileBottomNavInner() {
           />
           {/* Indicador inferior iOS estilizado */}
           <rect
-            x={(barWidth - 120) / 2}
-            y={H - 9}
-            width="120"
-            height="4"
-            rx="2"
+            x={(barWidth - 110) / 2}
+            y={H - 7}
+            width="110"
+            height="3"
+            rx="1.5"
             fill="#E5E0DC"
           />
         </svg>
@@ -667,7 +667,7 @@ function MobileBottomNavInner() {
           aria-hidden="true"
           className="pointer-events-none absolute z-30 flex items-center justify-center rounded-full text-white will-change-transform"
           style={{
-            top: `${TOP + 9 - R}px`,
+            top: `${TOP + 7 - R}px`,
             left: 0,
             width: `${R * 2}px`,
             height: `${R * 2}px`,
@@ -682,7 +682,7 @@ function MobileBottomNavInner() {
               isBubbleIconHidden ? "opacity-0 scale-50" : "opacity-100 scale-100"
             } ${isBubbleIconPopping ? "animate-bubble-pop" : ""}`}
           >
-            <ActiveBubbleIcon className="h-6 w-6 drop-shadow-xs" strokeWidth={2.2} />
+            <ActiveBubbleIcon className="h-5 w-5 drop-shadow-xs" strokeWidth={2.2} />
           </span>
         </div>
 
@@ -690,8 +690,8 @@ function MobileBottomNavInner() {
         <div
           className="absolute inset-x-0 grid grid-cols-5"
           style={{
-            top: `${TOP + 8}px`,
-            height: `${BAR_H - 12}px`,
+            top: `${TOP + 4}px`,
+            height: `${BAR_H - 10}px`,
           }}
         >
           {tabs.map((tab, idx) => {
@@ -711,7 +711,7 @@ function MobileBottomNavInner() {
                 className="lhe-tab-btn group relative flex flex-col items-center justify-center focus:outline-none"
               >
                 <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 ${
                     isActive
                       ? "pointer-events-none scale-50 opacity-0"
                       : isDimmed
@@ -719,13 +719,13 @@ function MobileBottomNavInner() {
                       : "text-[#262322] opacity-85 group-hover:scale-110 group-hover:text-[#D85678]"
                   }`}
                 >
-                  <Icon className="h-[22px] w-[22px]" strokeWidth={2} />
+                  <Icon className="h-5 w-5" strokeWidth={2} />
                 </span>
 
                 <span
                   className={`text-[9px] font-bold tracking-tight transition-all duration-200 ${
                     isActive
-                      ? "translate-y-1 text-[#C94A6A] opacity-100"
+                      ? "translate-y-0.5 text-[#C94A6A] opacity-100"
                       : "text-[#262322]/55 opacity-0 group-hover:opacity-100"
                   }`}
                 >

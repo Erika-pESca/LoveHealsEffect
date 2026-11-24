@@ -79,6 +79,7 @@ export async function GET(
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
+          "Content-Disposition": "inline",
           "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:;",
           "Cache-Control": "private, max-age=3600",
         },

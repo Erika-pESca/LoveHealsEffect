@@ -1,14 +1,18 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertTriangle,
   Download,
-  ExternalLink,
   Eye,
   FileText,
   FolderOpen,
+  Loader2,
+  Maximize2,
   Trash2,
   X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { Card } from "@/components/panel/ui";
 
@@ -68,15 +72,107 @@ function matchesDocCategory(doc: DocumentItem, filter: string): boolean {
   return true;
 }
 
+function OriginalDocxViewer({
+  url,
+  title,
+  heightClass,
+  t,
+}: {
+  url: string;
+  title: string;
+  heightClass: string;
+  t: (es: string, en: string) => string;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fallbackHtml, setFallbackHtml] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setFallbackHtml(false);
+
+    async function loadDocx() {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("fetch failed");
+        const buf = await res.arrayBuffer();
+        if (cancelled || !containerRef.current) return;
+
+        containerRef.current.innerHTML = "";
+        const { renderAsync } = await import("docx-preview");
+        await renderAsync(buf, containerRef.current, undefined, {
+          className: "lhe-docx-render",
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          useBase64URL: true,
+          renderHeaders: true,
+          renderFooters: true,
+        });
+      } catch {
+        if (!cancelled) setFallbackHtml(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadDocx();
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  if (fallbackHtml) {
+    return (
+      <iframe
+        src={`${url}?preview=html`}
+        title={title}
+        sandbox=""
+        className={`w-full rounded-2xl border border-espresso/10 bg-white ${heightClass}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`relative w-full overflow-auto rounded-2xl border border-espresso/10 bg-[#E9E7E2] ${heightClass}`}
+    >
+      {loading && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[#E9E7E2]/90 text-xs font-semibold text-espresso/70">
+          <Loader2 className="h-6 w-6 animate-spin text-[#239BA2]" />
+          <span>{t("Cargando documento original...", "Loading original document...")}</span>
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        className="min-h-full w-full p-2 [&_.lhe-docx-render-wrapper]:!bg-transparent [&_.lhe-docx-render-wrapper]:!p-3 [&_.lhe-docx-render]:!shadow-[0_6px_24px_rgba(38,35,34,0.14)]"
+      />
+    </div>
+  );
+}
+
 function DocumentPreviewBody({
   doc,
   t,
   tall = false,
+  fullMode = false,
 }: {
   doc: DocumentItem;
   t: (es: string, en: string) => string;
   tall?: boolean;
+  fullMode?: boolean;
 }) {
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    setZoomed(false);
+  }, [doc.archivoRuta]);
+
+  const heightClass = fullMode ? "h-[78vh]" : tall ? "h-[540px]" : "h-[65vh]";
+
   if (!doc.archivoRuta) {
     return (
       <div className="rounded-2xl border border-dashed border-[#6BB1AD]/35 bg-[#FAF7F2] p-6 text-center">
@@ -102,12 +198,30 @@ function DocumentPreviewBody({
 
   if (isImageDoc(doc)) {
     return (
-      <div className="flex items-center justify-center rounded-2xl bg-[#FAF7F2] p-3">
-        <img
-          src={doc.archivoRuta}
-          alt={doc.titulo}
-          className={`w-auto rounded-xl object-contain ${tall ? "max-h-[540px]" : "max-h-[65vh]"}`}
-        />
+      <div className={`relative overflow-auto rounded-2xl bg-[#262322]/95 p-4 ${fullMode ? "h-[78vh]" : ""}`}>
+        {fullMode && (
+          <button
+            type="button"
+            onClick={() => setZoomed((z) => !z)}
+            className="sticky left-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-espresso shadow-md transition hover:bg-white"
+          >
+            {zoomed ? <ZoomOut className="h-3.5 w-3.5" /> : <ZoomIn className="h-3.5 w-3.5" />}
+            <span>{zoomed ? t("Ajustar a pantalla", "Fit to screen") : t("Tamaño original", "Original size")}</span>
+          </button>
+        )}
+        <div className="flex min-h-full items-center justify-center">
+          <img
+            src={doc.archivoRuta}
+            alt={doc.titulo}
+            className={
+              zoomed
+                ? "max-w-none rounded-lg shadow-lg"
+                : `w-auto rounded-xl object-contain shadow-lg ${
+                    fullMode ? "max-h-[72vh]" : tall ? "max-h-[520px]" : "max-h-[65vh]"
+                  }`
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -115,24 +229,30 @@ function DocumentPreviewBody({
   if (isPdfDoc(doc)) {
     return (
       <iframe
-        src={doc.archivoRuta}
+        src={`${doc.archivoRuta}#view=FitH`}
         title={doc.titulo}
-        className={`w-full rounded-2xl border border-espresso/10 bg-[#FAF7F2] ${
-          tall ? "h-[540px]" : "h-[65vh]"
-        }`}
+        className={`w-full rounded-2xl border border-espresso/10 bg-[#E9E7E2] ${heightClass}`}
       />
     );
   }
 
   if (isDocxDoc(doc)) {
+    if (fullMode) {
+      return (
+        <OriginalDocxViewer
+          url={doc.archivoRuta}
+          title={doc.titulo}
+          heightClass={heightClass}
+          t={t}
+        />
+      );
+    }
     return (
       <iframe
         src={`${doc.archivoRuta}?preview=html`}
         title={doc.titulo}
         sandbox=""
-        className={`w-full rounded-2xl border border-espresso/10 bg-white ${
-          tall ? "h-[540px]" : "h-[65vh]"
-        }`}
+        className={`w-full rounded-2xl border border-espresso/10 bg-white ${heightClass}`}
       />
     );
   }
@@ -165,6 +285,42 @@ export function DocumentCardsList({
   const [typeFilter, setTypeFilter] = useState("todos");
   const [selectedKey, setSelectedKey] = useState<string | number | null>(null);
   const [mobilePreviewDoc, setMobilePreviewDoc] = useState<DocumentItem | null>(null);
+  const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    index: number;
+    doc: DocumentItem;
+  } | null>(null);
+
+  const handleDownload = async (doc: DocumentItem) => {
+    if (!doc.archivoRuta || downloadingUrl === doc.archivoRuta) return;
+    setDownloadingUrl(doc.archivoRuta);
+    try {
+      const res = await fetch(`${doc.archivoRuta}?download=1`);
+      if (!res.ok) throw new Error("download failed");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = doc.archivoNombre || "documento";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.location.href = `${doc.archivoRuta}?download=1`;
+    } finally {
+      setDownloadingUrl(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!pendingDelete) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPendingDelete(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pendingDelete]);
 
   const indexedDocs = useMemo(
     () => documents.map((doc, originalIndex) => ({ doc, originalIndex, key: doc.id ?? originalIndex })),
@@ -274,7 +430,7 @@ export function DocumentCardsList({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onDelete(originalIndex);
+                          setPendingDelete({ index: originalIndex, doc: d });
                         }}
                         className="shrink-0 text-espresso/30 transition hover:text-[#C94A6A]"
                         aria-label={t("Eliminar", "Delete")}
@@ -315,15 +471,26 @@ export function DocumentCardsList({
                             <Eye className="h-3.5 w-3.5" />
                             <span>{t("Ver", "View")}</span>
                           </button>
-                          <a
-                            href={`${d.archivoRuta}?download=1`}
-                            download={d.archivoNombre || "documento"}
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 rounded-full bg-[#FCECEE] px-3 py-1 text-[11px] font-bold text-[#C94A6A] transition hover:bg-[#f8dce0] lg:hidden"
+                          <button
+                            type="button"
+                            disabled={downloadingUrl === d.archivoRuta}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleDownload(d);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full bg-[#FCECEE] px-3 py-1 text-[11px] font-bold text-[#C94A6A] transition hover:bg-[#f8dce0] disabled:opacity-70 lg:hidden"
                           >
-                            <Download className="h-3.5 w-3.5" />
-                            <span>{t("Descargar", "Download")}</span>
-                          </a>
+                            {downloadingUrl === d.archivoRuta ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Download className="h-3.5 w-3.5" />
+                            )}
+                            <span>
+                              {downloadingUrl === d.archivoRuta
+                                ? t("Descargando...", "Downloading...")
+                                : t("Descargar", "Download")}
+                            </span>
+                          </button>
                         </>
                       ) : (
                         <span className="rounded-full bg-espresso/5 px-2.5 py-1 text-[10px] font-semibold text-espresso/45">
@@ -359,27 +526,31 @@ export function DocumentCardsList({
 
                 {activeEntry.doc.archivoRuta && (
                   <div className="flex shrink-0 items-center gap-2">
-                    <a
-                      href={
-                        isDocxDoc(activeEntry.doc)
-                          ? `${activeEntry.doc.archivoRuta}?preview=html`
-                          : activeEntry.doc.archivoRuta
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E5F2F1] px-3.5 py-2 text-xs font-bold text-[#239BA2] transition hover:bg-[#d2eae8]"
+                    <button
+                      type="button"
+                      onClick={() => setMobilePreviewDoc(activeEntry.doc)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E5F2F1] px-3.5 py-2 text-xs font-bold text-[#239BA2] transition hover:bg-[#d2eae8] active:scale-95"
                     >
-                      <ExternalLink className="h-3.5 w-3.5" />
+                      <Maximize2 className="h-3.5 w-3.5" />
                       <span>{t("Abrir", "Open")}</span>
-                    </a>
-                    <a
-                      href={`${activeEntry.doc.archivoRuta}?download=1`}
-                      download={activeEntry.doc.archivoNombre || "documento"}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E6748E] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#d65c78]"
+                    </button>
+                    <button
+                      type="button"
+                      disabled={downloadingUrl === activeEntry.doc.archivoRuta}
+                      onClick={() => void handleDownload(activeEntry.doc)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#E6748E] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#d65c78] active:scale-95 disabled:cursor-wait disabled:opacity-75"
                     >
-                      <Download className="h-3.5 w-3.5" />
-                      <span>{t("Descargar", "Download")}</span>
-                    </a>
+                      {downloadingUrl === activeEntry.doc.archivoRuta ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Download className="h-3.5 w-3.5" />
+                      )}
+                      <span>
+                        {downloadingUrl === activeEntry.doc.archivoRuta
+                          ? t("Descargando...", "Downloading...")
+                          : t("Descargar", "Download")}
+                      </span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -408,14 +579,14 @@ export function DocumentCardsList({
         </div>
       </div>
 
-      {/* Modal de vista previa en móvil / pantallas pequeñas */}
+      {/* Modal de vista ampliada (escritorio al dar "Abrir" y móvil al dar "Ver") */}
       {mobilePreviewDoc && mobilePreviewDoc.archivoRuta && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-espresso/50 p-4 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-espresso/55 p-4 backdrop-blur-sm"
           onClick={() => setMobilePreviewDoc(null)}
         >
           <div
-            className="w-full max-w-2xl rounded-[28px] bg-white p-5 shadow-2xl"
+            className="flex max-h-[94vh] w-full max-w-6xl flex-col rounded-[28px] bg-white p-5 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 border-b border-espresso/10 pb-3">
@@ -427,38 +598,99 @@ export function DocumentCardsList({
                   {mobilePreviewDoc.archivoNombre} · {mobilePreviewDoc.fecha}
                 </p>
               </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  disabled={downloadingUrl === mobilePreviewDoc.archivoRuta}
+                  onClick={() => void handleDownload(mobilePreviewDoc)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#E6748E] px-3.5 py-2 text-xs font-bold text-white transition hover:bg-[#d65c78] active:scale-95 disabled:cursor-wait disabled:opacity-75"
+                >
+                  {downloadingUrl === mobilePreviewDoc.archivoRuta ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  <span>
+                    {downloadingUrl === mobilePreviewDoc.archivoRuta
+                      ? t("Descargando...", "Downloading...")
+                      : t("Descargar", "Download")}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobilePreviewDoc(null)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-espresso/5 text-espresso/70 transition hover:bg-espresso/10"
+                  aria-label={t("Cerrar", "Close")}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 flex-1 overflow-hidden">
+              <DocumentPreviewBody doc={mobilePreviewDoc} t={t} fullMode />
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal de confirmación para eliminar documento */}
+      {pendingDelete && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-espresso/45 p-4 backdrop-blur-sm"
+          onClick={() => setPendingDelete(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-[28px] border border-white/90 bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FCECEE] text-[#C94A6A]">
+                <AlertTriangle className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold text-espresso">
+                  {t("¿Eliminar documento?", "Delete document?")}
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-espresso/70">
+                  {t(
+                    "Estás a punto de eliminar",
+                    "You are about to delete"
+                  )}{" "}
+                  <span className="font-bold text-espresso">
+                    “{pendingDelete.doc.titulo}”
+                  </span>
+                  {pendingDelete.doc.archivoNombre
+                    ? ` (${pendingDelete.doc.archivoNombre})`
+                    : ""}
+                  .{" "}
+                  {t(
+                    "Esta acción no se puede deshacer.",
+                    "This action cannot be undone."
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center justify-end gap-2.5">
               <button
                 type="button"
-                onClick={() => setMobilePreviewDoc(null)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-espresso/5 text-espresso/70 transition hover:bg-espresso/10"
-                aria-label={t("Cerrar", "Close")}
+                onClick={() => setPendingDelete(null)}
+                className="rounded-full bg-[#FAF7F2] px-4 py-2 text-xs font-bold text-espresso/75 transition hover:bg-espresso/10"
               >
-                <X className="h-4 w-4" />
+                {t("Cancelar", "Cancel")}
               </button>
-            </div>
-
-            <div className="mt-4">
-              <DocumentPreviewBody doc={mobilePreviewDoc} t={t} />
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-              <a
-                href={mobilePreviewDoc.archivoRuta}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#E5F2F1] px-4 py-2 text-xs font-bold text-[#239BA2] transition hover:bg-[#d2eae8]"
+              <button
+                type="button"
+                onClick={() => {
+                  const idxToDelete = pendingDelete.index;
+                  setPendingDelete(null);
+                  onDelete(idxToDelete);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#C94A6A] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#b53d5c] active:scale-95"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
-                <span>{t("Abrir en pestaña", "Open in tab")}</span>
-              </a>
-              <a
-                href={`${mobilePreviewDoc.archivoRuta}?download=1`}
-                download={mobilePreviewDoc.archivoNombre || "documento"}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#E6748E] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#d65c78]"
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span>{t("Descargar", "Download")}</span>
-              </a>
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>{t("Sí, eliminar", "Yes, delete")}</span>
+              </button>
             </div>
           </div>
         </div>
