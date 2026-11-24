@@ -24,7 +24,7 @@ export function ContenidosSection({
   return (
     <main className="mt-6 space-y-5">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Mis contenidos", "My content")}
         </h2>
         <p className="mt-1 text-sm text-espresso/60">
@@ -62,6 +62,11 @@ export function ContenidosSection({
                 <span className="mt-0.5 block text-sm font-bold leading-snug text-espresso line-clamp-2">
                   {item.titulo_es}
                 </span>
+                {item.descripcion_es && (
+                  <span className="mt-0.5 line-clamp-2 block text-xs text-espresso/65">
+                    ✨ {item.descripcion_es}
+                  </span>
+                )}
                 {item.fecha_evento && (
                   <span className="block text-xs text-espresso/55">
                     {String(item.fecha_evento).slice(0, 16).replace("T", " ")}

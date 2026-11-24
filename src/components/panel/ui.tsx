@@ -42,7 +42,7 @@ export function Sheet({
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-espresso/15 sm:hidden" />
         <div className="mb-4 flex items-start justify-between gap-3">
           {title ? (
-            <h3 className="font-serif text-xl font-bold leading-tight text-espresso">
+            <h3 className="text-xl font-semibold leading-tight tracking-[-0.02em] text-espresso">
               {title}
             </h3>
           ) : (
@@ -135,7 +135,7 @@ export function SectionTitle({
 }) {
   return (
     <div className="mb-3 flex items-end justify-between">
-      <h2 className="font-serif text-lg font-bold text-espresso">{title}</h2>
+      <h2 className="text-lg font-semibold tracking-[-0.02em] text-espresso">{title}</h2>
       {action && (
         <button
           type="button"

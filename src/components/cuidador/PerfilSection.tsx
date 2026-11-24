@@ -49,10 +49,10 @@ export function PerfilSection({
   return (
     <main className="mt-6 space-y-6">
       <div className="animate-fade-in text-center">
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] font-serif text-4xl font-bold text-white shadow-lg">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] text-4xl font-semibold tracking-[-0.025em] text-white shadow-lg">
           {firstName.charAt(0)}
         </div>
-        <h2 className="mt-3 font-serif text-2xl font-bold text-espresso">{user.nombre}</h2>
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-espresso">{user.nombre}</h2>
         <p className="text-xs text-espresso/55">{user.correo}</p>
         <span className="mt-2 inline-block rounded-full bg-[#D7F3EA] px-3 py-1 text-[11px] font-bold text-[#239BA2]">
           {fc?.relacion_familiar || t("Cuidador", "Caregiver")} · {fp.nombre_familia}
@@ -66,7 +66,7 @@ export function PerfilSection({
           { v: upcoming.length, l: t("Próximas citas", "Upcoming") },
         ].map((s) => (
           <div key={s.l} className="rounded-3xl bg-white py-4 text-center shadow-sm">
-            <div className="font-serif text-2xl font-bold text-espresso">{s.v}</div>
+            <div className="text-2xl font-semibold tracking-[-0.025em] text-espresso">{s.v}</div>
             <div className="text-[11px] font-semibold text-espresso/55">{s.l}</div>
           </div>
         ))}

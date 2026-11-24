@@ -43,7 +43,7 @@ export function FichaPacienteSection({
   return (
     <main className="mt-6 space-y-6">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t(`Salud de ${patientFirst}`, `${patientFirst}'s health`)}
         </h2>
         <p className="mt-1 text-sm text-espresso/60">
@@ -58,7 +58,7 @@ export function FichaPacienteSection({
           <Sparkles className="h-3 w-3" />
           PONO IA · {t("Certeza en la consulta", "Certainty at the visit")}
         </span>
-        <h3 className="mt-2 max-w-[74%] font-serif text-xl font-bold leading-tight text-espresso">
+        <h3 className="mt-2 max-w-[74%] text-xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t(
             `Resumen listo de ${patientFirst} para mostrar al médico o sanador`,
             `Ready summary of ${patientFirst} to show the doctor or healer`

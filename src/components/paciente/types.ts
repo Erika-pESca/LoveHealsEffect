@@ -2,7 +2,10 @@ import React from "react";
 import {
   BookOpen,
   CalendarHeart,
+  FileText,
   GraduationCap,
+  Headphones,
+  Mic,
   Music,
   Sparkles,
   Users,
@@ -141,6 +144,30 @@ export const TYPE_META: Record<
     en: "LHE Academy",
     icon: GraduationCap,
     grad: "from-[#FFF1B8] to-[#FAD4DC]",
+  },
+  spotify: {
+    es: "Spotify",
+    en: "Spotify",
+    icon: Headphones,
+    grad: "from-[#D7F3EA] to-[#CFEDE8]",
+  },
+  podcast: {
+    es: "Podcast",
+    en: "Podcast",
+    icon: Mic,
+    grad: "from-[#FDE3E8] to-[#E4E0FA]",
+  },
+  libro: {
+    es: "Libro",
+    en: "Book",
+    icon: BookOpen,
+    grad: "from-[#FFF5DA] to-[#FAD4DC]",
+  },
+  guia_pdf: {
+    es: "Guía PDF",
+    en: "PDF Guide",
+    icon: FileText,
+    grad: "from-[#EFEAE2] to-[#D9E8FB]",
   },
 };
 

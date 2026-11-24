@@ -296,7 +296,7 @@ export function RegisterWizard() {
         {/* PASO 0: PRIMERO LA OPCIÓN (Soy Paciente o Soy Cuidador) */}
         {step === 0 && (
           <div className="mt-5">
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-espresso sm:text-3xl">
+            <h1 className="text-2xl font-semibold tracking-[-0.025em] tracking-tight text-espresso sm:text-3xl">
               {isEs ? "¿Cómo deseas unirte?" : "How would you like to join?"}
             </h1>
             <p className="mt-1.5 text-xs leading-relaxed text-espresso/70">
@@ -428,7 +428,7 @@ export function RegisterWizard() {
             )}
 
             <div>
-              <h1 className="font-serif text-2xl font-bold tracking-tight text-espresso sm:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-[-0.025em] tracking-tight text-espresso sm:text-3xl">
                 {isEs ? "Tus datos de cuenta" : "Your Account Details"}
               </h1>
               <p className="mt-1 text-xs leading-relaxed text-espresso/70">
@@ -539,7 +539,7 @@ export function RegisterWizard() {
                     <Heart className="h-3 w-3" />
                     {isEs ? "Acompañamiento Opcional" : "Optional Support"}
                   </span>
-                  <h2 className="mt-2 font-serif text-xl font-bold tracking-tight text-espresso sm:text-2xl">
+                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] tracking-tight text-espresso sm:text-2xl">
                     {isEs
                       ? "¿Deseas registrar a un familiar o persona que te acompañe?"
                       : "Would you like to register a family member or caregiver?"}
@@ -685,7 +685,7 @@ export function RegisterWizard() {
                     <Users className="h-3 w-3" />
                     {isEs ? "Paso Obligatorio" : "Mandatory Step"}
                   </span>
-                  <h2 className="mt-2 font-serif text-xl font-bold tracking-tight text-espresso sm:text-2xl">
+                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] tracking-tight text-espresso sm:text-2xl">
                     {isEs
                       ? "Registra a tu Paciente"
                       : "Register Your Patient"}
@@ -850,7 +850,7 @@ export function RegisterWizard() {
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FCECEE] text-[#E8809A]">
                 <CheckCircle2 className="h-7 w-7" />
               </span>
-              <h2 className="mt-3 font-serif text-xl font-bold text-espresso sm:text-2xl">
+              <h2 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-espresso sm:text-2xl">
                 {isEs ? "¡Tu cuenta está lista!" : "Your account is ready!"}
               </h2>
               <p className="mt-1 text-xs leading-relaxed text-espresso/70">
@@ -880,7 +880,7 @@ export function RegisterWizard() {
                               {linkedPartnerName || (isPatient ? caregiverName : patientName)}
                             </strong>{" "}
                             {linkedPartnerEmail || (isPatient ? caregiverEmail : patientEmail) ? (
-                              <span className="text-espresso/60 font-mono text-[11px]">
+                              <span className="text-espresso/60 text-[11px] font-medium">
                                 ({linkedPartnerEmail || (isPatient ? caregiverEmail : patientEmail)})
                               </span>
                             ) : null}{" "}

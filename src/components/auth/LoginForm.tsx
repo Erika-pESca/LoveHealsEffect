@@ -123,7 +123,7 @@ export function LoginForm() {
           </div>
         </div>
 
-        <h1 className="mt-5 font-serif text-3xl font-bold tracking-tight text-espresso">
+        <h1 className="mt-5 text-3xl font-semibold tracking-[-0.025em] tracking-tight text-espresso">
           {t.title}
         </h1>
         <p className="mt-1.5 text-xs leading-relaxed text-espresso/70">

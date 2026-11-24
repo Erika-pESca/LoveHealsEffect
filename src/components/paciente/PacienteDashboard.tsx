@@ -94,6 +94,11 @@ export const TYPE_META: Record<
   guia_autocuidado: { es: "Guía", en: "Guide", icon: BookOpen, grad: "from-[#FFF1B8] to-[#FDE3E8]" },
   love_circle: { es: "Love Circle", en: "Love Circle", icon: Users, grad: "from-[#FDE3E8] to-[#F6E6FA]" },
   workshop: { es: "Workshop", en: "Workshop", icon: CalendarHeart, grad: "from-[#D9E8FB] to-[#D7F3EA]" },
+  tapping_eft: { es: "Tapping EFT", en: "EFT Tapping", icon: Sparkles, grad: "from-[#FCD5DE] to-[#E4E0FA]" },
+  spotify: { es: "Spotify", en: "Spotify", icon: Music, grad: "from-[#D7F3EA] to-[#CFEDE8]" },
+  podcast: { es: "Podcast", en: "Podcast", icon: Mic, grad: "from-[#FDE3E8] to-[#E4E0FA]" },
+  libro: { es: "Libro", en: "Book", icon: BookOpen, grad: "from-[#FFF5DA] to-[#FAD4DC]" },
+  guia_pdf: { es: "Guía PDF", en: "PDF Guide", icon: FileText, grad: "from-[#EFEAE2] to-[#D9E8FB]" },
 };
 
 export const HABIT_COLORS = [
@@ -128,7 +133,19 @@ export const dayKeyOffset = (offset: number) => {
 /*  Reproductor de práctica guiada (respiración + onda)                */
 /* ------------------------------------------------------------------ */
 
-export function PracticePlayer({ item, isEs }: { item: any; isEs: boolean }) {
+export function PracticePlayer({
+  item,
+  isEs,
+  healers = [],
+  onViewHealer,
+  onBookHealer,
+}: {
+  item: any;
+  isEs: boolean;
+  healers?: any[];
+  onViewHealer?: (name: string) => void;
+  onBookHealer?: (healerId?: number) => void;
+}) {
   const [playing, setPlaying] = useState(true);
   const [secs, setSecs] = useState(0);
 
@@ -181,9 +198,39 @@ export function PracticePlayer({ item, isEs }: { item: any; isEs: boolean }) {
     setSecs((s) => Math.max(0, Math.min(totalSecs, s + delta)));
   };
 
+  const isReading = item.tipo_contenido === "libro" || item.tipo_contenido === "guia_pdf";
+  const rawInstructor = String(item.instructor || "Love Heals Effect");
+  const primaryHealerName = /kelsie/i.test(rawInstructor)
+    ? "Kelsie Reynolds"
+    : /omar/i.test(rawInstructor)
+      ? "Omar Melero"
+      : rawInstructor.split(/&|,/)[0].trim();
+
+  const matchedHealer = healers.find((h: any) =>
+    String(h.especialidad || "").toLowerCase().includes(primaryHealerName.split(" ")[0].toLowerCase())
+  );
+  const healerSpecialty = matchedHealer
+    ? String(matchedHealer.especialidad || "").split("·").slice(1).join(" · ").trim() || matchedHealer.especialidad
+    : /kelsie/i.test(primaryHealerName)
+      ? isEs
+        ? "Sobreviviente · Coach holística y Movimiento BAM"
+        : "Survivor · Holistic Coach & BAM Movement"
+      : /omar/i.test(primaryHealerName)
+        ? isEs
+          ? "Coach integrativo · Sistema nervioso y cuidadores"
+          : "Integrative Coach · Nervous System & Caregivers"
+        : isEs
+          ? "Especialista en salud holística"
+          : "Holistic health specialist";
+  const healerBio = matchedHealer
+    ? isEs
+      ? matchedHealer.short_bio_es
+      : matchedHealer.short_bio_en || matchedHealer.short_bio_es
+    : "";
+
   return (
     <div className="-mt-2 space-y-4">
-      {/* Portada Fotográfica Real (Estilo Image 4) */}
+      {/* Portada Fotográfica Real */}
       <div className="relative overflow-hidden rounded-[28px] bg-espresso/5 shadow-md">
         <div className="relative h-48 w-full sm:h-56">
           <img src={photoUrl} alt={title} className="h-full w-full object-cover" />
@@ -201,105 +248,162 @@ export function PracticePlayer({ item, isEs }: { item: any; isEs: boolean }) {
 
           {/* Información del título sobre la foto */}
           <div className="absolute bottom-3 left-4 right-4">
-            <h4 className="font-serif text-lg font-bold leading-tight text-white sm:text-xl drop-shadow-sm">
+            <h4 className="text-lg font-bold leading-tight text-white sm:text-xl drop-shadow-sm">
               {title}
             </h4>
             <p className="mt-0.5 text-xs font-medium text-white/85">
-              {item.instructor ? `${isEs ? "Guiado por" : "Guided by"} ${item.instructor}` : "Love Heals Effect"}
+              {item.autor
+                ? `${item.autor} · ${isEs ? "Recomendado por" : "Recommended by"} ${primaryHealerName}`
+                : item.instructor
+                  ? `${isEs ? "Compartido por" : "Shared by"} ${item.instructor}`
+                  : "Love Heals Effect"}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Reproductor Interactivo con Barra de Scrubbing y Controles */}
-      <div className="rounded-[26px] bg-[#FAF7F2] p-5 text-center shadow-inner">
-        {/* Barra de progreso de tiempo interactiva */}
-        <div className="space-y-1.5">
-          <div
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickX = e.clientX - rect.left;
-              const newPct = Math.max(0, Math.min(1, clickX / rect.width));
-              setSecs(Math.round(newPct * totalSecs));
-            }}
-            className="group relative h-2.5 w-full cursor-pointer overflow-hidden rounded-full bg-espresso/10 transition hover:h-3"
-          >
+      {/* Controles interactivos de audio/video (solo cuando es audio/video/playlist) */}
+      {!isReading && (
+        <div className="rounded-[26px] bg-[#FAF7F2] p-5 text-center shadow-inner">
+          <div className="space-y-1.5">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#F48EA6] to-[#DC5678] transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between text-xs font-bold text-espresso/60">
-            <span>{formatTime(secs)}</span>
-            <span className="text-[11px] font-semibold text-espresso/45">
-              {playing ? (inhale ? (isEs ? "Inhala…" : "Inhale…") : isEs ? "Exhala…" : "Exhale…") : (isEs ? "En pausa" : "Paused")}
-            </span>
-            <span>{formatTime(totalSecs)}</span>
-          </div>
-        </div>
-
-        {/* Ondas Sonoras Dinámicas */}
-        <div className="mx-auto my-3 flex h-7 max-w-[200px] items-center justify-center gap-1">
-          {Array.from({ length: 22 }).map((_, i) => (
-            <span
-              key={i}
-              className="h-full w-1 origin-center animate-wave rounded-full bg-[#E8809A]/60"
-              style={{
-                animationDelay: `${(i % 7) * 0.11}s`,
-                animationPlayState: playing ? "running" : "paused",
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const newPct = Math.max(0, Math.min(1, clickX / rect.width));
+                setSecs(Math.round(newPct * totalSecs));
               }}
-            />
-          ))}
+              className="group relative h-2.5 w-full cursor-pointer overflow-hidden rounded-full bg-espresso/10 transition hover:h-3"
+            >
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#F48EA6] to-[#DC5678] transition-all duration-300"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-xs font-bold text-espresso/60">
+              <span>{formatTime(secs)}</span>
+              <span className="text-[11px] font-semibold text-espresso/45">
+                {playing ? (inhale ? (isEs ? "Inhala…" : "Inhale…") : isEs ? "Exhala…" : "Exhale…") : isEs ? "En pausa" : "Paused"}
+              </span>
+              <span>{formatTime(totalSecs)}</span>
+            </div>
+          </div>
+
+          <div className="mx-auto my-3 flex h-7 max-w-[200px] items-center justify-center gap-1">
+            {Array.from({ length: 22 }).map((_, i) => (
+              <span
+                key={i}
+                className="h-full w-1 origin-center animate-wave rounded-full bg-[#E8809A]/60"
+                style={{
+                  animationDelay: `${(i % 7) * 0.11}s`,
+                  animationPlayState: playing ? "running" : "paused",
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="mt-3 flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => skip(-15)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
+              aria-label="-15 segundos"
+            >
+              <span className="text-xs font-bold">-15s</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPlaying((p) => !p)}
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-[#E8809A] to-[#DC5678] text-white shadow-lg transition duration-200 hover:scale-105 active:scale-95"
+              aria-label={playing ? "Pausar" : "Reproducir"}
+            >
+              {playing ? <Pause className="h-6 w-6 fill-white" /> : <Play className="h-6 w-6 fill-white ml-0.5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => skip(15)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
+              aria-label="+15 segundos"
+            >
+              <span className="text-xs font-bold">+15s</span>
+            </button>
+          </div>
         </div>
+      )}
 
-        {/* Controles de Reproducción: -15s, Play/Pause, +15s */}
-        <div className="mt-3 flex items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={() => skip(-15)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
-            aria-label="-15 segundos"
-          >
-            <span className="text-xs font-bold">-15s</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setPlaying((p) => !p)}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-[#E8809A] to-[#DC5678] text-white shadow-lg transition duration-200 hover:scale-105 active:scale-95"
-            aria-label={playing ? "Pausar" : "Reproducir"}
-          >
-            {playing ? <Pause className="h-6 w-6 fill-white" /> : <Play className="h-6 w-6 fill-white ml-0.5" />}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => skip(15)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
-            aria-label="+15 segundos"
-          >
-            <span className="text-xs font-bold">+15s</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Descripción y enlace */}
-      <div className="rounded-2xl bg-white p-4 shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-wider text-espresso/50">
-          {isEs ? "¿Por qué ayuda a tu cuerpo?" : "Why this helps your body"}
+      {/* ¿En qué te ayuda / qué vas a manejar? (Escrito por el sanador) */}
+      <div className="rounded-2xl bg-[#FAF7F2] p-4">
+        <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#239BA2]">
+          ✨ {isEs ? "¿Qué vas a manejar / en qué te ayuda?" : "What does this help you manage?"}
         </p>
-        <p className="mt-1.5 text-xs leading-relaxed text-espresso/75">{desc}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-espresso/80">{desc}</p>
       </div>
+
+      {/* Ficha del sanador que lo subió y su especialidad */}
+      {primaryHealerName && primaryHealerName !== "Love Heals Effect" && (
+        <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#E8809A] to-[#C94A6A] text-base font-bold text-white">
+              {primaryHealerName.charAt(0)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-extrabold uppercase tracking-wider text-espresso/45">
+                {isEs ? "Sanador que comparte este recurso" : "Healer sharing this resource"}
+              </p>
+              <p className="truncate text-base font-bold text-espresso">{primaryHealerName}</p>
+              <p className="text-xs font-semibold text-[#C94A6A]">{healerSpecialty}</p>
+            </div>
+          </div>
+          {healerBio && <p className="mt-2.5 text-xs leading-relaxed text-espresso/70">{healerBio}</p>}
+          {(onViewHealer || onBookHealer) && (
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-espresso/5 pt-2.5">
+              {onViewHealer && (
+                <button
+                  type="button"
+                  onClick={() => onViewHealer(primaryHealerName)}
+                  className="rounded-full bg-[#FAF7F2] px-3.5 py-1.5 text-xs font-bold text-espresso transition hover:bg-espresso/10"
+                >
+                  {isEs ? "Ver más recursos suyos" : "See more from them"}
+                </button>
+              )}
+              {onBookHealer && (
+                <button
+                  type="button"
+                  onClick={() => onBookHealer(matchedHealer?.id)}
+                  className="rounded-full bg-espresso px-3.5 py-1.5 text-xs font-bold text-white transition hover:brightness-110"
+                >
+                  {isEs ? "Reservar sesión" : "Book session"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {hasLink && (
         <a
           href={item.media_url}
           target="_blank"
           rel="noreferrer"
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-[#D85678]/40 bg-[#FCECEE] px-6 py-3 text-xs font-bold text-[#C94A6A] transition hover:bg-[#D85678] hover:text-white"
+          className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-bold transition ${item.tipo_contenido === "spotify"
+            ? "bg-[#1DB954] text-white shadow-md hover:brightness-105"
+            : "border border-[#D85678]/40 bg-[#FCECEE] text-[#C94A6A] hover:bg-[#D85678] hover:text-white"
+            }`}
         >
           <ExternalLink className="h-4 w-4" />
-          {isEs ? "Abrir práctica completa en alta resolución" : "Open full practice in high definition"}
+          {item.tipo_contenido === "spotify"
+            ? isEs
+              ? "Escuchar playlist en Spotify"
+              : "Listen to playlist on Spotify"
+            : item.tipo_contenido === "libro"
+              ? isEs
+                ? "Ver libro completo"
+                : "View full book"
+              : isEs
+                ? "Abrir práctica completa en alta resolución"
+                : "Open full practice in high definition"}
         </a>
       )}
     </div>
@@ -357,7 +461,7 @@ export function MiniCalendar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="font-serif text-base font-bold capitalize text-espresso">
+        <span className="text-base font-bold capitalize text-espresso">
           {monthLabel}
         </span>
         <button
@@ -811,7 +915,7 @@ function PacienteDashboardInner() {
           <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] text-2xl text-white shadow-lg">
             🌺
           </div>
-          <p className="font-serif text-lg font-bold text-espresso">
+          <p className="text-lg font-bold text-espresso">
             {t("Preparando tu espacio…", "Preparing your space…")}
           </p>
         </div>
@@ -866,14 +970,14 @@ function PacienteDashboardInner() {
             <button
               type="button"
               onClick={() => goToTab("perfil")}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif text-lg font-bold text-white shadow-md"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] text-lg font-bold text-white shadow-md"
               aria-label={t("Mi perfil", "My profile")}
             >
               {firstName.charAt(0)}
             </button>
             <div>
               <p className="text-xs font-medium text-espresso/55">{greeting}</p>
-              <h1 className="font-serif text-2xl font-bold leading-tight text-espresso">
+              <h1 className="text-2xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
                 Aloha, {firstName} 🌺
               </h1>
             </div>
@@ -945,6 +1049,7 @@ function PacienteDashboardInner() {
         {(activeTab === "recursos" || activeTab === "practicas") && (
           <RecursosSection
             resources={resources}
+            healers={healers}
             resourceFilter={resourceFilter}
             setResourceFilter={setResourceFilter}
             isPremium={isPremium}
@@ -1029,7 +1134,24 @@ function PacienteDashboardInner() {
       {/* ===================== HOJAS ===================== */}
 
       <Sheet open={sheet === "player"} onClose={() => { setSheet(null); setPlayerItem(null); }}>
-        {playerItem && <PracticePlayer key={playerItem.id} item={playerItem} isEs={isEs} />}
+        {playerItem && (
+          <PracticePlayer
+            key={playerItem.id}
+            item={playerItem}
+            isEs={isEs}
+            healers={healers}
+            onViewHealer={(name) => {
+              setSheet(null);
+              setPlayerItem(null);
+              setResourceFilter(`healer:${name}`);
+              goToTab("recursos");
+            }}
+            onBookHealer={(healerId) => {
+              setPlayerItem(null);
+              openSheet("book", healerId ? { healer: String(healerId) } : {});
+            }}
+          />
+        )}
       </Sheet>
 
       {/* Contenido premium bloqueado */}
@@ -1037,7 +1159,7 @@ function PacienteDashboardInner() {
         {lockedItem && (
           <div className="space-y-4 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF1B8] text-[#B98A00]"><Crown className="h-9 w-9" /></div>
-            <h4 className="font-serif text-lg font-bold text-espresso">{isEs ? lockedItem.titulo_es : lockedItem.titulo_en || lockedItem.titulo_es}</h4>
+            <h4 className="text-lg font-bold text-espresso">{isEs ? lockedItem.titulo_es : lockedItem.titulo_en || lockedItem.titulo_es}</h4>
             <p className="text-sm leading-relaxed text-espresso/70">{isEs ? lockedItem.descripcion_es : lockedItem.descripcion_en || lockedItem.descripcion_es}</p>
             <p className="rounded-2xl bg-[#FAF7F2] p-3 text-xs text-espresso/70">{t("Incluido en la membresía familiar de $10 USD/mes (paciente + cuidador).", "Included in the $10 USD/month family membership (patient + caregiver).")}</p>
             <PrimaryButton onClick={async () => { const ok = await runAction("create_ticket", { tipo: "soporte", asunto: "Activar membresía premium", descripcion: `Quiero acceder a: ${lockedItem.titulo_es}` }, t("¡Listo! El equipo te contactará para activar tu membresía.", "Done! The team will contact you to activate your membership.")); if (ok) setSheet(null); }}>
@@ -1067,11 +1189,11 @@ function PacienteDashboardInner() {
         </div>
       </Sheet>
 
-      {/* ===================== MODAL DE INSCRIPCIÓN GRATUITA A CÍRCULO ===================== */}
+      {/* ===================== MODAL DE INSCRIPCIÓN GRATUITA A LOVE CIRCLES ===================== */}
       <Sheet
         open={sheet === "circle_rsvp"}
         onClose={() => setSheet(null)}
-        title={t("Inscripción Gratuita · Healing Circles", "Free RSVP · Healing Circles")}
+        title={t("Inscripción Gratuita · Love Circles", "Free RSVP · Love Circles")}
       >
         <div className="space-y-4">
           <div className="rounded-3xl bg-gradient-to-br from-[#CFEDE8] via-[#E8F6F3] to-[#FDE3E8] p-4 text-espresso">
@@ -1083,8 +1205,8 @@ function PacienteDashboardInner() {
                 <p className="text-xs font-bold uppercase tracking-wider text-[#239BA2]">
                   {t("Support · 100% Gratuito en Vivo", "Support · 100% Free Live")}
                 </p>
-                <h4 className="font-serif text-base font-bold">
-                  {t("Círculo de Sanación con Kelsie & Omar", "Healing Circle with Kelsie & Omar")}
+                <h4 className="text-base font-bold">
+                  {t("Love Circle for Patients · Kelsie & Omar", "Love Circle for Patients · Kelsie & Omar")}
                 </h4>
               </div>
             </div>
@@ -1214,7 +1336,7 @@ function PacienteDashboardInner() {
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#D7F3EA] text-3xl">
             🌸
           </span>
-          <h4 className="font-serif text-xl font-bold text-espresso">
+          <h4 className="text-xl font-semibold tracking-[-0.025em] text-espresso">
             {t("¡Nos alegra profundamente recibirte!", "We are deeply grateful to welcome you!")}
           </h4>
           <p className="text-sm leading-relaxed text-espresso/75">
@@ -1228,7 +1350,7 @@ function PacienteDashboardInner() {
             <p className="text-xs font-bold uppercase tracking-wider text-[#239BA2]">
               {t("Enlace directo de acceso", "Direct Zoom Link")}
             </p>
-            <p className="mt-1 font-mono text-xs font-bold text-espresso select-all break-all">
+            <p className="mt-1 text-xs font-bold text-espresso select-all break-all">
               https://zoom.us/j/lovehealseffect-circle
             </p>
             <div className="mt-3 flex gap-2">
@@ -1272,7 +1394,7 @@ function PacienteDashboardInner() {
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#B03052]">
               {t("Nuestra Misión en Honolulu", "Our Mission in Honolulu")}
             </span>
-            <h3 className="mt-1 font-serif text-xl font-bold text-espresso">
+            <h3 className="mt-1 text-xl font-semibold tracking-[-0.025em] text-espresso">
               Filling “The Gap”
             </h3>
             <p className="mt-2 text-xs leading-relaxed text-espresso/80">
@@ -1286,11 +1408,11 @@ function PacienteDashboardInner() {
           {/* Kelsie */}
           <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#E8809A] to-[#C94A6A] font-serif text-lg font-bold text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#E8809A] to-[#C94A6A] text-lg font-bold text-white">
                 K
               </span>
               <div>
-                <h4 className="font-serif text-base font-bold text-espresso">Kelsie Reynolds</h4>
+                <h4 className="text-base font-bold text-espresso">Kelsie Reynolds</h4>
                 <p className="text-xs text-[#C94A6A] font-semibold">
                   Co-Founder · Holistic Breast Cancer Coach & BAM Specialist
                 </p>
@@ -1307,11 +1429,11 @@ function PacienteDashboardInner() {
           {/* Omar */}
           <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#239BA2] to-[#166064] font-serif text-lg font-bold text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#239BA2] to-[#166064] text-lg font-bold text-white">
                 O
               </span>
               <div>
-                <h4 className="font-serif text-base font-bold text-espresso">Omar Melero</h4>
+                <h4 className="text-base font-bold text-espresso">Omar Melero</h4>
                 <p className="text-xs text-[#239BA2] font-semibold">
                   Co-Founder · Integrative Coach & Caregiver Resilience Lead
                 </p>
@@ -1585,7 +1707,7 @@ function PacienteDashboardInner() {
               const name = String(h.especialidad).split("·")[0].trim();
               return (
                 <button key={h.id} type="button" onClick={() => setForm((p) => ({ ...p, healer: String(h.id) }))} className={`flex w-full items-center gap-3 rounded-3xl border-2 p-3.5 text-left transition ${active ? "border-[#D85678] bg-[#FCECEE]/60" : "border-transparent bg-[#FAF7F2]"}`}>
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F49678] to-[#D85678] font-serif text-lg font-bold text-white">{name.charAt(0)}</span>
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F49678] to-[#D85678] text-lg font-bold text-white">{name.charAt(0)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-bold text-espresso">{name}</span>
                     <span className="block truncate text-xs text-espresso/60">{isEs ? h.short_bio_es : h.short_bio_en || h.short_bio_es}</span>

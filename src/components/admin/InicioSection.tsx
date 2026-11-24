@@ -37,7 +37,7 @@ export function InicioSection({
           <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold">
             {t("Piloto V1 · Honolulu", "V1 Pilot · Honolulu")}
           </span>
-          <h2 className="mt-3 max-w-[72%] font-serif text-3xl font-bold leading-tight">
+          <h2 className="mt-3 max-w-[72%] text-3xl font-semibold tracking-[-0.025em] leading-tight">
             {metrics.totalFamilies} {t("de 3 familias", "of 3 families")}
           </h2>
           <div className="mt-3 h-2.5 max-w-[75%] overflow-hidden rounded-full bg-white/20">
@@ -92,7 +92,7 @@ export function InicioSection({
             onClick={m.go}
             className={`rounded-3xl ${m.bg} p-4 text-left transition active:scale-[0.97]`}
           >
-            <div className="font-serif text-4xl font-bold text-espresso">{m.v}</div>
+            <div className="text-4xl font-semibold tracking-[-0.025em] text-espresso">{m.v}</div>
             <div className="mt-0.5 text-xs font-bold text-espresso/80">{m.l}</div>
             <div className="mt-0.5 text-[10px] font-semibold text-espresso/55">{m.sub}</div>
           </button>

@@ -17,7 +17,7 @@ export function CommunityCirclesSection() {
           <span className="text-[11px] font-bold uppercase tracking-wider text-veranda-blue">
             {dict.circles.badge}
           </span>
-          <h2 className="mt-1 font-serif text-2xl font-bold text-espresso sm:text-3xl">
+          <h2 className="mt-1 text-2xl font-semibold tracking-[-0.025em] text-espresso sm:text-3xl">
             {dict.circles.title}
           </h2>
           <p className="mt-1.5 text-xs text-espresso/70 sm:text-sm">

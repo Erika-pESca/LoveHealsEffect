@@ -21,7 +21,7 @@ export function SectionHeading({
       <span className="inline-block rounded-full bg-brand-100 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand-700">
         {eyebrow}
       </span>
-      <h2 className="mt-4 font-serif text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+      <h2 className="mt-4 text-3xl font-semibold tracking-[-0.025em] tracking-tight text-stone-900 sm:text-4xl">
         {title}
       </h2>
       {description && (

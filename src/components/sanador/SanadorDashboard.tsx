@@ -200,7 +200,7 @@ function SanadorDashboardInner() {
       <div className="flex min-h-screen items-center justify-center bg-[#FFF5F0] px-4">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-[#F7A27F] to-[#D85678] text-2xl text-white shadow-lg">✨</div>
-          <p className="font-serif text-lg font-bold text-espresso">{t("Preparando tu portal…", "Preparing your portal…")}</p>
+          <p className="text-lg font-bold text-espresso">{t("Preparando tu portal…", "Preparing your portal…")}</p>
         </div>
       </div>
     );
@@ -247,7 +247,7 @@ function SanadorDashboardInner() {
             </button>
             <div>
               <p className="text-xs font-medium text-espresso/55">{greeting}</p>
-              <h1 className="font-serif text-2xl font-bold leading-tight text-espresso">Aloha, Omar &amp; Kelsie ✨</h1>
+              <h1 className="text-2xl font-semibold tracking-[-0.025em] leading-tight text-espresso">Aloha, Omar &amp; Kelsie ✨</h1>
             </div>
           </div>
           <div className="inline-flex items-center rounded-full bg-white p-0.5 text-[10px] font-bold shadow-sm">
@@ -338,11 +338,11 @@ function SanadorDashboardInner() {
         {activePatient && (
           <div className="-mt-2 space-y-4">
             <div className="flex items-center gap-3">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif text-xl font-bold text-white">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] text-xl font-semibold tracking-[-0.025em] text-white">
                 {(activePatient.nombre_paciente || "P").charAt(0)}
               </span>
               <div>
-                <h3 className="font-serif text-xl font-bold text-espresso">{activePatient.nombre_paciente}</h3>
+                <h3 className="text-xl font-semibold tracking-[-0.025em] text-espresso">{activePatient.nombre_paciente}</h3>
                 <p className="text-xs text-espresso/60">
                   {(STAGES.find((s) => s.id === activePatient.etapa_actual) || STAGES[0])[isEs ? "es" : "en"]} ·{" "}
                   {activePatient.caregiverName || t("sin cuidador", "no caregiver")}
@@ -524,6 +524,7 @@ function SanadorDashboardInner() {
                 titulo_es: fv("tituloEs"),
                 titulo_en: fv("tituloEn") || fv("tituloEs"),
                 descripcion_es: fv("desc"),
+                descripcion_en: fv("descEn") || fv("desc"),
                 media_url: fv("url") || "https://www.youtube.com",
                 fecha_evento: fv("fecha") || null,
                 es_gratuito: true,
@@ -535,10 +536,15 @@ function SanadorDashboardInner() {
         >
           <Field label={t("Tipo", "Type")}>
             <select className={inputCls} value={fv("tipo", "video_bam")} onChange={fs("tipo")}>
+              <option value="spotify">{t("Playlist de Spotify", "Spotify playlist")}</option>
+              <option value="podcast">Podcast</option>
+              <option value="libro">{t("Libro recomendado", "Recommended book")}</option>
+              <option value="guia_pdf">{t("Guía descargable (PDF)", "Downloadable guide (PDF)")}</option>
               <option value="video_bam">Video BAM</option>
               <option value="meditacion_audio">{t("Meditación guiada", "Guided meditation")}</option>
               <option value="musicoterapia">{t("Musicoterapia / cuencos", "Music therapy / bowls")}</option>
-              <option value="guia_autocuidado">{t("Guía / nutrición", "Guide / nutrition")}</option>
+              <option value="tapping_eft">{t("Tapping y respiración", "Tapping & breathwork")}</option>
+              <option value="guia_autocuidado">{t("Cocina saludable / nutrición", "Healthy cooking / nutrition")}</option>
               <option value="love_circle">Love Circle</option>
               <option value="workshop">Workshop</option>
             </select>
@@ -564,9 +570,34 @@ function SanadorDashboardInner() {
               <input type="datetime-local" className={inputCls} value={fv("fecha")} onChange={fs("fecha")} />
             </Field>
           )}
-          <Field label={t("Descripción breve", "Short description")}>
-            <textarea rows={2} className={inputCls} value={fv("desc")} onChange={fs("desc")} />
+          <Field label={t("¿En qué le ayuda este recurso y qué podrá manejar? (ES)", "How does this help the patient & what can they manage? (ES)")}>
+            <textarea
+              required
+              rows={3}
+              className={inputCls}
+              value={fv("desc")}
+              onChange={fs("desc")}
+              placeholder={t(
+                "Ej: Te ayuda a bajar la ansiedad durante la quimioterapia, soltar tensión en hombros y descansar mejor…",
+                "E.g.: Helps you calm anxiety during chemotherapy, release shoulder tension, and sleep deeper…"
+              )}
+            />
           </Field>
+          <Field label={t("¿En qué le ayuda? (Inglés · opcional)", "How does it help? (English · optional)")}>
+            <textarea
+              rows={2}
+              className={inputCls}
+              value={fv("descEn")}
+              onChange={fs("descEn")}
+              placeholder="Optional English explanation shown to English-speaking patients…"
+            />
+          </Field>
+          <p className="rounded-2xl bg-[#FAF7F2] p-3 text-[11px] leading-relaxed text-espresso/65">
+            ✨ {t(
+              "Tu nombre, tu especialidad y tu biografía corta (de tu Ficha pública) aparecerán automáticamente junto a este recurso.",
+              "Your name, specialty, and short bio (from your Public profile) will automatically appear next to this resource."
+            )}
+          </p>
           <PrimaryButton type="submit" color={CORAL}>{t("Publicar", "Publish")}</PrimaryButton>
         </form>
       </Sheet>
@@ -585,17 +616,22 @@ function SanadorDashboardInner() {
             if (ok) setSheet(null);
           }}
         >
-          <Field label={t("Nombre y especialidad", "Name & specialty")}>
-            <input className={inputCls} value={fv("especialidad")} onChange={fs("especialidad")} />
+          <Field label={t("Tu nombre y en qué te especializas (se ve en cada recurso)", "Your name & specialty (shown on each resource)")}>
+            <input
+              className={inputCls}
+              value={fv("especialidad")}
+              onChange={fs("especialidad")}
+              placeholder={t("Ej: Dra. Maya Lin · Acupuntura oncológica y nutrición", "E.g.: Dr. Maya Lin · Oncology Acupuncture & Nutrition")}
+            />
           </Field>
           <Field label={t("Tarifa por hora (USD)", "Hourly rate (USD)")}>
             <input type="number" className={inputCls} value={fv("tarifa")} onChange={fs("tarifa")} />
           </Field>
-          <Field label="Short bio (ES)">
-            <textarea rows={2} className={inputCls} value={fv("bioEs")} onChange={fs("bioEs")} />
+          <Field label={t("Cómo acompañas a la paciente · Bio corta (ES)", "How you support patients · Short bio (ES)")}>
+            <textarea rows={3} className={inputCls} value={fv("bioEs")} onChange={fs("bioEs")} />
           </Field>
-          <Field label="Short bio (EN)">
-            <textarea rows={2} className={inputCls} value={fv("bioEn")} onChange={fs("bioEn")} />
+          <Field label={t("Cómo acompañas a la paciente · Bio corta (EN)", "How you support patients · Short bio (EN)")}>
+            <textarea rows={3} className={inputCls} value={fv("bioEn")} onChange={fs("bioEn")} />
           </Field>
           <PrimaryButton type="submit" color={CORAL}>{t("Guardar", "Save")}</PrimaryButton>
         </form>

@@ -240,7 +240,7 @@ function ModuleScaffoldInner({
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
             Sección activa en la barra inferior · {activeTab.toUpperCase()}
           </span>
-          <h2 className="font-serif text-lg font-bold text-espresso sm:text-xl">
+          <h2 className="text-lg font-bold text-espresso sm:text-xl">
             {tabMeta.title}
           </h2>
           <p className="mt-0.5 text-xs text-espresso/70 sm:text-sm">
@@ -260,7 +260,7 @@ function ModuleScaffoldInner({
           </code>
         </div>
 
-        <h1 className="mt-6 font-serif text-3xl font-bold text-espresso sm:text-4xl">
+        <h1 className="mt-6 text-3xl font-semibold tracking-[-0.025em] text-espresso sm:text-4xl">
           {title}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-espresso/75 sm:text-base">

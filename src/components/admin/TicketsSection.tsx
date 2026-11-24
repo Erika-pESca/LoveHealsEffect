@@ -27,7 +27,7 @@ export function TicketsSection({
   return (
     <main className="mt-6 space-y-5">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Tickets y feedback", "Tickets & feedback")}
         </h2>
         <p className="mt-1 text-sm text-espresso/60">

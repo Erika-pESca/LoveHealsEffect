@@ -61,7 +61,7 @@ export function MiCaminoSection({
   return (
     <main className="mt-6 space-y-6">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">{t("Mi camino", "My journey")}</h2>
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">{t("Mi camino", "My journey")}</h2>
         <p className="mt-1 text-sm text-espresso/60">
           {t("Todo tu proceso en un solo lugar, para que nunca se te olvide nada.", "Your whole process in one place, so you never forget anything.")}
         </p>
@@ -93,7 +93,7 @@ export function MiCaminoSection({
         <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#7A4FD1]">
           <Sparkles className="h-3 w-3" />PONO IA
         </span>
-        <h3 className="mt-2 max-w-[72%] font-serif text-xl font-bold leading-tight text-espresso">
+        <h3 className="mt-2 max-w-[72%] text-xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Prepara tu próxima cita sin olvidar nada", "Prepare your next visit without forgetting anything")}
         </h3>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -360,7 +360,7 @@ export function MiCaminoSection({
               }}
               className="flex w-full items-center gap-3 rounded-3xl bg-white p-4 text-left shadow-sm transition active:scale-[0.98]"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#D9E8FB] font-serif text-lg font-bold text-[#3D7BD6]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#D9E8FB] text-lg font-bold text-[#3D7BD6]">
                 {d.name.replace(/^(dr\.?|dra\.?)\s*/i, "").charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0 flex-1">

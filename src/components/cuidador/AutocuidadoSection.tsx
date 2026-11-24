@@ -66,7 +66,7 @@ export function AutocuidadoSection({
           <Heart className="h-3.5 w-3.5" />
           {t("Espacio de Autocuidado del Cuidador", "Caregiver Self-Care Sanctuary")}
         </div>
-        <h2 className="mt-2 font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="mt-2 text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Para ti, cuidador/a", "For you, caregiver")}
         </h2>
         <p className="mt-1 text-sm text-espresso/65">
@@ -105,7 +105,7 @@ export function AutocuidadoSection({
                   </span>
                 </div>
 
-                <h3 className="mt-3 font-serif text-2xl font-bold leading-snug text-white sm:text-3xl max-w-[85%]">
+                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.025em] leading-snug text-white sm:text-3xl max-w-[85%]">
                   {isEs ? heroCaregiver.titulo_es : heroCaregiver.titulo_en}
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed text-white/80 line-clamp-2 max-w-[90%]">
@@ -146,7 +146,7 @@ export function AutocuidadoSection({
         <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#239BA2]">
           Love Circle · {t("En vivo · 100% Gratis", "Live · 100% Free")}
         </span>
-        <h3 className="mt-2 max-w-[75%] font-serif text-xl font-bold text-espresso">
+        <h3 className="mt-2 max-w-[75%] text-xl font-semibold tracking-[-0.025em] text-espresso">
           {t("Círculo de cuidadores con Omar Melero", "Caregivers circle with Omar Melero")}
         </h3>
         <p className="mt-1 text-xs text-espresso/65 max-w-[85%]">
@@ -279,7 +279,7 @@ export function AutocuidadoSection({
                         setPlayerItem(item);
                         setSheet("player");
                       }}
-                      className="mt-1 cursor-pointer font-serif text-base font-bold leading-snug text-espresso transition hover:text-[#239BA2] line-clamp-2"
+                      className="mt-1 cursor-pointer text-base font-bold leading-snug text-espresso transition hover:text-[#239BA2] line-clamp-2"
                     >
                       {isEs ? item.titulo_es : item.titulo_en || item.titulo_es}
                     </h4>

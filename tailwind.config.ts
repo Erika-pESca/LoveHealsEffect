@@ -46,8 +46,10 @@ const config: Config = {
         "on-surface-variant": "#4D5558",
       },
       fontFamily: {
+        // Sistema tipográfico unificado (máximo 2 familias en toda la web, igual que Inicio)
         sans: ["var(--font-jakarta)", "Plus Jakarta Sans", "system-ui", "sans-serif"],
         serif: ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
+        mono: ["var(--font-jakarta)", "Plus Jakarta Sans", "system-ui", "sans-serif"],
       },
       animation: {
         marquee: "marquee 30s linear infinite",

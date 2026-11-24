@@ -233,8 +233,8 @@ export function InicioSection({
               </span>
             </div>
 
-            <h3 className="mt-2.5 font-serif text-xl sm:text-2xl font-bold leading-tight text-white">
-              {t("Círculo de Sanación (Healing Circle) con Kelsie & Omar", "Healing Circle with Kelsie & Omar")}
+            <h3 className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-[-0.025em] leading-tight text-white">
+              {t("Love Circle for Patients · Kelsie & Omar", "Love Circle for Patients · Kelsie & Omar")}
             </h3>
             <p className="mt-1 text-xs text-white/80 leading-relaxed line-clamp-2">
               {t(
@@ -466,7 +466,7 @@ export function InicioSection({
               <Flame className="h-6 w-6" />
             </span>
             <div>
-              <div className="font-serif text-2xl font-bold text-espresso">
+              <div className="text-2xl font-semibold tracking-[-0.025em] text-espresso">
                 {streak} {streak === 1 ? t("día", "day") : t("días", "days")}
               </div>
               <p className="text-xs text-espresso/60">

@@ -49,7 +49,7 @@ export function PerfilSection({
         >
           <ShieldCheck className="h-10 w-10 text-[#E8809A]" />
         </div>
-        <h2 className="mt-3 font-serif text-2xl font-bold text-espresso">
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-espresso">
           {adminUser.nombre}
         </h2>
         <p className="text-xs text-espresso/55">{adminUser.correo}</p>
@@ -74,7 +74,7 @@ export function PerfilSection({
               }`}
             >
               <Database className="h-4 w-4 text-espresso/35" />
-              <span className="flex-1 font-mono text-xs font-bold text-espresso">
+              <span className="flex-1 text-xs font-bold text-espresso">
                 {r.n}
               </span>
               <span className="rounded-full bg-[#E7F2F1] px-3 py-1 text-[11px] font-bold text-[#239BA2]">
