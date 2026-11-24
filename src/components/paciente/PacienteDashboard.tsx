@@ -420,13 +420,22 @@ export function MiniCalendar({
   onSelect,
   isEs,
 }: {
-  marks: Record<string, { med: number; ses: number }>;
+  marks: Record<string, { med: number; ses: number; cir?: number }>;
   selected: string;
   onSelect: (k: string) => void;
   isEs: boolean;
 }) {
   const now = new Date();
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
+
+  useEffect(() => {
+    if (!selected || selected.length < 7) return;
+    const y = Number(selected.slice(0, 4));
+    const m = Number(selected.slice(5, 7)) - 1;
+    if (!Number.isNaN(y) && !Number.isNaN(m)) {
+      setCursor((prev) => (prev.y === y && prev.m === m ? prev : { y, m }));
+    }
+  }, [selected]);
 
   const first = new Date(cursor.y, cursor.m, 1);
   const lead = (first.getDay() + 6) % 7; // lunes primero
@@ -504,7 +513,10 @@ export function MiniCalendar({
                   <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white" : "bg-[#239BA2]"}`} />
                 ) : null}
                 {mark?.ses ? (
-                  <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white/80" : "bg-[#F49678]"}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white/85" : "bg-[#F49678]"}`} />
+                ) : null}
+                {mark?.cir ? (
+                  <span className={`h-1.5 w-1.5 rounded-full ${isSel ? "bg-white/75" : "bg-[#7A4FD1]"}`} />
                 ) : null}
               </span>
             </button>
@@ -512,7 +524,7 @@ export function MiniCalendar({
         })}
       </div>
 
-      <div className="mt-3 flex items-center gap-4 text-[11px] font-semibold text-espresso/60">
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-semibold text-espresso/60">
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-[#239BA2]" />
           {isEs ? "Cita médica" : "Medical visit"}
@@ -520,6 +532,10 @@ export function MiniCalendar({
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-[#F49678]" />
           {isEs ? "Sesión con sanador" : "Healer session"}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-[#7A4FD1]" />
+          {isEs ? "Healing Circle gratis" : "Free Healing Circle"}
         </span>
       </div>
     </div>
@@ -1137,6 +1153,9 @@ function PacienteDashboardInner() {
           <RecordatoriosSection
             t={t}
             isEs={isEs}
+            ficha={ficha}
+            caregiver={caregiver}
+            healerSessions={data.healerSessions || []}
             medReminders={medReminders}
             otherReminders={otherReminders}
             todayHabits={todayHabits}
@@ -1150,6 +1169,8 @@ function PacienteDashboardInner() {
             fmtDate={fmtDate}
             runAction={runAction}
             openSheet={openSheet}
+            openConsult={openConsult}
+            goToTab={goToTab}
             healers={healers}
           />
         )}
