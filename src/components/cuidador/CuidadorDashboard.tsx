@@ -366,7 +366,7 @@ function CuidadorDashboardInner() {
           <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] text-2xl text-white shadow-lg">
             🤝
           </div>
-          <p className="font-serif text-lg font-bold text-espresso">
+          <p className="text-lg font-bold text-espresso">
             {t("Preparando tu espacio…", "Preparing your space…")}
           </p>
         </div>
@@ -388,21 +388,21 @@ function CuidadorDashboardInner() {
     <div className="min-h-screen bg-gradient-to-b from-[#E4F4F1] via-[#F8FBFA] to-[#FFF4EE] pb-44">
       <Toast message={toast} />
 
-      <div className="mx-auto max-w-2xl px-5">
+      <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl px-4 sm:px-6 lg:px-8 transition-all">
         {/* ENCABEZADO */}
         <header className="flex items-center justify-between pt-7">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => goToTab("perfil")}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] font-serif text-lg font-bold text-white shadow-md"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] text-lg font-bold text-white shadow-md"
               aria-label={t("Mi perfil", "My profile")}
             >
               {firstName.charAt(0)}
             </button>
             <div>
               <p className="text-xs font-medium text-espresso/55">{greeting}</p>
-              <h1 className="font-serif text-2xl font-bold leading-tight text-espresso">Aloha, {firstName} 🌿</h1>
+              <h1 className="text-2xl font-semibold tracking-[-0.025em] leading-tight text-espresso">Aloha, {firstName} 🌿</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -682,7 +682,7 @@ function CuidadorDashboardInner() {
               const name = String(h.especialidad).split("·")[0].trim();
               return (
                 <button key={h.id} type="button" onClick={() => setForm((p) => ({ ...p, healer: String(h.id) }))} className={`flex w-full items-center gap-3 rounded-3xl border-2 p-3.5 text-left transition ${active ? "border-[#239BA2] bg-[#E3F1EF]/70" : "border-transparent bg-[#F2FAF8]"}`}>
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] font-serif text-lg font-bold text-white">{name.charAt(0)}</span>
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6BB1AD] to-[#239BA2] text-lg font-bold text-white">{name.charAt(0)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-bold text-espresso">{name}</span>
                     <span className="block truncate text-xs text-espresso/60">{isEs ? h.short_bio_es : h.short_bio_en || h.short_bio_es}</span>

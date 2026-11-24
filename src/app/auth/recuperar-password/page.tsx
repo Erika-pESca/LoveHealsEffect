@@ -117,7 +117,7 @@ function RecuperarPasswordContent() {
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FCECEE] text-[#E8809A]">
                 <KeyRound className="h-6 w-6" />
               </span>
-              <h1 className="mt-3 font-serif text-2xl font-bold text-espresso">
+              <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-espresso">
                 {isEs ? "Recuperar Contraseña" : "Reset Password"}
               </h1>
               <p className="mt-1 text-xs text-espresso/70 leading-relaxed">
@@ -210,7 +210,7 @@ function RecuperarPasswordContent() {
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FCECEE] text-[#E8809A]">
                 <KeyRound className="h-6 w-6" />
               </span>
-              <h1 className="mt-3 font-serif text-2xl font-bold text-espresso">
+              <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-espresso">
                 {isEs ? "Nueva Contraseña" : "New Password"}
               </h1>
               <p className="mt-1 text-xs text-espresso/70">

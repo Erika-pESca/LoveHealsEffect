@@ -54,7 +54,7 @@ export function RecordatoriosSection({
   return (
     <main className="mt-6 space-y-6">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Recordatorios", "Reminders")}
         </h2>
         <p className="mt-1 text-sm text-espresso/60">

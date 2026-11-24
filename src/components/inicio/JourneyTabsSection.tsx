@@ -17,7 +17,7 @@ export function JourneyTabsSection() {
           <span className="text-[11px] font-bold uppercase tracking-wider text-veranda-blue">
             {dict.journey.badge}
           </span>
-          <h2 className="mt-1 font-serif text-2xl font-bold text-espresso sm:text-3xl">
+          <h2 className="mt-1 text-2xl font-semibold tracking-[-0.025em] text-espresso sm:text-3xl">
             {dict.journey.title}
           </h2>
         </div>
@@ -49,7 +49,7 @@ export function JourneyTabsSection() {
             <span className="inline-block rounded-full bg-[#E5F2F1] px-3 py-1 text-[11px] font-bold text-[#2D5F5D]">
               {currentStage.pill}
             </span>
-            <h3 className="font-serif text-xl font-bold text-espresso sm:text-2xl">
+            <h3 className="text-xl font-semibold tracking-[-0.025em] text-espresso sm:text-2xl">
               {currentStage.title}
             </h3>
             <p className="text-xs leading-relaxed text-espresso/70 sm:text-sm">

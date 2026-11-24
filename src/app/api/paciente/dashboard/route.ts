@@ -20,14 +20,19 @@ const PAID_RESOURCES = [
   {
     id: 401,
     tipo_registro: "contenido",
-    tipo_contenido: "meditacion_audio",
-    titulo_es: "Visualización avanzada de sanación (Premium)",
-    titulo_en: "Advanced Healing Visualization (Premium)",
+    tipo_contenido: "academia_lhe",
+    titulo_es: "Academia LHE · Lección 1: Reconectando con la Sabiduría de tu Cuerpo",
+    titulo_en: "LHE Academy · Lesson 1: Reconnecting with Your Body's Wisdom",
     descripcion_es:
-      "Meditación guiada profunda de 25 minutos para acompañar tus etapas de tratamiento.",
+      "Primera lección del curso anual Love Heals Effect. Práctica semanal paso a paso de sanación individual (Individual Healing).",
     descripcion_en:
-      "Deep 25-minute guided meditation to accompany your treatment stages.",
+      "First lesson of the Love Heals Effect annual course. Step-by-step weekly individual healing practice.",
     media_url: "https://open.spotify.com",
+    imagen_url: "/img/academy-lesson.jpg",
+    duracion: "20 min",
+    instructor: "Kelsie Reynolds",
+    nivel: "Sanación Individual",
+    categoria_doc: "academy_paid",
     publico_objetivo: "paciente",
     es_gratuito: false,
     costo_usd: 10,
@@ -35,33 +40,63 @@ const PAID_RESOURCES = [
   {
     id: 402,
     tipo_registro: "contenido",
-    tipo_contenido: "video_bam",
-    titulo_es: "Serie BAM avanzada: 4 semanas de movimiento consciente (Premium)",
-    titulo_en: "Advanced BAM Series: 4 Weeks of Mindful Movement (Premium)",
+    tipo_contenido: "meditacion_audio",
+    titulo_es: "Visualización Cuántica de Regeneración y Células Madre",
+    titulo_en: "Quantum Stem Cell & Cellular Regeneration Visualization",
     descripcion_es:
-      "Programa semanal con Kelsie para recuperar movilidad y vitalidad con suavidad.",
+      "Meditación guiada profunda de 25 minutos con frecuencias binaurales 528 Hz para apoyar tu sistema inmune durante el tratamiento activo.",
     descripcion_en:
-      "Weekly program with Kelsie to regain mobility and vitality gently.",
-    media_url: "https://www.youtube.com",
+      "Deep 25-minute guided meditation with 528 Hz binaural frequencies to support your immune system during active treatment.",
+    media_url: "https://open.spotify.com",
+    imagen_url: "/img/meditation-calm.jpg",
+    duracion: "25 min",
+    instructor: "Omar Melero",
+    nivel: "Sanación Profunda",
+    categoria_doc: "academy_paid",
     publico_objetivo: "paciente",
     es_gratuito: false,
     costo_usd: 10,
   },
   {
     id: 403,
+    tipo_registro: "contenido",
+    tipo_contenido: "video_bam",
+    titulo_es: "Serie BAM Avanzada: 4 Semanas de Movimiento Consciente",
+    titulo_en: "Advanced BAM Series: 4 Weeks of Mindful Movement",
+    descripcion_es:
+      "Secuencias progresivas diseñadas por Kelsie para recuperar rango articular, drenaje linfático y flexibilidad con amor y respeto a tus tiempos.",
+    descripcion_en:
+      "Progressive mindful movement sequences to regain range of motion, lymphatic flow, and flexibility.",
+    media_url: "https://www.youtube.com",
+    imagen_url: "/img/bam-movement.jpg",
+    duracion: "30 min",
+    instructor: "Kelsie Reynolds",
+    nivel: "Restaurativo Pro",
+    categoria_doc: "academy_paid",
+    publico_objetivo: "paciente",
+    es_gratuito: false,
+    costo_usd: 10,
+  },
+  {
+    id: 404,
     tipo_registro: "workshop",
     tipo_contenido: "workshop",
-    titulo_es: "Seminario con profesionales invitados (Premium)",
-    titulo_en: "Seminar with Invited Professionals (Premium)",
+    titulo_es: "Peers Healing Live Webinar · Práctica entre Pares",
+    titulo_en: "Peers Healing Live Webinar · Peer Practice",
     descripcion_es:
-      "Encuentro en vivo con especialistas en medicina integrativa y oncología.",
+      "Encuentro mensual en vivo para pacientes de la membresía: práctica compartida de respiración, coaching grupal y preguntas con Omar y Kelsie.",
     descripcion_en:
-      "Live gathering with integrative medicine and oncology specialists.",
+      "Monthly live gathering for members: shared breathwork, peer coaching, and Q&A with Omar and Kelsie.",
     media_url: "https://zoom.us",
+    imagen_url: "/img/love-circle.jpg",
+    duracion: "45 min",
+    instructor: "Omar Melero & Kelsie Reynolds",
+    nivel: "Práctica en Pares",
+    categoria_doc: "academy_paid",
     fecha_evento: "2026-12-05T18:00:00Z",
     publico_objetivo: "paciente",
     es_gratuito: false,
-    costo_usd: 25,
+    costo_usd: 10,
   },
 ];
 
@@ -280,8 +315,54 @@ const SAMPLE_CITAS = [
   },
 ];
 
+/**
+ * Biblioteca semilla por colección (Spotify, podcast, libros, guías...).
+ * Según el ANEXO: "El sanador publica contenido gratuito (música, podcast, libros y guías)"
+ * y "Perfil gratuito de Spotify de Love Heals". Se usa solo para los tipos que aún no
+ * existan en la base de datos, así la galería nunca queda vacía en el piloto.
+ */
+const LIBRARY_SEED = [
+  // ---------- Spotify ----------
+  { id: 501, tipo_contenido: "spotify", titulo_es: "Calma para tus días de quimio", titulo_en: "Calm for your chemo days", descripcion_es: "Playlist suave para acompañarte durante la infusión y el descanso posterior.", descripcion_en: "Gentle playlist for infusion time and the rest afterwards.", media_url: "https://open.spotify.com/search/healing%20calm%20piano", imagen_url: "/img/meditation-calm.jpg", duracion: "1 h 12 min", instructor: "Kelsie Reynolds", nivel: "24 canciones" },
+  { id: 502, tipo_contenido: "spotify", titulo_es: "Aloha Sleep · Océano de O'ahu", titulo_en: "Aloha Sleep · O'ahu Ocean", descripcion_es: "Sonidos del mar de Hawái y música ambiental para dormir profundo.", descripcion_en: "Hawaiian ocean sounds and ambient music for deep sleep.", media_url: "https://open.spotify.com/search/ocean%20sleep%20hawaii", imagen_url: "/img/sound-healing.jpg", duracion: "58 min", instructor: "Omar Melero", nivel: "18 canciones" },
+  { id: 503, tipo_contenido: "spotify", titulo_es: "Frecuencias 432 Hz para descansar", titulo_en: "432 Hz frequencies to rest", descripcion_es: "Cuencos y tonos sostenidos para bajar el ritmo del sistema nervioso.", descripcion_en: "Bowls and sustained tones to slow the nervous system.", media_url: "https://open.spotify.com/search/432%20hz%20healing", imagen_url: "/img/sound-healing.jpg", duracion: "45 min", instructor: "Omar Melero", nivel: "12 canciones" },
+  { id: 504, tipo_contenido: "spotify", titulo_es: "Mañanas suaves · Música para tu BAM", titulo_en: "Soft mornings · Music for your BAM", descripcion_es: "Ritmos lentos para acompañar tu movimiento consciente diario.", descripcion_en: "Slow rhythms for your daily mindful movement.", media_url: "https://open.spotify.com/search/gentle%20morning%20yoga", imagen_url: "/img/bam-movement.jpg", duracion: "35 min", instructor: "Kelsie Reynolds", nivel: "10 canciones" },
+  // ---------- Podcast ----------
+  { id: 511, tipo_contenido: "podcast", titulo_es: "Ep. 1 · Lo que nadie te dice del diagnóstico", titulo_en: "Ep. 1 · What no one tells you about diagnosis", descripcion_es: "Kelsie comparte su historia como sobreviviente y cómo nació Love Heals Effect.", descripcion_en: "Kelsie shares her survivor story and how Love Heals Effect was born.", media_url: "https://open.spotify.com/search/breast%20cancer%20podcast", imagen_url: "/img/love-circle.jpg", duracion: "32 min", instructor: "Kelsie Reynolds & Omar Melero", nivel: "Episodio 1" },
+  { id: 512, tipo_contenido: "podcast", titulo_es: "Ep. 2 · Cuidar sin agotarse", titulo_en: "Ep. 2 · Caring without burning out", descripcion_es: "Omar habla con cuidadores sobre límites, descanso y pedir ayuda.", descripcion_en: "Omar talks with caregivers about limits, rest and asking for help.", media_url: "https://open.spotify.com/search/caregiver%20podcast", imagen_url: "/img/love-circle.jpg", duracion: "28 min", instructor: "Omar Melero", nivel: "Episodio 2" },
+  { id: 513, tipo_contenido: "podcast", titulo_es: "Ep. 3 · Comer con amor durante el tratamiento", titulo_en: "Ep. 3 · Eating with love during treatment", descripcion_es: "Ideas sencillas para cuando no hay apetito o hay náuseas.", descripcion_en: "Simple ideas for when appetite is low or nausea shows up.", media_url: "https://open.spotify.com/search/nutrition%20cancer%20podcast", imagen_url: "/img/healthy-cooking.jpg", duracion: "25 min", instructor: "Kelsie Reynolds", nivel: "Episodio 3" },
+  // ---------- Libros ----------
+  { id: 521, tipo_contenido: "libro", titulo_es: "Radical Remission", titulo_en: "Radical Remission", autor: "Kelly A. Turner", color: "#DC5678", descripcion_es: "Los 9 factores comunes en personas que superaron el cáncer contra todo pronóstico.", descripcion_en: "The 9 common factors among people who beat the odds.", media_url: "https://www.amazon.com/s?k=Radical+Remission+Kelly+Turner", duracion: "336 págs", instructor: "Kelsie Reynolds", nivel: "Recomendado" },
+  { id: 522, tipo_contenido: "libro", titulo_es: "Anticáncer", titulo_en: "Anticancer: A New Way of Life", autor: "David Servan-Schreiber", color: "#239BA2", descripcion_es: "Hábitos de alimentación, movimiento y emoción que apoyan al cuerpo.", descripcion_en: "Food, movement and emotional habits that support the body.", media_url: "https://www.amazon.com/s?k=Anticancer+Servan-Schreiber", duracion: "400 págs", instructor: "Omar Melero", nivel: "Recomendado" },
+  { id: 523, tipo_contenido: "libro", titulo_es: "The Cancer Journals", titulo_en: "The Cancer Journals", autor: "Audre Lorde", color: "#7A4FD1", descripcion_es: "Un diario honesto y poderoso sobre vivir el cáncer de mama.", descripcion_en: "An honest, powerful journal about living with breast cancer.", media_url: "https://www.amazon.com/s?k=The+Cancer+Journals+Audre+Lorde", duracion: "96 págs", instructor: "Kelsie Reynolds", nivel: "Recomendado" },
+  { id: 524, tipo_contenido: "libro", titulo_es: "Crazy Sexy Cancer Tips", titulo_en: "Crazy Sexy Cancer Tips", autor: "Kris Carr", color: "#E8A23A", descripcion_es: "Consejos prácticos y con humor para atravesar el tratamiento.", descripcion_en: "Practical, funny tips for getting through treatment.", media_url: "https://www.amazon.com/s?k=Crazy+Sexy+Cancer+Tips", duracion: "208 págs", instructor: "Kelsie Reynolds", nivel: "Recomendado" },
+  // ---------- Guías descargables ----------
+  { id: 531, tipo_contenido: "guia_pdf", titulo_es: "Guía para tu primera quimioterapia", titulo_en: "Guide for your first chemo", descripcion_es: "Qué llevar, qué preguntar y cómo cuidarte los días siguientes.", descripcion_en: "What to bring, what to ask and how to care for yourself after.", media_url: "#guia-quimio", imagen_url: "/img/academy-lesson.jpg", duracion: "8 págs", instructor: "Kelsie Reynolds", nivel: "PDF" },
+  { id: 532, tipo_contenido: "guia_pdf", titulo_es: "Guía del cuidador: primeras 4 semanas", titulo_en: "Caregiver guide: first 4 weeks", descripcion_es: "Organización, señales de alerta y autocuidado para quien acompaña.", descripcion_en: "Organization, warning signs and self-care for companions.", media_url: "#guia-cuidador", imagen_url: "/img/love-circle.jpg", duracion: "12 págs", instructor: "Omar Melero", nivel: "PDF" },
+  { id: 533, tipo_contenido: "guia_pdf", titulo_es: "Recetario alcalino Love Heals", titulo_en: "Love Heals alkaline recipe book", descripcion_es: "Caldos, batidos e infusiones fáciles para días de poco apetito.", descripcion_en: "Easy broths, smoothies and teas for low-appetite days.", media_url: "#recetario", imagen_url: "/img/healthy-cooking.jpg", duracion: "10 págs", instructor: "Kelsie Reynolds", nivel: "PDF" },
+  // ---------- Extras para colecciones existentes ----------
+  { id: 541, tipo_contenido: "meditacion_audio", titulo_es: "Respiración 4-7-8 para dormir", titulo_en: "4-7-8 breathing for sleep", descripcion_es: "Audio corto para soltar el día y conciliar el sueño.", descripcion_en: "Short audio to let go of the day and fall asleep.", media_url: "https://open.spotify.com/search/478%20breathing", imagen_url: "/img/meditation-calm.jpg", duracion: "8 min", instructor: "Omar Melero", nivel: "Para dormir" },
+  { id: 542, tipo_contenido: "video_bam", titulo_es: "BAM de hombros y brazos tras cirugía", titulo_en: "BAM for shoulders & arms after surgery", descripcion_es: "Movimientos muy suaves para recuperar rango sin dolor.", descripcion_en: "Very gentle moves to regain range without pain.", media_url: "https://www.youtube.com/results?search_query=gentle+arm+exercises+after+mastectomy", imagen_url: "/img/bam-movement.jpg", duracion: "12 min", instructor: "Kelsie Reynolds", nivel: "Post-cirugía" },
+].map((r) => ({
+  ...r,
+  tipo_registro: "contenido",
+  categoria_doc: "support_free",
+  publico_objetivo: "ambos",
+  es_gratuito: true,
+}));
+
 function mergeResources(dbResources: any[]) {
-  const base = dbResources.length > 0 ? dbResources : DEFAULT_RESOURCES;
+  let base: any[];
+  if (dbResources.length > 0) {
+    const ids = new Set(dbResources.map((r: any) => r.id));
+    const types = new Set(dbResources.map((r: any) => r.tipo_contenido));
+    base = [
+      ...dbResources,
+      ...LIBRARY_SEED.filter((r) => !types.has(r.tipo_contenido) && !ids.has(r.id)),
+    ];
+  } else {
+    base = [...DEFAULT_RESOURCES, ...LIBRARY_SEED];
+  }
   const hasPaid = base.some((r: any) => r.es_gratuito === false);
   return hasPaid ? base : [...base, ...PAID_RESOURCES];
 }
@@ -335,6 +416,11 @@ const DEFAULT_RESOURCES = [
     descripcion_en:
       "Gentle conscious movement guided by Kelsie to release lymphatic tension and reconnect with your breath effortlessly.",
     media_url: "https://www.youtube.com/watch?v=inpok4MKVLM",
+    imagen_url: "/img/bam-movement.jpg",
+    duracion: "15 min",
+    instructor: "Kelsie Reynolds",
+    nivel: "Nivel Suave",
+    categoria_doc: "support_free",
     publico_objetivo: "paciente",
     es_gratuito: true,
   },
@@ -345,10 +431,15 @@ const DEFAULT_RESOURCES = [
     titulo_es: "Meditación Aloha: Calma antes de tu Cita Oncológica",
     titulo_en: "Aloha Meditation: Calm Before Your Oncology Visit",
     descripcion_es:
-      "Audio guiado de 10 minutos para regular la ansiedad antes de exámenes de laboratorio o consultas médicas.",
+      "Audio guiado de 10 minutos para regular la ansiedad, calmar palpitaciones y centrarte antes de exámenes o consultas médicas.",
     descripcion_en:
-      "10-minute guided audio to regulate anxiety before lab tests or medical appointments.",
+      "10-minute guided audio to regulate anxiety and feel grounded before medical consultations.",
     media_url: "https://open.spotify.com",
+    imagen_url: "/img/meditation-calm.jpg",
+    duracion: "10 min",
+    instructor: "Kelsie Reynolds",
+    nivel: "Calma Rápida",
+    categoria_doc: "support_free",
     publico_objetivo: "ambos",
     es_gratuito: true,
   },
@@ -359,10 +450,15 @@ const DEFAULT_RESOURCES = [
     titulo_es: "Cuencos Sonoros y Brisa de O'ahu (432 Hz)",
     titulo_en: "Sound Bowls & O'ahu Ocean Breeze (432 Hz)",
     descripcion_es:
-      "Sesión de musicoterapia restaurativa ideal para descansar durante la tarde o conciliar el sueño profundo.",
+      "Sesión de musicoterapia restaurativa grabada en la costa de Oahu. Ideal para relajación vespertina o conciliar el sueño profundo.",
     descripcion_en:
-      "Restorative music therapy session ideal for afternoon rest or deep sleep.",
+      "Restorative sound therapy recorded on the Oahu coast. Ideal for deep sleep and cellular ease.",
     media_url: "https://open.spotify.com",
+    imagen_url: "/img/sound-healing.jpg",
+    duracion: "20 min",
+    instructor: "Omar Melero",
+    nivel: "Relajación Total",
+    categoria_doc: "support_free",
     publico_objetivo: "ambos",
     es_gratuito: true,
   },
@@ -370,28 +466,57 @@ const DEFAULT_RESOURCES = [
     id: 204,
     tipo_registro: "contenido",
     tipo_contenido: "guia_autocuidado",
-    titulo_es: "Guía de Nutrición Antiinflamatoria e Hidratación en Tratamiento",
-    titulo_en: "Anti-inflammatory Nutrition & Hydration Guide During Treatment",
+    titulo_es: "Cocina Saludable: Caldos Antiinflamatorios e Infusiones",
+    titulo_en: "Healthy Cooking: Anti-inflammatory Broths & Teas",
     descripcion_es:
-      "Recetas sencillas, infusiones para aliviar náuseas y alimentos alcalinos recomendados para tu semana.",
+      "Guía y video práctico con recetas de caldos de cúrcuma y jengibre, alimentos alcalinos y batidos para aliviar náuseas.",
     descripcion_en:
-      "Simple recipes, nausea-soothing infusions, and alkaline foods recommended for your week.",
+      "Simple culinary video and recipes of turmeric-ginger broths and alkalizing smoothies to ease nausea.",
     media_url: "#guia-nutricion",
+    imagen_url: "/img/healthy-cooking.jpg",
+    duracion: "12 min",
+    instructor: "Dra. Maya Lin & Kelsie",
+    nivel: "Nutrición Fácil",
+    categoria_doc: "support_free",
     publico_objetivo: "ambos",
     es_gratuito: true,
   },
   {
     id: 205,
+    tipo_registro: "contenido",
+    tipo_contenido: "tapping_eft",
+    titulo_es: "Tapping EFT para Calmar el Miedo y la Incertidumbre",
+    titulo_en: "EFT Tapping to Calm Fear & Uncertainty",
+    descripcion_es:
+      "Técnica de Liberación Emocional guiada para reducir la carga de estrés y reprogramar el sistema nervioso en momentos difíciles.",
+    descripcion_en:
+      "Guided Emotional Freedom Technique to release emotional stress and ground yourself in moments of uncertainty.",
+    media_url: "https://www.youtube.com",
+    imagen_url: "/img/tapping-eft.jpg",
+    duracion: "14 min",
+    instructor: "Omar Melero",
+    nivel: "Regulación Emocional",
+    categoria_doc: "support_free",
+    publico_objetivo: "ambos",
+    es_gratuito: true,
+  },
+  {
+    id: 206,
     tipo_registro: "workshop",
     tipo_contenido: "love_circle",
-    titulo_es: "Love Circle for Patients · Círculo Semanal con Kelsie",
-    titulo_en: "Love Circle for Patients · Weekly Circle with Kelsie",
+    titulo_es: "Love Circle for Patients · Círculo Semanal con Kelsie y Omar",
+    titulo_en: "Love Circle for Patients · Weekly Circle with Kelsie & Omar",
     descripcion_es:
-      "Espacio íntimo y gratuito de contención emocional entre mujeres atravesando el proceso de cáncer de mama (Zoom y Honolulu).",
+      "Espacio íntimo y 100% gratuito de contención entre mujeres en tratamiento y sobrevivientes (Zoom en vivo desde Honolulu).",
     descripcion_en:
-      "Free intimate emotional support space for women navigating breast cancer (Zoom & Honolulu).",
+      "Free intimate support circle for breast cancer patients and survivors (Live Zoom from Honolulu).",
     media_url: "https://zoom.us",
-    fecha_evento: "2026-11-21T18:00:00Z",
+    imagen_url: "/img/love-circle.jpg",
+    duracion: "60 min",
+    instructor: "Kelsie Reynolds & Omar Melero",
+    nivel: "Comunidad en Vivo",
+    categoria_doc: "support_free",
+    fecha_evento: "2026-11-28T18:00:00Z",
     publico_objetivo: "paciente",
     es_gratuito: true,
   },
@@ -498,6 +623,7 @@ export async function GET(req: NextRequest) {
       cuidadorUserRes,
       fichaCuidadorRes,
       allHealerRowsRes,
+      healerUsersRes,
       sessionsDataRes,
       ticketsDataRes,
     ] = await Promise.all([
@@ -516,6 +642,10 @@ export async function GET(req: NextRequest) {
             .maybeSingle()
         : Promise.resolve({ data: null }),
       supabaseAdmin.from("sanadores_y_contenidos").select("*"),
+      supabaseAdmin
+        .from("usuarios")
+        .select("id, nombre")
+        .in("rol", ["sanador", "admin"]),
       supabaseAdmin
         .from("citas_y_bitacora_sanador")
         .select("*")
@@ -553,12 +683,30 @@ export async function GET(req: NextRequest) {
 
     // Sanadores y contenidos gratuitos
     const rows = Array.isArray(allHealerRowsRes?.data) ? allHealerRowsRes.data : [];
+    const healerUsers = Array.isArray(healerUsersRes?.data) ? healerUsersRes.data : [];
+    const healerNameById = new Map<number, string>();
+    healerUsers.forEach((u: any) => {
+      if (u?.id && u?.nombre) healerNameById.set(Number(u.id), String(u.nombre));
+    });
     const dbHealers = rows.filter((r) => r.tipo_registro === "perfil_sanador");
-    const dbResources = rows.filter(
-      (r) =>
-        (r.tipo_registro === "contenido" || r.tipo_registro === "workshop") &&
-        (r.publico_objetivo === "paciente" || r.publico_objetivo === "ambos")
-    );
+    dbHealers.forEach((h: any) => {
+      if (h?.sanador_usuario_id && !healerNameById.has(Number(h.sanador_usuario_id)) && h?.especialidad) {
+        healerNameById.set(Number(h.sanador_usuario_id), String(h.especialidad).split("·")[0].trim());
+      }
+    });
+    const dbResources = rows
+      .filter(
+        (r) =>
+          (r.tipo_registro === "contenido" || r.tipo_registro === "workshop") &&
+          (r.publico_objetivo === "paciente" || r.publico_objetivo === "ambos")
+      )
+      .map((r) => ({
+        ...r,
+        instructor:
+          r.instructor ||
+          healerNameById.get(Number(r.sanador_usuario_id)) ||
+          "Love Heals Effect",
+      }));
 
     const healers = dbHealers.length > 0 ? dbHealers : DEFAULT_HEALERS;
     const resources = mergeResources(dbResources);

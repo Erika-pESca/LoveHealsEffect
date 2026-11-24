@@ -38,7 +38,7 @@ export function PerfilSection({
         >
           <Sparkles className="h-10 w-10" />
         </div>
-        <h2 className="mt-3 font-serif text-2xl font-bold text-espresso">
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.025em] text-espresso">
           Omar Melero &amp; Kelsie Reynolds
         </h2>
         <p className="text-xs text-espresso/55">{data?.user?.correo}</p>

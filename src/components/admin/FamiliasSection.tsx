@@ -26,7 +26,7 @@ export function FamiliasSection({
   return (
     <main className="mt-6 space-y-6">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Familias y usuarios", "Families & users")}
         </h2>
         <p className="mt-1 text-sm text-espresso/60">
@@ -42,7 +42,7 @@ export function FamiliasSection({
             return (
               <div key={cell.id} className="rounded-[26px] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate font-serif text-base font-bold text-espresso">
+                  <span className="truncate text-base font-bold text-espresso">
                     {cell.nombre_familia}
                   </span>
                   <span
@@ -98,7 +98,7 @@ export function FamiliasSection({
                 }`}
               >
                 <span
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${rs.bg} ${rs.fg} font-serif text-lg font-bold`}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${rs.bg} ${rs.fg} text-lg font-bold`}
                 >
                   {String(u.nombre).charAt(0)}
                 </span>

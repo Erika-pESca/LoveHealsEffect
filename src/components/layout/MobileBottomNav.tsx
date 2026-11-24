@@ -63,7 +63,7 @@ interface NavTabItem {
 const ROLE_TABS: Record<RoleKey, NavTabItem[]> = {
   paciente: [
     {
-      id: "practicas",
+      id: "recursos",
       icon: Sparkles,
       labelEs: "Recursos",
       labelEn: "Resources",
@@ -255,7 +255,8 @@ function MobileBottomNavInner() {
   const tabs = role ? ROLE_TABS[role] : null;
 
   // Tab activo según query param ?tab= (por defecto "inicio", índice 2)
-  const currentTabParam = searchParams.get("tab") || "inicio";
+  const rawTabParam = searchParams.get("tab") || "inicio";
+  const currentTabParam = rawTabParam === "practicas" ? "recursos" : rawTabParam;
   const targetActiveIndex = tabs
     ? Math.max(
         0,

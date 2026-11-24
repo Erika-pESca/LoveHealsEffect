@@ -51,7 +51,7 @@ export function InicioSection({
           <span className="inline-block rounded-full bg-white/25 px-3 py-1 text-[11px] font-bold">
             {t("Tu agenda", "Your agenda")}
           </span>
-          <h2 className="mt-3 max-w-[70%] font-serif text-3xl font-bold leading-tight">
+          <h2 className="mt-3 max-w-[70%] text-3xl font-semibold tracking-[-0.025em] leading-tight">
             {todayCount > 0
               ? t(
                   `${todayCount} sesión${todayCount > 1 ? "es" : ""} hoy`,
@@ -80,7 +80,7 @@ export function InicioSection({
           { v: published.length, l: t("Recursos", "Resources"), bg: "bg-[#FFF1B8]" },
         ].map((s) => (
           <div key={s.l} className={`rounded-3xl ${s.bg} py-4 text-center`}>
-            <div className="font-serif text-3xl font-bold text-espresso">{s.v}</div>
+            <div className="text-3xl font-semibold tracking-[-0.025em] text-espresso">{s.v}</div>
             <div className="text-[11px] font-bold text-espresso/60">{s.l}</div>
           </div>
         ))}
@@ -110,7 +110,7 @@ export function InicioSection({
                 }}
                 className="flex w-full items-center gap-3 rounded-3xl bg-white px-4 py-3.5 text-left shadow-sm transition active:scale-[0.98]"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif text-lg font-bold text-white">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] text-lg font-bold text-white">
                   {(p?.nombre_paciente || "P").charAt(0)}
                 </span>
                 <span className="min-w-0 flex-1">

@@ -150,7 +150,7 @@ function AdminDashboardInner() {
           <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-espresso text-white shadow-lg">
             <ShieldCheck className="h-7 w-7" />
           </div>
-          <p className="font-serif text-lg font-bold text-espresso">{t("Cargando administración…", "Loading administration…")}</p>
+          <p className="text-lg font-bold text-espresso">{t("Cargando administración…", "Loading administration…")}</p>
         </div>
       </div>
     );
@@ -171,7 +171,7 @@ function AdminDashboardInner() {
     <div className="min-h-screen bg-gradient-to-b from-[#EFEAE2] via-[#F9F7F3] to-[#EAF1F4] pb-44">
       <Toast message={toast} />
 
-      <div className="mx-auto max-w-2xl px-5">
+      <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl px-4 sm:px-6 lg:px-8 transition-all">
         {/* ENCABEZADO */}
         <header className="flex items-center justify-between pt-7">
           <div className="flex items-center gap-3">
@@ -180,7 +180,7 @@ function AdminDashboardInner() {
             </button>
             <div>
               <p className="text-xs font-medium text-espresso/55">{greeting}</p>
-              <h1 className="font-serif text-2xl font-bold leading-tight text-espresso">{t("Panel de administración", "Admin panel")}</h1>
+              <h1 className="text-2xl font-semibold tracking-[-0.025em] leading-tight text-espresso">{t("Panel de administración", "Admin panel")}</h1>
             </div>
           </div>
           <div className="inline-flex items-center rounded-full bg-white p-0.5 text-[10px] font-bold shadow-sm">
@@ -386,10 +386,15 @@ function AdminDashboardInner() {
         >
           <Field label={t("Tipo", "Type")}>
             <select className={inputCls} value={fv("tipo", "guia_autocuidado")} onChange={fs("tipo")}>
-              <option value="guia_autocuidado">{t("Anuncio / guía", "Announcement / guide")}</option>
+              <option value="guia_autocuidado">{t("Cocina saludable / guía", "Healthy cooking / guide")}</option>
+              <option value="spotify">{t("Playlist de Spotify", "Spotify playlist")}</option>
+              <option value="podcast">Podcast</option>
+              <option value="libro">{t("Libro recomendado", "Recommended book")}</option>
+              <option value="guia_pdf">{t("Guía descargable (PDF)", "Downloadable guide (PDF)")}</option>
               <option value="video_bam">Video BAM</option>
               <option value="meditacion_audio">{t("Meditación", "Meditation")}</option>
               <option value="musicoterapia">{t("Musicoterapia", "Music therapy")}</option>
+              <option value="tapping_eft">{t("Tapping y respiración", "Tapping & breathwork")}</option>
               <option value="love_circle">Love Circle</option>
               <option value="workshop">Workshop</option>
             </select>

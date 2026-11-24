@@ -209,6 +209,61 @@ export function InicioSection({
         </div>
       </section>
 
+      {/* ===================== CÍRCULO DE SANACIÓN GRATUITO (EN VIVO POR ZOOM) ===================== */}
+      <section className="animate-fade-in">
+        <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[#1C2E2B] via-[#243A36] to-[#36272B] p-5 sm:p-6 text-white shadow-[0_14px_34px_rgba(28,46,43,0.22)]">
+          <div className="absolute right-0 top-0 h-full w-1/2 opacity-30 pointer-events-none overflow-hidden">
+            <img
+              src="/img/love-circle.jpg"
+              alt="Healing Circle"
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="relative z-10 max-w-xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                {t("En Vivo Cada Semana", "Live Every Week")}
+              </span>
+              <span className="rounded-full bg-[#5C8D67] px-2 py-0.5 text-[10px] font-bold text-white">
+                ✓ {t("100% Gratuito (Support)", "100% Free (Support)")}
+              </span>
+              <span className="text-[11px] text-white/70">
+                🌴 {t("Honolulu · Zoom", "Honolulu · Zoom")}
+              </span>
+            </div>
+
+            <h3 className="mt-2.5 text-xl sm:text-2xl font-semibold tracking-[-0.025em] leading-tight text-white">
+              {t("Love Circle for Patients · Kelsie & Omar", "Love Circle for Patients · Kelsie & Omar")}
+            </h3>
+            <p className="mt-1 text-xs text-white/80 leading-relaxed line-clamp-2">
+              {t(
+                "Espacio abierto para cerrar la brecha (Filling The Gap): conócenos, comparte y respira en un ambiente amoroso sin costo.",
+                "Open space to fill the gap: meet us, share, and breathe in a loving free setting."
+              )}
+            </p>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => openSheet("circle_rsvp")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-4 py-2 text-xs font-bold text-white shadow-md transition hover:brightness-110 active:scale-95"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {t("Inscribirme gratis (RSVP)", "RSVP for Free")}
+              </button>
+              <button
+                type="button"
+                onClick={() => goToTab("recursos")}
+                className="rounded-full bg-white/15 backdrop-blur-md px-4 py-2 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95"
+              >
+                {t("Ver todos los recursos gratuitos", "View all free resources")} →
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Ánimo + recomendación de PONO */}
       <section>
         <SectionTitle title={t("¿Cómo te sientes hoy?", "How are you feeling today?")} />
@@ -411,7 +466,7 @@ export function InicioSection({
               <Flame className="h-6 w-6" />
             </span>
             <div>
-              <div className="font-serif text-2xl font-bold text-espresso">
+              <div className="text-2xl font-semibold tracking-[-0.025em] text-espresso">
                 {streak} {streak === 1 ? t("día", "day") : t("días", "days")}
               </div>
               <p className="text-xs text-espresso/60">

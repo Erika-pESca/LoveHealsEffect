@@ -35,7 +35,7 @@ export function AgendaSection({
   return (
     <main className="mt-6 space-y-5">
       <div className="animate-fade-in">
-        <h2 className="font-serif text-3xl font-bold leading-tight text-espresso">
+        <h2 className="text-3xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
           {t("Reservas", "Bookings")}
         </h2>
         <p className="mt-1 text-sm text-espresso/60">
@@ -50,7 +50,7 @@ export function AgendaSection({
           { v: `$${fee}`, l: t("Fee LHEAPP 15%", "LHEAPP fee 15%"), bg: "bg-[#FAD4DC]" },
         ].map((s) => (
           <div key={s.l} className={`rounded-3xl ${s.bg} py-4 text-center`}>
-            <div className="font-serif text-2xl font-bold text-espresso">{s.v}</div>
+            <div className="text-2xl font-semibold tracking-[-0.025em] text-espresso">{s.v}</div>
             <div className="text-[10px] font-bold text-espresso/60">{s.l}</div>
           </div>
         ))}
@@ -90,7 +90,7 @@ export function AgendaSection({
           return (
             <div key={s.id} className="rounded-[26px] bg-white p-4 shadow-sm">
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-serif font-bold text-white">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F48EA6] to-[#B03052] font-semibold text-white">
                   {(p?.nombre_paciente || "P").charAt(0)}
                 </span>
                 <div className="min-w-0 flex-1">

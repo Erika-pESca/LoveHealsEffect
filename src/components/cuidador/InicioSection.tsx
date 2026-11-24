@@ -71,7 +71,7 @@ export function InicioSection({
           <span className="inline-block rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-[#239BA2]">
             {t("Célula familiar 1 a 1", "1-to-1 family cell")}
           </span>
-          <h2 className="mt-3 max-w-[72%] font-serif text-2xl font-bold leading-tight text-espresso">
+          <h2 className="mt-3 max-w-[72%] text-2xl font-semibold tracking-[-0.025em] leading-tight text-espresso">
             {t(`Acompañando a ${patientFirst}`, `Supporting ${patientFirst}`)}
           </h2>
           <p className="mt-1 text-xs font-semibold text-espresso/60">
@@ -222,7 +222,7 @@ export function InicioSection({
               <Flame className="h-6 w-6" />
             </span>
             <div>
-              <div className="font-serif text-2xl font-bold text-espresso">
+              <div className="text-2xl font-semibold tracking-[-0.025em] text-espresso">
                 {streak} {streak === 1 ? t("día", "day") : t("días", "days")}
               </div>
               <p className="text-xs text-espresso/60">
