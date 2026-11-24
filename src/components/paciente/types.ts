@@ -2,7 +2,9 @@ import React from "react";
 import {
   BookOpen,
   CalendarHeart,
+  GraduationCap,
   Music,
+  Sparkles,
   Users,
   Video,
   Wind,
@@ -127,6 +129,18 @@ export const TYPE_META: Record<
     en: "Workshop",
     icon: CalendarHeart,
     grad: "from-[#D9E8FB] to-[#D7F3EA]",
+  },
+  tapping_eft: {
+    es: "Tapping EFT",
+    en: "EFT Tapping",
+    icon: Sparkles,
+    grad: "from-[#FCD5DE] to-[#E4E0FA]",
+  },
+  academia_lhe: {
+    es: "Academia LHE",
+    en: "LHE Academy",
+    icon: GraduationCap,
+    grad: "from-[#FFF1B8] to-[#FAD4DC]",
   },
 };
 

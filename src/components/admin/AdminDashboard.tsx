@@ -171,7 +171,7 @@ function AdminDashboardInner() {
     <div className="min-h-screen bg-gradient-to-b from-[#EFEAE2] via-[#F9F7F3] to-[#EAF1F4] pb-44">
       <Toast message={toast} />
 
-      <div className="mx-auto max-w-2xl px-5">
+      <div className="mx-auto w-full max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl px-4 sm:px-6 lg:px-8 transition-all">
         {/* ENCABEZADO */}
         <header className="flex items-center justify-between pt-7">
           <div className="flex items-center gap-3">
