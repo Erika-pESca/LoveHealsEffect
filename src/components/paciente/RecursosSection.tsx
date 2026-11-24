@@ -5,12 +5,16 @@ import {
   ArrowLeft,
   BookOpen,
   Calendar,
+  CheckCircle2,
   ChevronRight,
+  Clock,
   Crown,
   FileText,
   Headphones,
   HeartHandshake,
+  Image as ImageIcon,
   Lock,
+  MapPin,
   Mic,
   Music,
   Play,
@@ -20,6 +24,7 @@ import {
   Utensils,
   Video,
   Wind,
+  X,
 } from "lucide-react";
 
 export interface RecursosSectionProps {
@@ -291,11 +296,187 @@ const FALLBACK_HEALERS: Record<string, HealerSummary> = {
   },
 };
 
-/** Próximos Love Circles del mes (inscripción con anticipación). */
-const UPCOMING_CIRCLES = [
-  { iso: "2026-11-29T18:00:00-10:00", es: "Sáb 29 Nov", en: "Sat Nov 29", topicEs: "Respirar en paz y soltar tensión", topicEn: "Breathe in peace, release tension" },
-  { iso: "2026-12-06T18:00:00-10:00", es: "Sáb 6 Dic", en: "Sat Dec 6", topicEs: "Pacientes y cuidadores juntos", topicEn: "Patients and caregivers together" },
-  { iso: "2026-12-13T18:00:00-10:00", es: "Sáb 13 Dic", en: "Sat Dec 13", topicEs: "Tapping y cuencos de cuarzo", topicEn: "Tapping and quartz bowls" },
+export interface CircleEventInfo {
+  iso: string;
+  es: string;
+  en: string;
+  fullDateEs: string;
+  fullDateEn: string;
+  time: string;
+  badgeEs: string;
+  badgeEn: string;
+  topicEs: string;
+  topicEn: string;
+  host: string;
+  img: string;
+  videoUrl: string;
+  summaryEs: string;
+  summaryEn: string;
+  whereEs: string;
+  whereEn: string;
+  whoEs: string;
+  whoEn: string;
+  stepsEs: { time: string; title: string; detail: string }[];
+  stepsEn: { time: string; title: string; detail: string }[];
+  bringEs: string[];
+  bringEn: string[];
+  spots: number;
+}
+
+/** Próximas fechas de Healing & Love Circles con resumen, imagen, video y dinámica interactiva. */
+const UPCOMING_CIRCLES: CircleEventInfo[] = [
+  {
+    iso: "2026-11-29T18:00:00-10:00",
+    es: "Sáb 29 Nov",
+    en: "Sat Nov 29",
+    fullDateEs: "Sábado 29 de Noviembre · 6:00 PM HST",
+    fullDateEn: "Saturday, November 29 · 6:00 PM HST",
+    time: "6:00 PM HST · 60 min",
+    badgeEs: "Love Circle · Pacientes",
+    badgeEn: "Love Circle · Patients",
+    topicEs: "Respirar en paz y soltar tensión",
+    topicEn: "Breathe in peace, release tension",
+    host: "Kelsie Reynolds & Omar Melero",
+    img: "/img/love-circle.jpg",
+    videoUrl: "https://www.youtube.com/embed/inpok4MKVLM?rel=0",
+    summaryEs:
+      "Un encuentro cálido y guiado para bajar la ansiedad acumulada de la semana, suavizar el cuerpo después de tratamientos o consultas médicas y descansar acompañada por mujeres que comprenden lo que vives.",
+    summaryEn:
+      "A warm guided gathering to release weekly anxiety, soften your body after medical visits or treatments, and rest alongside women who truly understand your journey.",
+    whereEs:
+      "En línea en vivo por Zoom (recibes tu enlace privado al correo apenas te inscribes) o presencial en nuestro espacio de Honolulu, O'ahu.",
+    whereEn:
+      "Live online via Zoom (your private link is sent to your email upon signup) or in person at our Honolulu, O'ahu space.",
+    whoEs: "Pacientes y sobrevivientes · Cámara opcional (puedes hablar o solo escuchar en calma).",
+    whoEn: "Patients & survivors · Camera optional (share openly or simply listen in peace).",
+    stepsEs: [
+      { time: "10 min", title: "Bienvenida Aloha sin presiones", detail: "Llegamos con calma, nos saludamos y preparamos un espacio seguro." },
+      { time: "25 min", title: "Respiración 4-7-8 y alivio de hombros", detail: "Práctica suave guiada en vivo por Kelsie para relajar pecho, cuello y sistema linfático." },
+      { time: "25 min", title: "Círculo de compañía y escucha", detail: "Quien lo desee comparte cómo va su semana y cerramos con una intención de paz." },
+    ],
+    stepsEn: [
+      { time: "10 min", title: "Pressure-free Aloha welcome", detail: "Arrive gently, settle in, and open a safe space together." },
+      { time: "25 min", title: "4-7-8 breathwork & shoulder release", detail: "Gentle live practice with Kelsie to relax chest, neck, and lymphatic tension." },
+      { time: "25 min", title: "Companionship & listening circle", detail: "Optional sharing and a peaceful closing intention together." },
+    ],
+    bringEs: ["Ropa cómoda", "Agua o infusión tibia", "Manta o cojín suave"],
+    bringEn: ["Comfortable clothes", "Water or warm tea", "Soft blanket or pillow"],
+    spots: 8,
+  },
+  {
+    iso: "2026-12-06T18:00:00-10:00",
+    es: "Sáb 6 Dic",
+    en: "Sat Dec 6",
+    fullDateEs: "Sábado 6 de Diciembre · 6:00 PM HST",
+    fullDateEn: "Saturday, December 6 · 6:00 PM HST",
+    time: "6:00 PM HST · 60 min",
+    badgeEs: "Círculo Familiar 1 a 1",
+    badgeEn: "1-on-1 Family Circle",
+    topicEs: "Pacientes y cuidadores juntos",
+    topicEn: "Patients and caregivers together",
+    host: "Omar Melero & Kelsie Reynolds",
+    img: "/img/meditation-calm.jpg",
+    videoUrl: "https://www.youtube.com/embed/aEqlQvczMJQ?rel=0",
+    summaryEs:
+      "Espacio pensado para asistir sola o acompañada de tu cuidador/familiar. Aprenderán ejercicios simples para bajar el agotamiento en casa, pedir apoyo sin culpa y cuidarse mutuamente.",
+    summaryEn:
+      "Designed to attend solo or with your caregiver/family member. Learn simple practices to ease household burnout, ask for help without guilt, and care for each other.",
+    whereEs:
+      "En vivo por Zoom (pueden conectarse juntos desde casa o desde ciudades distintas) y cupos presenciales en Honolulu.",
+    whereEn:
+      "Live on Zoom (join together from home or from different locations) plus in-person spots in Honolulu.",
+    whoEs: "Pacientes, cuidadores y familiares cercanos.",
+    whoEn: "Patients, caregivers, and close family members.",
+    stepsEs: [
+      { time: "10 min", title: "Encuentro de familias Love Heals", detail: "Reconocemos tanto el proceso de la paciente como el corazón de quien cuida." },
+      { time: "25 min", title: "Dinámica de regulación del sistema nervioso", detail: "Omar guía ejercicios prácticos de respiración compartida y manejo del estrés." },
+      { time: "25 min", title: "Herramientas para la semana en casa", detail: "Preguntas abiertas a Omar y Kelsie y acuerdos sencillos de descanso familiar." },
+    ],
+    stepsEn: [
+      { time: "10 min", title: "Love Heals family welcome", detail: "Honoring both the patient's journey and the caregiver's heart." },
+      { time: "25 min", title: "Co-regulating the nervous system", detail: "Omar guides practical shared breathing and stress-relief tools." },
+      { time: "25 min", title: "Take-home weekly tools & Q&A", detail: "Open questions with Omar & Kelsie and simple family rest agreements." },
+    ],
+    bringEs: ["Asistir sola o en pareja familiar", "Libreta opcional", "Té o agua"],
+    bringEn: ["Attend solo or with your caregiver", "Optional notebook", "Tea or water"],
+    spots: 6,
+  },
+  {
+    iso: "2026-12-13T18:00:00-10:00",
+    es: "Sáb 13 Dic",
+    en: "Sat Dec 13",
+    fullDateEs: "Sábado 13 de Diciembre · 6:00 PM HST",
+    fullDateEn: "Saturday, December 13 · 6:00 PM HST",
+    time: "6:00 PM HST · 60 min",
+    badgeEs: "Taller Sonoro + EFT",
+    badgeEn: "Sound & EFT Workshop",
+    topicEs: "Tapping y cuencos de cuarzo",
+    topicEn: "Tapping and quartz bowls",
+    host: "Omar Melero & Kelsie Reynolds",
+    img: "/img/sound-healing.jpg",
+    videoUrl: "https://www.youtube.com/embed/1ZYbU82GVz4?rel=0",
+    summaryEs:
+      "Sesión vivencial que une Tapping EFT (acupresión emocional con tus manos) para soltar miedo o insomnio, seguida de un baño sonoro en vivo con cuencos de cuarzo a 432 Hz para un descanso profundo.",
+    summaryEn:
+      "Experiential session pairing gentle EFT Tapping to release fear or insomnia with a live 432 Hz quartz sound bath for deep cellular rest.",
+    whereEs:
+      "En vivo por Zoom con audio de alta fidelidad para que puedas recostarte directamente en tu cama o sofá.",
+    whereEn:
+      "Live on Zoom with high-fidelity audio so you can lie back comfortably on your bed or sofa.",
+    whoEs: "Ideal si sientes insomnio, nervios antes de estudios o cansancio físico.",
+    whoEn: "Ideal if you're experiencing insomnia, scan anxiety, or physical fatigue.",
+    stepsEs: [
+      { time: "10 min", title: "Mapa fácil de puntos de Tapping", detail: "Aprendes dónde tocar suavemente para calmar picos de ansiedad en cualquier momento." },
+      { time: "20 min", title: "Ronda guiada de liberación emocional", detail: "Soltamos tensión, miedo a los controles y pensamientos repetitivos." },
+      { time: "30 min", title: "Concierto meditativo de cuencos 432 Hz", detail: "Solo cierras los ojos y recibes las frecuencias restaurativas desde O'ahu." },
+    ],
+    stepsEn: [
+      { time: "10 min", title: "Simple EFT tapping point map", detail: "Learn gentle points you can use anytime anxiety spikes." },
+      { time: "20 min", title: "Guided emotional release round", detail: "Letting go of tension, scan fear, and racing thoughts." },
+      { time: "30 min", title: "Live 432 Hz quartz bowl sound bath", detail: "Simply close your eyes and receive restorative sound from O'ahu." },
+    ],
+    bringEs: ["Audífonos recomendados", "Almohada y manta", "Luz suave"],
+    bringEn: ["Headphones recommended", "Pillow & blanket", "Dim lighting"],
+    spots: 11,
+  },
+  {
+    iso: "2026-12-20T18:00:00-10:00",
+    es: "Sáb 20 Dic",
+    en: "Sat Dec 20",
+    fullDateEs: "Sábado 20 de Diciembre · 6:00 PM HST",
+    fullDateEn: "Saturday, December 20 · 6:00 PM HST",
+    time: "6:00 PM HST · 60 min",
+    badgeEs: "Open Workshop Gratuito",
+    badgeEn: "Free Open Workshop",
+    topicEs: "Cocina alcalina y cierre en gratitud",
+    topicEn: "Alkaline kitchen & gratitude circle",
+    host: "Kelsie Reynolds & Dra. Maya Lin",
+    img: "/img/healthy-cooking.jpg",
+    videoUrl: "https://www.youtube.com/embed/inpok4MKVLM?rel=0",
+    summaryEs:
+      "Taller abierto donde prepararemos caldos antiinflamatorios e infusiones suaves para días de náusea o poco apetito, cerrando con un círculo amoroso de gratitud y esperanza.",
+    summaryEn:
+      "Open workshop preparing soothing anti-inflammatory broths and teas for low-appetite or nausea days, closing with a warm gratitude circle.",
+    whereEs:
+      "En vivo por Zoom interactivo con espacio de preguntas en directo + recetario descargable incluido.",
+    whereEn:
+      "Interactive live Zoom with live Q&A + downloadable recipe guide included.",
+    whoEs: "Abierto a pacientes, cuidadores y toda la comunidad.",
+    whoEn: "Open to patients, caregivers, and the whole community.",
+    stepsEs: [
+      { time: "25 min", title: "Preparación en vivo de caldos e infusiones", detail: "Ingredientes sencillos con cúrcuma, jengibre y vegetales suaves para el estómago." },
+      { time: "15 min", title: "Consejos prácticos para el cuidador", detail: "Cómo adaptar porciones, aromas y texturas durante el tratamiento." },
+      { time: "20 min", title: "Brindis con infusión y círculo de gratitud", detail: "Despedimos el mes conectadas en calma y compañía." },
+    ],
+    stepsEn: [
+      { time: "25 min", title: "Live broth & digestive tea prep", detail: "Simple turmeric, ginger, and gentle plant ingredients." },
+      { time: "15 min", title: "Practical kitchen tips for caregivers", detail: "Adapting portions, aromas, and textures during treatment." },
+      { time: "20 min", title: "Warm tea toast & gratitude circle", detail: "Closing the month connected in calm and companionship." },
+    ],
+    bringEs: ["Tu taza favorita de té", "Invita a tu cuidador/a", "Recetario incluido"],
+    bringEn: ["Your favorite cup of tea", "Invite your caregiver", "Recipe PDF included"],
+    spots: 14,
+  },
 ];
 
 const PAGE_SIZE = 8;
@@ -324,6 +505,9 @@ export function RecursosSection({
 }: RecursosSectionProps) {
   const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(PAGE_SIZE);
+  const [selectedCircleIdx, setSelectedCircleIdx] = useState(0);
+  const [previewCircleIdx, setPreviewCircleIdx] = useState<number | null>(null);
+  const activeCircle = UPCOMING_CIRCLES[selectedCircleIdx] || UPCOMING_CIRCLES[0];
 
   /* ---------------- Mapa vivo de fichas de sanadores (desde lo que rellena cada sanador en BD) ---------------- */
   const healerDirectory = useMemo(() => {
@@ -806,38 +990,67 @@ export function RecursosSection({
         </div>
 
         <div className="grid gap-4 lg:grid-cols-5">
-          {/* Tarjeta principal */}
+          {/* Tarjeta principal sincronizada con la fecha seleccionada */}
           <div className="group relative overflow-hidden rounded-[30px] shadow-[0_18px_40px_rgba(28,46,43,0.28)] lg:col-span-3">
             <img
-              src="/img/love-circle.jpg"
-              alt="Love Circle"
-              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+              key={activeCircle.img}
+              src={activeCircle.img}
+              alt={isEs ? activeCircle.topicEs : activeCircle.topicEn}
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 animate-fade-in"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#172725] via-[#172725]/70 to-[#172725]/10" />
-            <div className="relative flex min-h-[320px] flex-col justify-end p-6 md:p-8">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#172725] via-[#172725]/75 to-[#172725]/15" />
+
+            {/* Botón flotante superior para abrir video / vista previa interactiva */}
+            <button
+              type="button"
+              onClick={() => setPreviewCircleIdx(selectedCircleIdx)}
+              className="absolute right-4 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-black/45 py-2 pl-3 pr-4 text-xs font-bold text-white backdrop-blur-md transition hover:bg-black/65 active:scale-95"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E8809A] text-white">
+                <Play className="ml-0.5 h-3 w-3 fill-white" />
+              </span>
+              {t("Ver video y de qué trata", "Watch video & details")}
+            </button>
+
+            <div className="relative flex min-h-[340px] flex-col justify-end p-6 md:p-8">
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#239BA2] px-3 py-1 text-[11px] font-bold text-white">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                  {t("Zoom o presencial", "Zoom or in person")}
+                  {isEs ? activeCircle.badgeEs : activeCircle.badgeEn}
+                </span>
+                <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+                  📅 {isEs ? activeCircle.es : activeCircle.en} · 6:00 PM HST
                 </span>
                 <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md">
                   ✓ {t("100% gratis", "100% free")}
                 </span>
               </div>
               <h3 className="mt-3 text-2xl font-semibold leading-tight tracking-[-0.025em] text-white md:text-3xl">
-                Love Circle <span className="font-light italic text-[#FCD5DE]">for Patients</span>
+                {isEs ? activeCircle.topicEs : activeCircle.topicEn}
               </h3>
-              <p className="mt-1.5 max-w-lg text-sm text-white/85">
-                {t(
-                  "Un espacio seguro para conocernos, respirar juntas y sentirte acompañada. Facilitado por Kelsie y Omar.",
-                  "A safe space to meet us, breathe together and feel supported. Facilitated by Kelsie and Omar."
-                )}
+              <p className="mt-1.5 max-w-xl line-clamp-2 text-sm leading-relaxed text-white/85">
+                {isEs ? activeCircle.summaryEs : activeCircle.summaryEn}
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-[#CFEDE8]">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  {t("Zoom en vivo o presencial en Honolulu · Con ", "Live Zoom or in-person Honolulu · With ")}
+                  <strong className="text-white">{activeCircle.host}</strong>
+                </span>
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2.5">
                 <button
                   type="button"
-                  onClick={() => openSheet("circle_rsvp")}
+                  onClick={() => setPreviewCircleIdx(selectedCircleIdx)}
                   className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-bold text-[#172725] shadow-lg transition hover:brightness-95 active:scale-95"
+                >
+                  <Play className="h-3.5 w-3.5 fill-[#172725]" />
+                  {t("Ver resumen, video y dinámica", "See summary, video & agenda")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openSheet("circle_rsvp", { fecha_circle: activeCircle.iso })}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#E8809A] px-5 py-2.5 text-xs font-bold text-white shadow-lg transition hover:brightness-105 active:scale-95"
                 >
                   <Calendar className="h-4 w-4" />
                   {t("Inscribirme gratis", "Sign up for free")}
@@ -845,7 +1058,7 @@ export function RecursosSection({
                 <button
                   type="button"
                   onClick={() => openSheet("meet_founders")}
-                  className="rounded-full bg-white/15 px-5 py-2.5 text-xs font-bold text-white backdrop-blur-md transition hover:bg-white/25 active:scale-95"
+                  className="rounded-full bg-white/15 px-4 py-2.5 text-xs font-bold text-white backdrop-blur-md transition hover:bg-white/25 active:scale-95"
                 >
                   {t("Conocer a Kelsie y Omar", "Meet Kelsie & Omar")}
                 </button>
@@ -853,37 +1066,77 @@ export function RecursosSection({
             </div>
           </div>
 
-          {/* Próximas fechas + sesión gratuita */}
+          {/* Próximas fechas interactivas + sesión gratuita */}
           <div className="flex flex-col gap-3 lg:col-span-2">
             <div className="rounded-[26px] bg-white p-4 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wider text-espresso/50">
-                {t("Próximas fechas", "Upcoming dates")}
-              </p>
-              <div className="mt-2 divide-y divide-espresso/5">
-                {UPCOMING_CIRCLES.map((c) => (
-                  <button
-                    key={c.iso}
-                    type="button"
-                    onClick={() => openSheet("circle_rsvp", { fecha_circle: c.iso })}
-                    className="flex w-full items-center gap-3 py-2.5 text-left transition hover:opacity-80"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#CFEDE8] text-[#1E747A]">
-                      <span className="text-[10px] font-bold leading-none">{(isEs ? c.es : c.en).split(" ")[0]}</span>
-                      <span className="text-sm font-extrabold leading-tight">{(isEs ? c.es : c.en).split(" ")[1]}</span>
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold text-espresso">{isEs ? c.topicEs : c.topicEn}</span>
-                      <span className="block text-xs text-espresso/55">6:00 PM HST</span>
-                    </span>
-                    <span className="rounded-full bg-[#239BA2]/10 px-3 py-1 text-[11px] font-bold text-[#239BA2]">
-                      {t("Reservar", "RSVP")}
-                    </span>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-espresso/50">
+                  {t("Próximas fechas", "Upcoming dates")}
+                </p>
+                <span className="text-[11px] font-semibold text-[#239BA2]">
+                  {t("Toca una fecha para explorar", "Tap a date to explore")}
+                </span>
+              </div>
+              <div className="mt-2.5 space-y-1.5">
+                {UPCOMING_CIRCLES.map((c, idx) => {
+                  const isSelected = idx === selectedCircleIdx;
+                  const parts = (isEs ? c.es : c.en).split(" ");
+                  return (
+                    <button
+                      key={c.iso}
+                      type="button"
+                      onMouseEnter={() => setSelectedCircleIdx(idx)}
+                      onClick={() => {
+                        setSelectedCircleIdx(idx);
+                        setPreviewCircleIdx(idx);
+                      }}
+                      className={`group flex w-full items-center gap-3 rounded-2xl p-2 text-left transition active:scale-[0.99] ${
+                        isSelected
+                          ? "bg-[#EAF6F4] ring-1 ring-[#239BA2]/35"
+                          : "hover:bg-[#FAF7F2]"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl transition ${
+                          isSelected ? "bg-[#239BA2] text-white shadow-sm" : "bg-[#CFEDE8] text-[#1E747A]"
+                        }`}
+                      >
+                        <span className="text-[9px] font-bold uppercase leading-none">{parts[0]}</span>
+                        <span className="text-sm font-extrabold leading-tight">{parts[1]}</span>
+                      </span>
+                      <span className="relative hidden h-11 w-11 shrink-0 overflow-hidden rounded-xl sm:block">
+                        <img src={c.img} alt="" className="h-full w-full object-cover" />
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Play className="h-3 w-3 fill-white text-white" />
+                        </span>
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-espresso">
+                          {isEs ? c.topicEs : c.topicEn}
+                        </span>
+                        <span className="block truncate text-[11px] text-espresso/55">
+                          6:00 PM HST · {isEs ? c.badgeEs : c.badgeEn}
+                        </span>
+                      </span>
+                      <span
+                        className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+                          isSelected
+                            ? "bg-[#239BA2] text-white"
+                            : "bg-[#239BA2]/10 text-[#239BA2] group-hover:bg-[#239BA2] group-hover:text-white"
+                        }`}
+                      >
+                        {t("Ver detalles", "Details")}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
               {nextCircle?.fecha_evento && (
-                <p className="mt-1 text-[11px] text-espresso/45">
-                  {t("Los cupos se confirman por correo.", "Spots are confirmed by email.")}
+                <p className="mt-2 text-[11px] text-espresso/45">
+                  {t(
+                    "Explora de qué trata cada fecha, mira el video de muestra e inscríbete gratis.",
+                    "Explore what each date is about, watch the preview video, and sign up free."
+                  )}
                 </p>
               )}
             </div>
@@ -906,6 +1159,29 @@ export function RecursosSection({
             </button>
           </div>
         </div>
+
+        {/* Modal interactivo al tocar cualquier fecha: Imagen + Video + Resumen + En qué y dónde participar */}
+        {previewCircleIdx !== null && (
+          <CircleEventPreviewModal
+            circles={UPCOMING_CIRCLES}
+            activeIndex={previewCircleIdx}
+            onSelectIndex={(idx) => {
+              setPreviewCircleIdx(idx);
+              setSelectedCircleIdx(idx);
+            }}
+            onClose={() => setPreviewCircleIdx(null)}
+            onRsvp={(iso) => {
+              setPreviewCircleIdx(null);
+              openSheet("circle_rsvp", { fecha_circle: iso });
+            }}
+            onMeetFounders={() => {
+              setPreviewCircleIdx(null);
+              openSheet("meet_founders");
+            }}
+            isEs={isEs}
+            t={t}
+          />
+        )}
       </section>
 
       {/* ---------- 2. RECURSOS INSPIRADORES POR COLECCIÓN ---------- */}
@@ -1365,5 +1641,303 @@ function MiniTile({ item, img, onOpen, isEs }: { item: any; img: string; onOpen:
         <span className="mt-1 block text-[10px] font-bold text-[#CFEDE8]">{item.duracion}</span>
       </span>
     </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Modal interactivo de fecha: Imagen + Video + Resumen + Dinámica   */
+/* ------------------------------------------------------------------ */
+
+function CircleEventPreviewModal({
+  circles,
+  activeIndex,
+  onSelectIndex,
+  onClose,
+  onRsvp,
+  onMeetFounders,
+  isEs,
+  t,
+}: {
+  circles: CircleEventInfo[];
+  activeIndex: number;
+  onSelectIndex: (idx: number) => void;
+  onClose: () => void;
+  onRsvp: (iso: string) => void;
+  onMeetFounders: () => void;
+  isEs: boolean;
+  t: (es: string, en: string) => string;
+}) {
+  const [mediaMode, setMediaMode] = useState<"image" | "video">("image");
+  const [tab, setTab] = useState<"resumen" | "participar" | "donde">("resumen");
+
+  const event = circles[activeIndex] || circles[0];
+  const steps = isEs ? event.stepsEs : event.stepsEn;
+  const bring = isEs ? event.bringEs : event.bringEn;
+
+  const switchDate = (idx: number) => {
+    onSelectIndex(idx);
+    setMediaMode("image");
+  };
+
+  return (
+    <div className="fixed inset-0 z-[65] flex items-end justify-center p-0 sm:items-center sm:p-4">
+      <button
+        type="button"
+        aria-label={t("Cerrar", "Close")}
+        onClick={onClose}
+        className="absolute inset-0 bg-espresso/55 backdrop-blur-sm"
+      />
+
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[32px] bg-white shadow-2xl animate-sheet-up sm:rounded-[32px]">
+        {/* Selector interactivo superior de fechas */}
+        <div className="flex items-center justify-between gap-2 border-b border-espresso/10 bg-[#FAF7F2] px-4 py-3 sm:px-6">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+            {circles.map((c, idx) => {
+              const active = idx === activeIndex;
+              return (
+                <button
+                  key={c.iso}
+                  type="button"
+                  onClick={() => switchDate(idx)}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+                    active
+                      ? "bg-[#239BA2] text-white shadow-sm"
+                      : "bg-white text-espresso/65 hover:bg-espresso/5"
+                  }`}
+                >
+                  {isEs ? c.es : c.en}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("Cerrar", "Close")}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition hover:bg-[#FCECEE] hover:text-[#C94A6A]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Cuerpo desplazable */}
+        <div className="overflow-y-auto p-5 sm:p-6 space-y-5">
+          {/* Visor interactivo: Imagen ↔ Video */}
+          <div className="relative overflow-hidden rounded-[26px] bg-[#172725] shadow-md">
+            {mediaMode === "video" ? (
+              <div className="aspect-video w-full bg-black">
+                <iframe
+                  src={`${event.videoUrl}&autoplay=1`}
+                  title={isEs ? event.topicEs : event.topicEn}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full border-0"
+                />
+              </div>
+            ) : (
+              <div className="relative aspect-video w-full overflow-hidden">
+                <img
+                  src={event.img}
+                  alt={isEs ? event.topicEs : event.topicEn}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+
+                {/* Botón Play central para ver video */}
+                <button
+                  type="button"
+                  onClick={() => setMediaMode("video")}
+                  className="group absolute inset-0 flex flex-col items-center justify-center gap-2"
+                >
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-[#172725] shadow-xl transition duration-300 group-hover:scale-110">
+                    <Play className="ml-1 h-7 w-7 fill-[#172725]" />
+                  </span>
+                  <span className="rounded-full bg-black/55 px-3.5 py-1 text-xs font-bold text-white backdrop-blur-md">
+                    {t("Ver video de muestra del encuentro", "Watch session preview video")}
+                  </span>
+                </button>
+
+                {/* Badges inferiores */}
+                <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex flex-wrap items-center justify-between gap-2">
+                  <span className="rounded-full bg-[#239BA2] px-3 py-1 text-[11px] font-bold text-white">
+                    {isEs ? event.badgeEs : event.badgeEn}
+                  </span>
+                  <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+                    ✨ {event.spots} {t("cupos libres · 100% gratis", "free spots · 100% free")}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Conmutador Imagen / Video arriba a la derecha */}
+            <div className="absolute right-3 top-3 flex gap-1 rounded-full bg-black/55 p-1 backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => setMediaMode("image")}
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+                  mediaMode === "image" ? "bg-white text-espresso" : "text-white/80 hover:text-white"
+                }`}
+              >
+                <ImageIcon className="h-3 w-3" />
+                {t("Imagen", "Image")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMediaMode("video")}
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+                  mediaMode === "video" ? "bg-[#E8809A] text-white" : "text-white/80 hover:text-white"
+                }`}
+              >
+                <Video className="h-3 w-3" />
+                {t("Video", "Video")}
+              </button>
+            </div>
+          </div>
+
+          {/* Encabezado de la fecha */}
+          <div>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[#239BA2]">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{isEs ? event.fullDateEs : event.fullDateEn}</span>
+              <span className="text-espresso/30">·</span>
+              <Clock className="h-3.5 w-3.5 text-[#E8809A]" />
+              <span className="text-espresso/65">60 min</span>
+            </div>
+            <h3 className="mt-1 text-2xl font-semibold leading-tight tracking-[-0.025em] text-espresso">
+              {isEs ? event.topicEs : event.topicEn}
+            </h3>
+            <p className="mt-1 text-xs font-semibold text-espresso/60">
+              {t("Facilitado por", "Facilitated by")}{" "}
+              <strong className="text-espresso">{event.host}</strong>
+            </p>
+          </div>
+
+          {/* Pestañas interactivas de información */}
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-[#FAF7F2] p-1.5">
+            {(
+              [
+                ["resumen", t("✨ De qué trata", "✨ About")],
+                ["participar", t("🤍 En qué participas", "🤍 What we'll do")],
+                ["donde", t("📍 Dónde unirte", "📍 Where & how")],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                className={`rounded-xl py-2.5 text-xs font-bold transition ${
+                  tab === id
+                    ? "bg-white text-espresso shadow-sm"
+                    : "text-espresso/60 hover:text-espresso"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Contenido según pestaña elegida */}
+          {tab === "resumen" && (
+            <div className="space-y-3 animate-fade-in">
+              <div className="rounded-2xl bg-[#FAF7F2] p-4">
+                <p className="text-sm leading-relaxed text-espresso/85">
+                  {isEs ? event.summaryEs : event.summaryEn}
+                </p>
+              </div>
+              <div className="flex items-start gap-3 rounded-2xl border border-[#239BA2]/20 bg-[#EAF6F4]/70 p-3.5">
+                <Users className="mt-0.5 h-4 w-4 shrink-0 text-[#239BA2]" />
+                <div className="text-xs leading-relaxed text-espresso/80">
+                  <strong className="block font-bold text-espresso">
+                    {t("¿Para quién es este encuentro?", "Who is this gathering for?")}
+                  </strong>
+                  {isEs ? event.whoEs : event.whoEn}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === "participar" && (
+            <div className="space-y-2.5 animate-fade-in">
+              <p className="text-xs font-semibold text-espresso/60">
+                {t(
+                  "Así viviremos los 60 minutos paso a paso (sin presiones, a tu propio ritmo):",
+                  "Here is how our 60 minutes flow step by step (pressure-free, at your own pace):"
+                )}
+              </p>
+              {steps.map((s, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3 rounded-2xl bg-[#FAF7F2] p-3.5"
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#239BA2] text-xs font-bold text-white">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-espresso">{s.title}</span>
+                      <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-[#C94A6A]">
+                        {s.time}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs leading-relaxed text-espresso/70">{s.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === "donde" && (
+            <div className="space-y-3 animate-fade-in">
+              <div className="rounded-2xl bg-[#FAF7F2] p-4 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#239BA2]">
+                  <MapPin className="h-4 w-4" />
+                  {t("Dónde y cómo te conectas", "Where & how you join")}
+                </div>
+                <p className="text-sm leading-relaxed text-espresso/80">
+                  {isEs ? event.whereEs : event.whereEn}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-espresso/50">
+                  {t("Qué tener a la mano para disfrutarlo", "What to keep nearby")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {bring.map((b) => (
+                    <span
+                      key={b}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#FCECEE] px-3 py-1.5 text-xs font-semibold text-[#C94A6A]"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {b}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Barra inferior fija de acción */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-espresso/10 bg-white px-5 py-4 sm:px-6">
+          <button
+            type="button"
+            onClick={onMeetFounders}
+            className="text-xs font-bold text-espresso/65 underline-offset-4 hover:text-espresso hover:underline"
+          >
+            {t("Conocer a Kelsie y Omar", "Meet Kelsie & Omar")}
+          </button>
+          <button
+            type="button"
+            onClick={() => onRsvp(event.iso)}
+            className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#239BA2] to-[#1D8389] px-6 py-3 text-xs font-bold text-white shadow-md transition hover:brightness-105 active:scale-95"
+          >
+            <Calendar className="h-4 w-4" />
+            {t("Quiero participar · Inscribirme gratis", "I want to join · Sign up free")} (
+            {isEs ? event.es : event.en})
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
