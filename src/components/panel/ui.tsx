@@ -12,11 +12,13 @@ export function Sheet({
   open,
   onClose,
   title,
+  maxWidth = "max-w-lg",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
+  maxWidth?: string;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -31,14 +33,14 @@ export function Sheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
       <button
         type="button"
         aria-label="Cerrar"
         onClick={onClose}
         className="absolute inset-0 bg-espresso/40 backdrop-blur-[2px]"
       />
-      <div className="relative z-10 max-h-[90vh] w-full max-w-lg animate-sheet-up overflow-y-auto rounded-t-[32px] bg-white p-6 pb-10 shadow-2xl sm:rounded-[32px] sm:pb-6">
+      <div className={`relative z-10 max-h-[92vh] w-full ${maxWidth} animate-sheet-up overflow-y-auto rounded-t-[32px] bg-white p-6 pb-10 shadow-2xl sm:rounded-[32px] sm:pb-6`}>
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-espresso/15 sm:hidden" />
         <div className="mb-4 flex items-start justify-between gap-3">
           {title ? (

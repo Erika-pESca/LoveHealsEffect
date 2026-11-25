@@ -229,184 +229,204 @@ export function PracticePlayer({
       : matchedHealer.short_bio_en || matchedHealer.short_bio_es
     : "";
 
+  const healerPortrait = /kelsie/i.test(primaryHealerName)
+    ? "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80"
+    : /omar/i.test(primaryHealerName)
+      ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
+      : /maya/i.test(primaryHealerName)
+        ? "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"
+        : "";
+
   return (
-    <div className="-mt-2 space-y-4">
-      {/* Portada Fotográfica Real */}
-      <div className="relative overflow-hidden rounded-[28px] bg-espresso/5 shadow-md">
-        <div className="relative h-48 w-full sm:h-56">
-          <img src={photoUrl} alt={title} className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+    <div className="-mt-2 grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-center">
+      {/* Columna izquierda: Portada fotográfica real + reproductor compacto */}
+      <div className="space-y-3.5 lg:col-span-6">
+        <div className="relative overflow-hidden rounded-[26px] bg-[#FAF7F2] shadow-sm">
+          <div className="relative h-48 w-full sm:h-52">
+            <img src={photoUrl} alt={title} className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-espresso/65 via-espresso/15 to-transparent" />
 
-          {/* Badges superiores */}
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-            <span className="rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
-              {isEs ? meta.es : meta.en}
-            </span>
-            <span className="rounded-full bg-[#E8809A] px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
-              {item.duracion || "15 min"}
-            </span>
-          </div>
-
-          {/* Información del título sobre la foto */}
-          <div className="absolute bottom-3 left-4 right-4">
-            <h4 className="text-lg font-bold leading-tight text-white sm:text-xl drop-shadow-sm">
-              {title}
-            </h4>
-            <p className="mt-0.5 text-xs font-medium text-white/85">
-              {item.autor
-                ? `${item.autor} · ${isEs ? "Recomendado por" : "Recommended by"} ${primaryHealerName}`
-                : item.instructor
-                  ? `${isEs ? "Compartido por" : "Shared by"} ${item.instructor}`
-                  : "Love Heals Effect"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Controles interactivos de audio/video (solo cuando es audio/video/playlist) */}
-      {!isReading && (
-        <div className="rounded-[26px] bg-[#FAF7F2] p-5 text-center shadow-inner">
-          <div className="space-y-1.5">
-            <div
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const newPct = Math.max(0, Math.min(1, clickX / rect.width));
-                setSecs(Math.round(newPct * totalSecs));
-              }}
-              className="group relative h-2.5 w-full cursor-pointer overflow-hidden rounded-full bg-espresso/10 transition hover:h-3"
-            >
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#F48EA6] to-[#DC5678] transition-all duration-300"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs font-bold text-espresso/60">
-              <span>{formatTime(secs)}</span>
-              <span className="text-[11px] font-semibold text-espresso/45">
-                {playing ? (inhale ? (isEs ? "Inhala…" : "Inhale…") : isEs ? "Exhala…" : "Exhale…") : isEs ? "En pausa" : "Paused"}
+            <div className="absolute left-3 right-3 top-3 flex items-center justify-between">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-espresso shadow-2xs">
+                {isEs ? meta.es : meta.en}
               </span>
-              <span>{formatTime(totalSecs)}</span>
+              <span className="rounded-full bg-[#E8809A] px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+                {item.duracion || "15 min"}
+              </span>
+            </div>
+
+            <div className="absolute bottom-3 left-4 right-4">
+              <h4 className="line-clamp-2 text-lg font-bold leading-snug text-white drop-shadow-sm sm:text-xl">
+                {title}
+              </h4>
+              <p className="mt-0.5 truncate text-xs font-medium text-white/85">
+                {item.autor
+                  ? `${item.autor} · ${isEs ? "Recomendado por" : "Recommended by"} ${primaryHealerName}`
+                  : item.instructor
+                    ? `${isEs ? "Compartido por" : "Shared by"} ${item.instructor}`
+                    : "Love Heals Effect"}
+              </p>
             </div>
           </div>
-
-          <div className="mx-auto my-3 flex h-7 max-w-[200px] items-center justify-center gap-1">
-            {Array.from({ length: 22 }).map((_, i) => (
-              <span
-                key={i}
-                className="h-full w-1 origin-center animate-wave rounded-full bg-[#E8809A]/60"
-                style={{
-                  animationDelay: `${(i % 7) * 0.11}s`,
-                  animationPlayState: playing ? "running" : "paused",
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="mt-3 flex items-center justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => skip(-15)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
-              aria-label="-15 segundos"
-            >
-              <span className="text-xs font-bold">-15s</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPlaying((p) => !p)}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-[#E8809A] to-[#DC5678] text-white shadow-lg transition duration-200 hover:scale-105 active:scale-95"
-              aria-label={playing ? "Pausar" : "Reproducir"}
-            >
-              {playing ? <Pause className="h-6 w-6 fill-white" /> : <Play className="h-6 w-6 fill-white ml-0.5" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => skip(15)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
-              aria-label="+15 segundos"
-            >
-              <span className="text-xs font-bold">+15s</span>
-            </button>
-          </div>
         </div>
-      )}
 
-      {/* ¿En qué te ayuda / qué vas a manejar? (Escrito por el sanador) */}
-      <div className="rounded-2xl bg-[#FAF7F2] p-4">
-        <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#239BA2]">
-          ✨ {isEs ? "¿Qué vas a manejar / en qué te ayuda?" : "What does this help you manage?"}
-        </p>
-        <p className="mt-1.5 text-sm leading-relaxed text-espresso/80">{desc}</p>
+        {/* Controles interactivos de audio/video */}
+        {!isReading && (
+          <div className="rounded-[24px] bg-[#FAF7F2] p-4 text-center">
+            <div className="space-y-1">
+              <div
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = e.clientX - rect.left;
+                  const newPct = Math.max(0, Math.min(1, clickX / rect.width));
+                  setSecs(Math.round(newPct * totalSecs));
+                }}
+                className="group relative h-2 w-full cursor-pointer overflow-hidden rounded-full bg-espresso/10 transition hover:h-2.5"
+              >
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#F48EA6] to-[#DC5678] transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-espresso/60">
+                <span>{formatTime(secs)}</span>
+                <span className="font-semibold text-espresso/45">
+                  {playing ? (inhale ? (isEs ? "Inhala…" : "Inhale…") : isEs ? "Exhala…" : "Exhale…") : isEs ? "En pausa" : "Paused"}
+                </span>
+                <span>{formatTime(totalSecs)}</span>
+              </div>
+            </div>
+
+            <div className="mt-2.5 flex items-center justify-between gap-3">
+              <div className="hidden h-5 flex-1 items-center justify-center gap-1 sm:flex">
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="h-full w-1 origin-center animate-wave rounded-full bg-[#E8809A]/55"
+                    style={{
+                      animationDelay: `${(i % 7) * 0.11}s`,
+                      animationPlayState: playing ? "running" : "paused",
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="mx-auto flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => skip(-15)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-espresso/70 shadow-2xs transition active:scale-90"
+                  aria-label="-15 segundos"
+                >
+                  <span className="text-[11px] font-bold">-15s</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPlaying((p) => !p)}
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-[#E8809A] to-[#DC5678] text-white shadow-md transition duration-200 hover:scale-105 active:scale-95"
+                  aria-label={playing ? "Pausar" : "Reproducir"}
+                >
+                  {playing ? <Pause className="h-5 w-5 fill-white" /> : <Play className="ml-0.5 h-5 w-5 fill-white" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => skip(15)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-espresso/70 shadow-2xs transition active:scale-90"
+                  aria-label="+15 segundos"
+                >
+                  <span className="text-[11px] font-bold">+15s</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Ficha del sanador que lo subió y su especialidad */}
-      {primaryHealerName && primaryHealerName !== "Love Heals Effect" && (
-        <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#E8809A] to-[#C94A6A] text-base font-bold text-white">
-              {primaryHealerName.charAt(0)}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-espresso/45">
-                {isEs ? "Sanador que comparte este recurso" : "Healer sharing this resource"}
-              </p>
-              <p className="truncate text-base font-bold text-espresso">{primaryHealerName}</p>
-              <p className="text-xs font-semibold text-[#C94A6A]">{healerSpecialty}</p>
-            </div>
-          </div>
-          {healerBio && <p className="mt-2.5 text-xs leading-relaxed text-espresso/70">{healerBio}</p>}
-          {(onViewHealer || onBookHealer) && (
-            <div className="mt-3 flex flex-wrap gap-2 border-t border-espresso/5 pt-2.5">
-              {onViewHealer && (
-                <button
-                  type="button"
-                  onClick={() => onViewHealer(primaryHealerName)}
-                  className="rounded-full bg-[#FAF7F2] px-3.5 py-1.5 text-xs font-bold text-espresso transition hover:bg-espresso/10"
-                >
-                  {isEs ? "Ver más recursos suyos" : "See more from them"}
-                </button>
-              )}
-              {onBookHealer && (
-                <button
-                  type="button"
-                  onClick={() => onBookHealer(matchedHealer?.id)}
-                  className="rounded-full bg-espresso px-3.5 py-1.5 text-xs font-bold text-white transition hover:brightness-110"
-                >
-                  {isEs ? "Reservar sesión" : "Book session"}
-                </button>
-              )}
-            </div>
-          )}
+      {/* Columna derecha: Beneficio + Sanador con retrato real + Enlace externo */}
+      <div className="flex flex-col justify-between gap-3.5 lg:col-span-6">
+        <div className="rounded-2xl bg-[#FAF7F2] p-4">
+          <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#239BA2]">
+            {isEs ? "¿Qué vas a manejar / en qué te ayuda?" : "What does this help you manage?"}
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-espresso/80 sm:text-sm">{desc}</p>
         </div>
-      )}
 
-      {hasLink && (
-        <a
-          href={item.media_url}
-          target="_blank"
-          rel="noreferrer"
-          className={`flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-bold transition ${item.tipo_contenido === "spotify"
-            ? "bg-[#1DB954] text-white shadow-md hover:brightness-105"
-            : "border border-[#D85678]/40 bg-[#FCECEE] text-[#C94A6A] hover:bg-[#D85678] hover:text-white"
+        {primaryHealerName && primaryHealerName !== "Love Heals Effect" && (
+          <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-2xs">
+            <div className="flex items-center gap-3">
+              {healerPortrait ? (
+                <img
+                  src={healerPortrait}
+                  alt={primaryHealerName}
+                  className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-[#FCECEE]"
+                />
+              ) : (
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#E8809A] to-[#C94A6A] text-base font-bold text-white">
+                  {primaryHealerName.charAt(0)}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#239BA2]">
+                  {isEs ? "Sanador especialista" : "Specialist healer"}
+                </p>
+                <p className="truncate text-sm font-bold text-espresso">{primaryHealerName}</p>
+                <p className="line-clamp-1 text-[11px] font-semibold text-[#C94A6A]">{healerSpecialty}</p>
+              </div>
+            </div>
+            {healerBio && <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-espresso/70">{healerBio}</p>}
+            {(onViewHealer || onBookHealer) && (
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-espresso/5 pt-2.5">
+                {onViewHealer && (
+                  <button
+                    type="button"
+                    onClick={() => onViewHealer(primaryHealerName)}
+                    className="rounded-full bg-[#FAF7F2] px-3.5 py-1.5 text-xs font-bold text-espresso transition hover:bg-espresso/10"
+                  >
+                    {isEs ? "Ver perfil y recursos" : "Profile & resources"}
+                  </button>
+                )}
+                {onBookHealer && (
+                  <button
+                    type="button"
+                    onClick={() => onBookHealer(matchedHealer?.id)}
+                    className="rounded-full bg-[#E8809A] px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition hover:bg-[#d86c88]"
+                  >
+                    {isEs ? "Reservar sesión" : "Book session"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {hasLink && (
+          <a
+            href={item.media_url}
+            target="_blank"
+            rel="noreferrer"
+            className={`flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold transition ${
+              item.tipo_contenido === "spotify"
+                ? "bg-[#239BA2] text-white shadow-sm hover:brightness-105"
+                : "border border-[#E8809A]/35 bg-[#FDF3EF] text-[#C94A6A] hover:bg-[#E8809A] hover:text-white"
             }`}
-        >
-          <ExternalLink className="h-4 w-4" />
-          {item.tipo_contenido === "spotify"
-            ? isEs
-              ? "Escuchar playlist en Spotify"
-              : "Listen to playlist on Spotify"
-            : item.tipo_contenido === "libro"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {item.tipo_contenido === "spotify"
               ? isEs
-                ? "Ver libro completo"
-                : "View full book"
-              : isEs
-                ? "Abrir práctica completa en alta resolución"
-                : "Open full practice in high definition"}
-        </a>
-      )}
+                ? "Escuchar playlist en Spotify"
+                : "Listen to playlist on Spotify"
+              : item.tipo_contenido === "libro"
+                ? isEs
+                  ? "Ver libro completo"
+                  : "View full book"
+                : isEs
+                  ? "Abrir práctica en pantalla completa"
+                  : "Open full practice"}
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -1217,7 +1237,14 @@ function PacienteDashboardInner() {
 
       {/* ===================== HOJAS ===================== */}
 
-      <Sheet open={sheet === "player"} onClose={() => { setSheet(null); setPlayerItem(null); }}>
+      <Sheet
+        open={sheet === "player"}
+        onClose={() => {
+          setSheet(null);
+          setPlayerItem(null);
+        }}
+        maxWidth="max-w-4xl lg:overflow-visible"
+      >
         {playerItem && (
           <PracticePlayer
             key={playerItem.id}
