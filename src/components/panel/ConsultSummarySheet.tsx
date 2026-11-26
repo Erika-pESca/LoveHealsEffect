@@ -423,7 +423,7 @@ export function ConsultSummarySheet({
               ) : (
                 <ul className="mt-2.5 space-y-2 text-xs text-espresso/85">
                   {meds.slice(0, 4).map((m, idx) => (
-                    <li key={m.id ?? idx} className="rounded-xl bg-white px-3 py-2 shadow-2xs">
+                    <li key={m.id ?? idx} className="rounded-xl bg-white px-3 py-2 shadow-sm">
                       <div className="flex flex-wrap items-baseline justify-between gap-1">
                         <span className="font-bold text-espresso">{m.nombre}</span>
                         {(m.dosis || m.horario) && (
@@ -457,7 +457,7 @@ export function ConsultSummarySheet({
                   {supplements.map((s, idx) => (
                     <span
                       key={idx}
-                      className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-espresso/80 shadow-2xs"
+                      className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-espresso/80 shadow-sm"
                     >
                       {s.nombre}
                       {s.dosis ? ` · ${s.dosis}` : ""}
