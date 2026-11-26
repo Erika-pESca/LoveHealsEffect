@@ -6,11 +6,13 @@ import {
   ArrowRight,
   BookOpen,
   Calendar,
+  Check,
   CheckCircle2,
   ChevronRight,
   Clock,
   Crown,
   FileText,
+  Gift,
   Headphones,
   Heart,
   HeartHandshake,
@@ -774,7 +776,7 @@ export function RecursosSection({
                         className={`flex flex-col items-center rounded-2xl ${boxStyles.bg} p-3 text-center`}
                       >
                         <span
-                          className={`flex h-9 w-9 items-center justify-center rounded-full shadow-2xs ${boxStyles.iconBg}`}
+                          className={`flex h-9 w-9 items-center justify-center rounded-full shadow-sm ${boxStyles.iconBg}`}
                         >
                           <Sparkles className="h-4 w-4" />
                         </span>
@@ -844,7 +846,7 @@ export function RecursosSection({
                 </div>
               )}
 
-              <label className="flex items-center gap-2 rounded-full border border-espresso/10 bg-white px-4 py-2 shadow-2xs sm:w-64">
+              <label className="flex items-center gap-2 rounded-full border border-espresso/10 bg-white px-4 py-2 shadow-sm sm:w-64">
                 <Search className="h-4 w-4 text-espresso/40" />
                 <input
                   value={query}
@@ -877,7 +879,7 @@ export function RecursosSection({
                   <button
                     type="button"
                     onClick={() => go(`healer:${selectedHealerInfo.name}`)}
-                    className="rounded-full bg-white px-3.5 py-2 text-xs font-bold text-espresso shadow-2xs transition hover:bg-[#FAF7F2]"
+                    className="rounded-full bg-white px-3.5 py-2 text-xs font-bold text-espresso shadow-sm transition hover:bg-[#FAF7F2]"
                   >
                     {t("Ver perfil", "View profile")}
                   </button>
@@ -1106,154 +1108,248 @@ export function RecursosSection({
   /* ================================================================== */
   return (
     <main className="mt-5 space-y-8 pb-10">
-      {/* ---------- 1. HERO PASTEL LUMINOSO ("Today's Plan") + PRÓXIMOS ENCUENTROS ---------- */}
-      <section className="animate-fade-in grid grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* Tarjeta destacada pastel con foto real de personas a la derecha (sin fondos negros) */}
-        <div className="relative overflow-hidden rounded-[32px] border border-white bg-gradient-to-br from-[#FDF3EF] via-[#FCECEE]/70 to-[#E5F2F1]/80 p-6 shadow-[0_14px_38px_rgba(232,128,154,0.12)] sm:p-7 lg:col-span-7">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/50 blur-2xl" />
-
-          <div className="relative grid grid-cols-1 items-center gap-5 sm:grid-cols-12">
-            <div className="space-y-3 sm:col-span-7">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-[#C94A6A] shadow-2xs">
-                  <Sparkles className="h-3 w-3" />
-                  {isEs ? activeCircle.badgeEs : activeCircle.badgeEn}
-                </span>
-                <span className="rounded-full bg-[#E5F2F1] px-2.5 py-1 text-[10px] font-bold text-[#239BA2]">
-                  {t("100% Gratis", "100% Free")}
-                </span>
-              </div>
-
-              <h2 className="text-2xl font-semibold leading-[1.12] tracking-[-0.03em] text-espresso sm:text-[30px]">
-                {isEs ? activeCircle.topicEs : activeCircle.topicEn}
-              </h2>
-
-              <p className="text-xs font-semibold text-espresso/65">
-                {isEs ? activeCircle.es : activeCircle.en} · {activeCircle.time} ·{" "}
-                <span className="text-[#239BA2]">{activeCircle.host.split("&")[0].trim()}</span>
-              </p>
-
-              <p className="line-clamp-2 text-xs leading-relaxed text-espresso/70">
-                {isEs ? activeCircle.summaryEs : activeCircle.summaryEn}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => openSheet("circle_rsvp", { fecha_circle: activeCircle.iso })}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#E8809A] px-5 py-2.5 text-xs font-bold text-white shadow-[0_10px_22px_rgba(232,128,154,0.32)] transition hover:bg-[#d86c88] active:scale-95"
-                >
-                  <span>{t("Inscribirme gratis", "Join free")}</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewCircleIdx(selectedCircleIdx)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-xs font-bold text-espresso shadow-2xs transition hover:bg-[#FAF7F2] active:scale-95"
-                >
-                  <Play className="h-3.5 w-3.5 fill-[#E8809A] text-[#E8809A]" />
-                  <span>{t("Ver video", "Preview")}</span>
-                </button>
-              </div>
+      {/* ---------- 1. ZONA DESTACADA: BENEFICIOS Y ESPACIOS 100% GRATUITOS ---------- */}
+      <section className="animate-fade-in relative overflow-hidden rounded-[36px] border border-[#E8809A]/20 bg-gradient-to-b from-[#FFF5F7] via-[#FFFDFB] to-white p-5 sm:p-6 lg:p-7 shadow-[0_16px_40px_rgba(232,128,154,0.09)]">
+        {/* Cabecera / Banner Superior con identidad clara de beneficios gratuitos */}
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-espresso/10 pb-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#E8809A]/10 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#C94A6A]">
+              <Gift className="h-3.5 w-3.5 text-[#E8809A]" />
+              <span>{t("Beneficios 100% Gratuitos", "100% Free Benefits")}</span>
+              <span className="h-1 w-1 rounded-full bg-[#E8809A]" />
+              <span className="text-[#239BA2]">{t("Comunidad Love Heals", "Love Heals Community")}</span>
             </div>
+            <h2 className="text-xl font-bold tracking-tight text-espresso sm:text-2xl">
+              {t("Círculos en vivo, talleres y tu sesión de regalo", "Live circles, workshops & your gift session")}
+            </h2>
+            <p className="text-xs text-espresso/65 max-w-2xl">
+              {t(
+                "Espacios guiados de acompañamiento, meditación y movimiento suave. Abiertos sin costo para ti y tu familia.",
+                "Guided live spaces for companion, meditation, and gentle movement. Free for you and your family."
+              )}
+            </p>
+          </div>
 
-            {/* Fotografía real luminosa de personas reales */}
-            <div className="sm:col-span-5">
-              <button
-                type="button"
-                onClick={() => setPreviewCircleIdx(selectedCircleIdx)}
-                className="group relative block aspect-[4/4] w-full overflow-hidden rounded-[26px] bg-white p-1.5 shadow-[0_12px_28px_rgba(38,35,34,0.1)]"
-              >
-                <div className="relative h-full w-full overflow-hidden rounded-[20px]">
-                  <img
-                    src={activeCircle.img}
-                    alt={isEs ? activeCircle.topicEs : activeCircle.topicEn}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute bottom-2.5 right-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-[#E8809A] shadow-md transition group-hover:scale-110">
-                    <Play className="ml-0.5 h-4 w-4 fill-[#E8809A]" />
-                  </span>
-                </div>
-              </button>
-            </div>
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-espresso/75">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm border border-white">
+              <Sparkles className="h-3 w-3 text-[#E8809A]" />
+              {t("Círculos en vivo gratis", "Free live circles")}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm border border-white">
+              <HeartHandshake className="h-3 w-3 text-[#239BA2]" />
+              {t("1 Sesión 1-a-1 al mes", "1 Free 1-on-1/mo")}
+            </span>
           </div>
         </div>
 
-        {/* Columna derecha estilo "Continue Your Journey": Próximas fechas con miniatura real */}
-        <div className="flex flex-col justify-between gap-2.5 rounded-[32px] border border-white bg-white p-5 shadow-[0_10px_30px_rgba(38,35,34,0.05)] lg:col-span-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold tracking-tight text-espresso">
-              {t("Próximos Healing Circles", "Upcoming Healing Circles")}
-            </h3>
-            <button
-              type="button"
-              onClick={() => openSheet("meet_founders")}
-              className="text-[11px] font-bold text-[#239BA2] hover:underline"
-            >
-              {t("Conocer equipo", "Meet team")}
-            </button>
+        {/* Grid de las dos tarjetas principales */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          {/* Tarjeta izquierda: Círculo / Taller destacado de la semana */}
+          <div className="relative overflow-hidden rounded-[30px] border border-white bg-gradient-to-br from-[#FFF8F6] via-[#FAF7F2] to-[#E8F3F2] p-5 sm:p-7 shadow-[0_12px_32px_rgba(232,128,154,0.12)] lg:col-span-7 flex flex-col justify-between">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/60 blur-2xl" />
+
+            <div className="relative grid grid-cols-1 items-center gap-5 sm:grid-cols-12">
+              <div className="space-y-3 sm:col-span-7">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#E8809A] to-[#D85C7D] px-3 py-1 text-[11px] font-extrabold text-white shadow-sm">
+                    <Gift className="h-3 w-3 text-white" />
+                    {t("100% Gratis", "100% Free")}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-[#C94A6A] shadow-sm">
+                    <Sparkles className="h-3 w-3" />
+                    {isEs ? activeCircle.badgeEs : activeCircle.badgeEn}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#E5F2F1] px-2.5 py-1 text-[10px] font-bold text-[#239BA2]">
+                    <Check className="h-3 w-3 text-[#239BA2]" />
+                    {t("Cupos abiertos", "Spots open")}
+                  </span>
+                </div>
+
+                <h3 className="text-2xl font-bold leading-[1.12] tracking-tight text-espresso sm:text-[28px]">
+                  {isEs ? activeCircle.topicEs : activeCircle.topicEn}
+                </h3>
+
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-espresso/70">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5 text-[#E8809A]" />
+                    {isEs ? activeCircle.es : activeCircle.en}
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5 text-espresso/50" />
+                    {activeCircle.time}
+                  </span>
+                  <span>·</span>
+                  <span className="text-[#239BA2] font-bold">
+                    {activeCircle.host.split("&")[0].trim()}
+                  </span>
+                </div>
+
+                <p className="line-clamp-2 text-xs leading-relaxed text-espresso/75">
+                  {isEs ? activeCircle.summaryEs : activeCircle.summaryEn}
+                </p>
+
+                {/* Micro-beneficios incluidos */}
+                <div className="flex flex-wrap gap-2 pt-0.5 text-[11px] font-medium text-espresso/65">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5">
+                    <Check className="h-3 w-3 text-[#239BA2]" />
+                    {t("Vía Zoom en vivo", "Live via Zoom")}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5">
+                    <Check className="h-3 w-3 text-[#239BA2]" />
+                    {t("Grabación incluida", "Recording included")}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 pt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => openSheet("circle_rsvp", { fecha_circle: activeCircle.iso })}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#E8809A] to-[#D85C7D] px-5 py-2.5 text-xs font-bold text-white shadow-[0_10px_22px_rgba(232,128,154,0.35)] transition hover:brightness-105 active:scale-95"
+                  >
+                    <span>{t("Inscribirme gratis", "Join free")}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewCircleIdx(selectedCircleIdx)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-xs font-bold text-espresso shadow-sm transition hover:bg-[#FAF7F2] active:scale-95"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-[#E8809A] text-[#E8809A]" />
+                    <span>{t("Ver video", "Preview")}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Fotografía real luminosa con badge de en vivo */}
+              <div className="sm:col-span-5">
+                <button
+                  type="button"
+                  onClick={() => setPreviewCircleIdx(selectedCircleIdx)}
+                  className="group relative block aspect-[4/4] w-full overflow-hidden rounded-[26px] bg-white p-1.5 shadow-[0_12px_28px_rgba(38,35,34,0.1)]"
+                >
+                  <div className="relative h-full w-full overflow-hidden rounded-[20px]">
+                    <img
+                      src={activeCircle.img}
+                      alt={isEs ? activeCircle.topicEs : activeCircle.topicEn}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute top-2.5 left-2.5 rounded-full bg-black/45 backdrop-blur-sm px-2.5 py-0.5 text-[10px] font-bold text-white">
+                      {t("En vivo", "Live")}
+                    </span>
+                    <span className="absolute bottom-2.5 right-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-[#E8809A] shadow-md transition group-hover:scale-110">
+                      <Play className="ml-0.5 h-4 w-4 fill-[#E8809A]" />
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            {UPCOMING_CIRCLES.slice(0, 3).map((c, idx) => {
-              const isSelected = idx === selectedCircleIdx;
-              return (
-                <button
-                  key={c.iso}
-                  type="button"
-                  onMouseEnter={() => setSelectedCircleIdx(idx)}
-                  onClick={() => {
-                    setSelectedCircleIdx(idx);
-                    setPreviewCircleIdx(idx);
-                  }}
-                  className={`group flex w-full items-center gap-3 rounded-2xl p-2 text-left transition ${
-                    isSelected
-                      ? "bg-[#FDF3EF] ring-1 ring-[#E8809A]/40"
-                      : "bg-[#FAF7F2]/75 hover:bg-[#FDF3EF]/60"
-                  }`}
-                >
-                  <img
-                    src={c.img}
-                    alt=""
-                    className="h-12 w-12 shrink-0 rounded-xl object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-bold text-espresso">
-                      {isEs ? c.topicEs : c.topicEn}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] text-espresso/55">
-                      {isEs ? c.es : c.en} · 60 min · {t("Gratis", "Free")}
-                    </p>
-                  </div>
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
+          {/* Columna derecha: Próximas fechas gratuitas + TARJETA DESTACADA de Coaching Gratis */}
+          <div className="flex flex-col justify-between gap-3.5 rounded-[30px] border border-white bg-white p-5 shadow-[0_10px_30px_rgba(38,35,34,0.05)] lg:col-span-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold tracking-tight text-espresso">
+                  {t("Próximos Encuentros Gratuitos", "Upcoming Free Circles")}
+                </h3>
+                <span className="rounded-full bg-[#E5F2F1] px-2 py-0.5 text-[10px] font-bold text-[#239BA2]">
+                  {UPCOMING_CIRCLES.length}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => openSheet("meet_founders")}
+                className="text-[11px] font-bold text-[#239BA2] hover:underline"
+              >
+                {t("Conocer equipo", "Meet team")}
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {UPCOMING_CIRCLES.slice(0, 3).map((c, idx) => {
+                const isSelected = idx === selectedCircleIdx;
+                return (
+                  <button
+                    key={c.iso}
+                    type="button"
+                    onMouseEnter={() => setSelectedCircleIdx(idx)}
+                    onClick={() => {
+                      setSelectedCircleIdx(idx);
+                      setPreviewCircleIdx(idx);
+                    }}
+                    className={`group flex w-full items-center gap-3 rounded-2xl p-2 text-left transition ${
                       isSelected
-                        ? "bg-[#E8809A] text-white"
-                        : "bg-white text-espresso/60 shadow-2xs group-hover:text-[#E8809A]"
+                        ? "bg-[#FFF5F7] ring-1 ring-[#E8809A]/40 shadow-sm"
+                        : "bg-[#FAF7F2]/75 hover:bg-[#FFF5F7]/60"
                     }`}
                   >
-                    <Play className="ml-0.5 h-3 w-3 fill-current" />
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => openSheet("book", { gratis: "1", modalidad: "online" })}
-            className="flex items-center justify-between gap-2 rounded-2xl bg-[#E5F2F1]/80 px-3.5 py-2.5 text-left transition hover:bg-[#d8ecea]"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#239BA2] shadow-2xs">
-                <HeartHandshake className="h-4 w-4" />
-              </span>
-              <span className="truncate text-xs font-bold text-espresso">
-                {t("1 sesión de coaching gratis al mes", "1 free monthly coaching session")}
-              </span>
+                    <img
+                      src={c.img}
+                      alt=""
+                      className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-espresso">
+                        {isEs ? c.topicEs : c.topicEn}
+                      </p>
+                      <div className="mt-0.5 flex items-center gap-2 text-[11px] text-espresso/55">
+                        <span className="font-semibold text-espresso/70">{isEs ? c.es : c.en}</span>
+                        <span>·</span>
+                        <span>60 min</span>
+                        <span>·</span>
+                        <span className="font-bold text-[#239BA2]">{t("100% Gratis", "Free")}</span>
+                      </div>
+                    </div>
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
+                        isSelected
+                          ? "bg-[#E8809A] text-white shadow-sm"
+                          : "bg-white text-espresso/60 shadow-sm group-hover:text-[#E8809A]"
+                      }`}
+                    >
+                      <Play className="ml-0.5 h-3 w-3 fill-current" />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <ChevronRight className="h-4 w-4 shrink-0 text-[#239BA2]" />
-          </button>
+
+            {/* TARJETA DESTACADA: 1 Sesión 1-a-1 de Coaching Gratis al Mes */}
+            <div className="relative overflow-hidden rounded-[24px] border border-[#239BA2]/30 bg-gradient-to-br from-[#E6F4F2] via-[#F3FAF9] to-[#FFF5F7] p-4 shadow-[0_8px_24px_rgba(35,155,162,0.12)]">
+              <div className="flex items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[10px] font-extrabold text-[#239BA2] shadow-sm">
+                  <Gift className="h-3 w-3 text-[#239BA2]" />
+                  <span>{t("Regalo mensual para ti", "Your monthly gift")}</span>
+                </div>
+                <span className="rounded-full bg-[#239BA2]/15 px-2 py-0.5 text-[10px] font-bold text-[#239BA2]">
+                  {t("1 gratis al mes", "1 free/month")}
+                </span>
+              </div>
+
+              <div className="mt-2 space-y-0.5">
+                <h4 className="text-xs sm:text-sm font-bold text-espresso">
+                  {t("1 Sesión 1-a-1 de Coaching o Sanación", "1 Free 1-on-1 Coaching Session")}
+                </h4>
+                <p className="text-[11px] text-espresso/70 leading-relaxed">
+                  {t(
+                    "Acompañamiento individual con nuestros terapeutas para dudas de tratamiento, nutrición o calma.",
+                    "Personalized 1-on-1 guidance with our healers for questions, nutrition, or calm."
+                  )}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => openSheet("book", { gratis: "1", modalidad: "online" })}
+                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full bg-[#239BA2] py-2 text-xs font-bold text-white shadow-[0_6px_16px_rgba(35,155,162,0.25)] transition hover:bg-[#1f878d] active:scale-95"
+              >
+                <HeartHandshake className="h-3.5 w-3.5" />
+                <span>{t("Agendar mi sesión gratis", "Book my free session")}</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {previewCircleIdx !== null && (
@@ -1335,7 +1431,7 @@ export function RecursosSection({
             </h2>
           </div>
 
-          <label className="flex items-center gap-2 rounded-full border border-espresso/10 bg-white px-4 py-2 shadow-2xs sm:w-64">
+          <label className="flex items-center gap-2 rounded-full border border-espresso/10 bg-white px-4 py-2 shadow-sm sm:w-64">
             <Search className="h-3.5 w-3.5 text-espresso/40" />
             <input
               type="text"
@@ -1364,7 +1460,7 @@ export function RecursosSection({
             className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
               hubCategory === "todos"
                 ? "bg-[#E8809A] text-white shadow-[0_6px_16px_rgba(232,128,154,0.3)]"
-                : "bg-white text-espresso/70 shadow-2xs hover:bg-[#FAF7F2]"
+                : "bg-white text-espresso/70 shadow-sm hover:bg-[#FAF7F2]"
             }`}
           >
             {t("Todas", "All")} ({freeLibrary.length})
@@ -1379,7 +1475,7 @@ export function RecursosSection({
                 className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
                   active
                     ? "bg-[#E8809A] text-white shadow-[0_6px_16px_rgba(232,128,154,0.3)]"
-                    : "bg-white text-espresso/70 shadow-2xs hover:bg-[#FAF7F2]"
+                    : "bg-white text-espresso/70 shadow-sm hover:bg-[#FAF7F2]"
                 }`}
               >
                 {isEs ? col.shortEs : col.shortEn} ({items.length})
@@ -1646,7 +1742,7 @@ function ClassListCard({
         type="button"
         onClick={onOpen}
         style={{ backgroundColor: locked ? "#FAF7F2" : pastelBg, color: locked ? "#262322" : accent }}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-2xs transition group-hover:scale-105 active:scale-95"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-sm transition group-hover:scale-105 active:scale-95"
         aria-label={t("Iniciar práctica", "Start practice")}
       >
         {locked ? (
@@ -1696,7 +1792,7 @@ function MediaCard({
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
           {item.duracion && (
-            <span className="absolute bottom-2.5 left-2.5 rounded-full bg-white/95 px-2.5 py-0.5 text-[10px] font-bold text-espresso shadow-2xs">
+            <span className="absolute bottom-2.5 left-2.5 rounded-full bg-white/95 px-2.5 py-0.5 text-[10px] font-bold text-espresso shadow-sm">
               {item.duracion}
             </span>
           )}

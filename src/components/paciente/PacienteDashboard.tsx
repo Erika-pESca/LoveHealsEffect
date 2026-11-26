@@ -3,12 +3,15 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  Activity,
   Bell,
   BookOpen,
   CalendarHeart,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   Copy,
   Crown,
   Droplets,
@@ -30,10 +33,12 @@ import {
   Pill,
   Play,
   Plus,
+  ScanSearch,
   Send,
   Share2,
   Sparkles,
   Stethoscope,
+  Syringe,
   Trash2,
   Upload,
   UserCog,
@@ -109,6 +114,207 @@ export const HABIT_COLORS = [
   "bg-[#D9E8FB]",
   "bg-[#E4E0FA]",
 ];
+
+const BITACORA_TYPE_OPTIONS: Array<{
+  id: string;
+  es: string;
+  en: string;
+  descEs: string;
+  descEn: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+  pastelBg: string;
+}> = [
+  {
+    id: "sintoma",
+    es: "Síntoma",
+    en: "Symptom",
+    descEs: "Cómo se siente tu cuerpo",
+    descEn: "How your body feels",
+    icon: Activity,
+    accent: "#C9526D",
+    pastelBg: "#FFF0EC",
+  },
+  {
+    id: "cita",
+    es: "Cita médica",
+    en: "Medical visit",
+    descEs: "Consulta con especialista",
+    descEn: "Specialist appointment",
+    icon: Stethoscope,
+    accent: "#239BA2",
+    pastelBg: "#E5F2F1",
+  },
+  {
+    id: "procedimiento",
+    es: "Procedimiento",
+    en: "Procedure",
+    descEs: "Quimio, radio o examen",
+    descEn: "Chemo, radiation or exam",
+    icon: Syringe,
+    accent: "#239BA2",
+    pastelBg: "#E6F4F2",
+  },
+  {
+    id: "medicamento",
+    es: "Medicina",
+    en: "Medication",
+    descEs: "Dosis, toma o ajuste",
+    descEn: "Dose or adjustment",
+    icon: Pill,
+    accent: "#C94A6A",
+    pastelBg: "#FCECEE",
+  },
+  {
+    id: "diagnostico",
+    es: "Diagnóstico",
+    en: "Diagnosis",
+    descEs: "Resultado o estudio",
+    descEn: "Result or study",
+    icon: ScanSearch,
+    accent: "#B8862D",
+    pastelBg: "#FFF4E2",
+  },
+  {
+    id: "documento",
+    es: "Documento",
+    en: "Document",
+    descEs: "Receta o informe médico",
+    descEn: "Prescription or report",
+    icon: FileText,
+    accent: "#B8862D",
+    pastelBg: "#F4F2E6",
+  },
+  {
+    id: "sanador",
+    es: "Sanador",
+    en: "Healer",
+    descEs: "Terapia o bienestar",
+    descEn: "Therapy or wellness",
+    icon: Sparkles,
+    accent: "#C94A6A",
+    pastelBg: "#FFF5F7",
+  },
+  {
+    id: "nota",
+    es: "Nota personal",
+    en: "Personal note",
+    descEs: "Dudas o reflexiones",
+    descEn: "Questions or thoughts",
+    icon: ClipboardList,
+    accent: "#5C8D67",
+    pastelBg: "#EAF4EC",
+  },
+];
+
+function BitacoraTypeDropdown({
+  value,
+  onChange,
+  isEs,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  isEs: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  const normalized = value === "consulta" ? "cita" : value === "quimio" ? "procedimiento" : value;
+  const activeOpt =
+    BITACORA_TYPE_OPTIONS.find((o) => o.id === normalized) || BITACORA_TYPE_OPTIONS[7];
+  const ActiveIcon = activeOpt.icon;
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`flex w-full items-center justify-between gap-2.5 rounded-2xl border bg-[#FAF7F2] px-3.5 py-2.5 text-left transition ${
+          open
+            ? "border-[#E8809A] bg-white ring-2 ring-[#E8809A]/25"
+            : "border-espresso/10 hover:border-[#E8809A]/45 hover:bg-white"
+        }`}
+      >
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-sm"
+            style={{ backgroundColor: activeOpt.pastelBg, color: activeOpt.accent }}
+          >
+            <ActiveIcon className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-extrabold text-espresso">
+              {isEs ? activeOpt.es : activeOpt.en}
+            </p>
+            <p className="truncate text-[10px] font-medium text-espresso/55">
+              {isEs ? activeOpt.descEs : activeOpt.descEn}
+            </p>
+          </div>
+        </div>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-espresso/45 transition-transform duration-200 ${
+            open ? "rotate-180 text-[#E8809A]" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="animate-fade-in absolute left-0 right-0 top-[calc(100%+6px)] z-50 grid grid-cols-1 gap-1 rounded-2xl border border-[#E8809A]/25 bg-white p-2 shadow-[0_18px_40px_rgba(38,35,34,0.16)] sm:grid-cols-2 sm:w-[380px]">
+          {BITACORA_TYPE_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            const isSelected = opt.id === activeOpt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  onChange(opt.id);
+                  setOpen(false);
+                }}
+                className={`group flex items-center gap-2.5 rounded-xl p-2 text-left transition ${
+                  isSelected
+                    ? "bg-[#FFF5F7] ring-1 ring-[#E8809A]/45"
+                    : "hover:bg-[#FAF7F2]"
+                }`}
+              >
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition group-hover:scale-105"
+                  style={{ backgroundColor: opt.pastelBg, color: opt.accent }}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold text-espresso">
+                    {isEs ? opt.es : opt.en}
+                  </p>
+                  <p className="truncate text-[10px] text-espresso/55">
+                    {isEs ? opt.descEs : opt.descEn}
+                  </p>
+                </div>
+                {isSelected && (
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E8809A] text-white">
+                    <Check className="h-3 w-3 stroke-[3]" />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const TIMELINE_META: Record<string, { es: string; en: string; emoji: string; bg: string }> = {
   etapa: { es: "Etapa", en: "Stage", emoji: "🌱", bg: "bg-[#D7F3EA]" },
@@ -247,7 +453,7 @@ export function PracticePlayer({
             <div className="absolute inset-0 bg-gradient-to-t from-espresso/65 via-espresso/15 to-transparent" />
 
             <div className="absolute left-3 right-3 top-3 flex items-center justify-between">
-              <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-espresso shadow-2xs">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-espresso shadow-sm">
                 {isEs ? meta.es : meta.en}
               </span>
               <span className="rounded-full bg-[#E8809A] px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
@@ -315,7 +521,7 @@ export function PracticePlayer({
                 <button
                   type="button"
                   onClick={() => skip(-15)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-espresso/70 shadow-2xs transition active:scale-90"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
                   aria-label="-15 segundos"
                 >
                   <span className="text-[11px] font-bold">-15s</span>
@@ -333,7 +539,7 @@ export function PracticePlayer({
                 <button
                   type="button"
                   onClick={() => skip(15)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-espresso/70 shadow-2xs transition active:scale-90"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-espresso/70 shadow-sm transition active:scale-90"
                   aria-label="+15 segundos"
                 >
                   <span className="text-[11px] font-bold">+15s</span>
@@ -354,7 +560,7 @@ export function PracticePlayer({
         </div>
 
         {primaryHealerName && primaryHealerName !== "Love Heals Effect" && (
-          <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-2xs">
+          <div className="rounded-2xl border border-espresso/10 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
               {healerPortrait ? (
                 <img
@@ -391,7 +597,7 @@ export function PracticePlayer({
                   <button
                     type="button"
                     onClick={() => onBookHealer(matchedHealer?.id)}
-                    className="rounded-full bg-[#E8809A] px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition hover:bg-[#d86c88]"
+                    className="rounded-full bg-[#E8809A] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#d86c88]"
                   >
                     {isEs ? "Reservar sesión" : "Book session"}
                   </button>
@@ -1622,15 +1828,11 @@ function PacienteDashboardInner() {
         >
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("Tipo", "Type")}>
-              <select className={inputCls} value={fv("tipo", "nota")} onChange={fs("tipo")}>
-                {Object.entries(TIMELINE_META)
-                  .filter(([k]) => k !== "etapa")
-                  .map(([k, m]) => (
-                    <option key={k} value={k}>
-                      {m.emoji} {isEs ? m.es : m.en}
-                    </option>
-                  ))}
-              </select>
+              <BitacoraTypeDropdown
+                value={fv("tipo", "nota")}
+                onChange={(val) => setForm((p) => ({ ...p, tipo: val }))}
+                isEs={isEs}
+              />
             </Field>
             <Field label={t("Fecha", "Date")}>
               <input
