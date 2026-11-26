@@ -481,6 +481,7 @@ function CuidadorDashboardInner() {
         {activeTab === "salud-paciente" && (
           <FichaPacienteSection
             t={t}
+            isEs={isEs}
             patientFirst={patientFirst}
             openConsult={openConsult}
             saludView={saludView}
@@ -500,11 +501,14 @@ function CuidadorDashboardInner() {
             t={t}
             isEs={isEs}
             patientFirst={patientFirst}
+            fp={fp}
             marks={marks}
             selectedDay={selectedDay}
             setSelectedDay={setSelectedDay}
             fmtDate={fmtDate}
             eventsByDay={eventsByDay}
+            upcoming={upcoming}
+            healerSessions={data.healerSessions || []}
             runAction={runAction}
             openSheet={openSheet}
             healers={healers}

@@ -1156,16 +1156,18 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "add_medication") {
-      const current = Array.isArray(ficha.medicamentos_y_horarios)
-        ? ficha.medicamentos_y_horarios
-        : [];
+      const current =
+        Array.isArray(ficha.medicamentos_y_horarios) &&
+        ficha.medicamentos_y_horarios.length > 0
+          ? [...ficha.medicamentos_y_horarios]
+          : [...SAMPLE_MEDICAMENTOS];
       const updated = [
         ...current,
         {
           id: Date.now(),
           nombre: payload.nombre,
-          dosis: payload.dosis,
-          horario: payload.horario,
+          dosis: payload.dosis || "",
+          horario: payload.horario || "",
           indicaciones: payload.indicaciones || "",
           contraindicaciones: payload.contraindicaciones || "",
         },
@@ -1177,10 +1179,35 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ ok: true, items: updated });
     }
 
+    if (action === "update_medication") {
+      const current =
+        Array.isArray(ficha.medicamentos_y_horarios) &&
+        ficha.medicamentos_y_horarios.length > 0
+          ? [...ficha.medicamentos_y_horarios]
+          : [...SAMPLE_MEDICAMENTOS];
+      const idx = Number(payload.index);
+      if (current[idx]) {
+        current[idx] = {
+          ...current[idx],
+          nombre: payload.nombre ?? current[idx].nombre,
+          dosis: payload.dosis ?? current[idx].dosis,
+          horario: payload.horario ?? current[idx].horario,
+          indicaciones: payload.indicaciones ?? current[idx].indicaciones,
+        };
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ medicamentos_y_horarios: current })
+          .eq("id", ficha.id);
+      }
+      return NextResponse.json({ ok: true, items: current });
+    }
+
     if (action === "delete_medication") {
-      const current = Array.isArray(ficha.medicamentos_y_horarios)
-        ? ficha.medicamentos_y_horarios
-        : [];
+      const current =
+        Array.isArray(ficha.medicamentos_y_horarios) &&
+        ficha.medicamentos_y_horarios.length > 0
+          ? [...ficha.medicamentos_y_horarios]
+          : [...SAMPLE_MEDICAMENTOS];
       const updated = current.filter(
         (_: any, idx: number) => idx !== payload.index
       );
@@ -1192,14 +1219,18 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "add_supplement") {
-      const current = Array.isArray(ficha.suplementos) ? ficha.suplementos : [];
+      const current =
+        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
+          ? [...ficha.suplementos]
+          : [...SAMPLE_SUPLEMENTOS];
       const updated = [
         ...current,
         {
           id: Date.now(),
           nombre: payload.nombre,
-          dosis: payload.dosis,
-          horario: payload.horario,
+          dosis: payload.dosis || "",
+          horario: payload.horario || "",
+          indicaciones: payload.indicaciones || "",
         },
       ];
       await supabaseAdmin
@@ -1209,8 +1240,33 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ ok: true, items: updated });
     }
 
+    if (action === "update_supplement") {
+      const current =
+        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
+          ? [...ficha.suplementos]
+          : [...SAMPLE_SUPLEMENTOS];
+      const idx = Number(payload.index);
+      if (current[idx]) {
+        current[idx] = {
+          ...current[idx],
+          nombre: payload.nombre ?? current[idx].nombre,
+          dosis: payload.dosis ?? current[idx].dosis,
+          horario: payload.horario ?? current[idx].horario,
+          indicaciones: payload.indicaciones ?? current[idx].indicaciones,
+        };
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ suplementos: current })
+          .eq("id", ficha.id);
+      }
+      return NextResponse.json({ ok: true, items: current });
+    }
+
     if (action === "delete_supplement") {
-      const current = Array.isArray(ficha.suplementos) ? ficha.suplementos : [];
+      const current =
+        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
+          ? [...ficha.suplementos]
+          : [...SAMPLE_SUPLEMENTOS];
       const updated = current.filter(
         (_: any, idx: number) => idx !== payload.index
       );
@@ -1358,8 +1414,10 @@ export async function PATCH(req: NextRequest) {
       if (base[idx]) {
         base[idx] = {
           ...base[idx],
+          titulo: payload.titulo ?? base[idx].titulo,
           fecha: payload.fecha || base[idx].fecha,
           hora: payload.hora ?? base[idx].hora,
+          lugar: payload.lugar ?? base[idx].lugar,
           notas: payload.notas ?? base[idx].notas,
         };
         await supabaseAdmin
