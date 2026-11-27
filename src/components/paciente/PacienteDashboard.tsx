@@ -1161,6 +1161,7 @@ function PacienteDashboardInner() {
         String(c.fecha).slice(0, 10),
         {
           kind: "med",
+          id: c.id,
           idx,
           title: c.titulo,
           sub: `${c.hora || ""}${c.hora && c.lugar ? " · " : ""}${c.lugar || ""}`.trim(),
@@ -1177,7 +1178,15 @@ function PacienteDashboardInner() {
       .filter((s: any) => s.estado_cita !== "cancelada")
       .forEach((s: any) => {
         const rawTime = String(s.fecha_sesion || "");
-        const timePart = rawTime.includes("T") ? rawTime.slice(11, 16) : "";
+        const timePart = s.hora || (rawTime.includes("T") ? rawTime.slice(11, 16) : "");
+        const modLabel =
+          s.modalidad === "presencial"
+            ? isEs
+              ? "Presencial Honolulu"
+              : "In-person Honolulu"
+            : isEs
+              ? "Zoom en vivo"
+              : "Live Zoom";
         push(
           rawTime.slice(0, 10),
           {
@@ -1185,7 +1194,10 @@ function PacienteDashboardInner() {
             sessionId: s.id,
             sample: Boolean(s.sample),
             title: s.enlace_o_lugar,
-            sub: `${s.modalidad === "presencial" ? (isEs ? "Presencial Honolulu" : "In-person Honolulu") : "Zoom en vivo"}${timePart ? ` · ${timePart}` : ""}`,
+            sub: `${modLabel}${timePart ? ` · ${timePart}` : ""}`,
+            hora: timePart || "10:00 AM",
+            lugar: modLabel,
+            notas: s.transcripcion_o_notas || "",
             modalidad: s.modalidad || "online",
             estado: s.estado_cita || "programada",
             gratis: Boolean(s.es_sesion_gratuita_mensual),
@@ -2062,22 +2074,107 @@ function PacienteDashboardInner() {
         </form>
       </Sheet>
 
-      <Sheet open={sheet === "add-cita"} onClose={() => setSheet(null)} title={t("Nueva cita médica", "New medical visit")}>
+      <Sheet
+        open={sheet === "add-cita"}
+        onClose={() => setSheet(null)}
+        title={
+          fv("edit_idx") !== ""
+            ? t("Editar cita médica", "Edit medical visit")
+            : t("Nueva cita médica", "New medical visit")
+        }
+      >
         <form
           className="space-y-4"
           onSubmit={async (e) => {
             e.preventDefault();
-            const ok = await runAction("add_medical_appointment", { titulo: fv("titulo"), fecha: fv("fecha"), hora: fv("hora"), lugar: fv("lugar") || "Centro Oncológico" }, t("Cita agregada al calendario", "Visit added to calendar"));
-            if (ok) setSheet(null);
+            const isEditing = fv("edit_idx") !== "";
+            const targetDate = fv("fecha", todayKey());
+            const ok = await runAction(
+              isEditing ? "update_medical_appointment" : "add_medical_appointment",
+              {
+                ...(isEditing
+                  ? {
+                      index: Number(fv("edit_idx")),
+                      ...(fv("edit_id") ? { id: fv("edit_id") } : {}),
+                    }
+                  : {}),
+                titulo: fv("titulo"),
+                fecha: targetDate,
+                hora: fv("hora") || "09:30 AM",
+                lugar: fv("lugar") || "Centro Oncológico",
+                medico: fv("medico"),
+                notas: fv("notas"),
+              },
+              isEditing
+                ? t("Cita actualizada en el calendario", "Visit updated in calendar")
+                : t("Cita agregada al calendario", "Visit added to calendar")
+            );
+            if (ok) {
+              setSelectedDay(targetDate);
+              setSheet(null);
+            }
           }}
         >
-          <Field label={t("Motivo", "Reason")}><input required className={inputCls} value={fv("titulo")} onChange={fs("titulo")} placeholder={t("Control con oncología", "Oncology check-up")} /></Field>
+          <Field label={t("Motivo de la cita", "Reason for visit")}>
+            <input
+              required
+              className={inputCls}
+              value={fv("titulo")}
+              onChange={fs("titulo")}
+              placeholder={t("Ej. Control con oncología o laboratorio", "E.g. Oncology check-up or lab")}
+            />
+          </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label={t("Fecha", "Date")}><input required type="date" className={inputCls} value={fv("fecha")} onChange={fs("fecha")} /></Field>
-            <Field label={t("Hora", "Time")}><input className={inputCls} value={fv("hora")} onChange={fs("hora")} /></Field>
+            <Field label={t("Fecha", "Date")}>
+              <input
+                required
+                type="date"
+                className={inputCls}
+                value={fv("fecha", todayKey())}
+                onChange={fs("fecha")}
+              />
+            </Field>
+            <Field label={t("Hora", "Time")}>
+              <input
+                className={inputCls}
+                value={fv("hora", "09:30 AM")}
+                onChange={fs("hora")}
+                placeholder="09:30 AM"
+              />
+            </Field>
           </div>
-          <Field label={t("Lugar", "Place")}><input className={inputCls} value={fv("lugar")} onChange={fs("lugar")} placeholder="Queen's Medical Center" /></Field>
-          <PrimaryButton type="submit" color="from-[#4DB6B0] to-[#239BA2]">{t("Agregar cita", "Add visit")}</PrimaryButton>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("Médico / Especialista", "Doctor / Specialist")}>
+              <input
+                className={inputCls}
+                value={fv("medico")}
+                onChange={fs("medico")}
+                placeholder="Dra. Sarah Jenkins"
+              />
+            </Field>
+            <Field label={t("Lugar / Clínica", "Place / Clinic")}>
+              <input
+                className={inputCls}
+                value={fv("lugar")}
+                onChange={fs("lugar")}
+                placeholder="Queen's Medical Center"
+              />
+            </Field>
+          </div>
+          <Field label={t("Notas o indicaciones (opcional)", "Notes or instructions (optional)")}>
+            <textarea
+              rows={2}
+              className={inputCls}
+              value={fv("notas")}
+              onChange={fs("notas")}
+              placeholder={t("Ej. Asistir en ayuno, llevar últimos estudios...", "E.g. Fast before visit, bring latest labs...")}
+            />
+          </Field>
+          <PrimaryButton type="submit" color="from-[#4DB6B0] to-[#239BA2]">
+            {fv("edit_idx") !== ""
+              ? t("Guardar cambios", "Save changes")
+              : t("Agregar cita al calendario", "Add visit to calendar")}
+          </PrimaryButton>
         </form>
       </Sheet>
 
@@ -2086,21 +2183,31 @@ function PacienteDashboardInner() {
           className="space-y-4"
           onSubmit={async (e) => {
             e.preventDefault();
-            const h = healers.find((x) => String(x.id) === fv("healer"));
-            const name = String(h?.especialidad || "Sanador").split("·")[0].trim();
+            const h = healers.find((x) => String(x.id) === fv("healer")) || healers[0];
+            const name = String(h?.especialidad || "Kelsie & Omar").split("·")[0].trim();
             const modal = fv("modalidad", "online");
+            const datePicked = fv("fecha", todayKey());
+            const horaPicked = fv("hora", "10:00 AM");
+            const customTitle = fv("titulo").trim();
             const ok = await runAction(
               "book_healer_session",
               {
                 sanador_usuario_id: h?.sanador_usuario_id || 3,
                 modalidad: modal,
-                fecha_sesion: new Date(`${fv("fecha")}T10:00:00`).toISOString(),
+                fecha_sesion: `${datePicked}T10:00:00-10:00`,
+                hora: horaPicked,
                 es_sesion_gratuita_mensual: fv("gratis") === "1",
-                enlace_o_lugar: `${name} (${modal === "online" ? t("Videollamada", "Video call") : t("Presencial", "In person")})`,
+                enlace_o_lugar:
+                  customTitle ||
+                  `${t("Sesión con", "Session with")} ${name} (${modal === "online" ? t("Zoom en vivo", "Live Zoom") : t("Presencial", "In person")})`,
+                notas: fv("notas"),
               },
-              t("¡Sesión reservada!", "Session booked!")
+              t("¡Sesión reservada en tu calendario!", "Session booked in your calendar!")
             );
-            if (ok) setSheet(null);
+            if (ok) {
+              setSelectedDay(datePicked);
+              setSheet(null);
+            }
           }}
         >
           <div className="space-y-2.5">
@@ -2120,11 +2227,21 @@ function PacienteDashboardInner() {
             })}
           </div>
           <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#FAF7F2] p-1.5">
-            {([["online", "Online"], ["presencial", t("En persona", "In person")]] as const).map(([id, label]) => (
+            {([["online", "Online (Zoom)"], ["presencial", t("En persona", "In person")]] as const).map(([id, label]) => (
               <button key={id} type="button" onClick={() => setForm((p) => ({ ...p, modalidad: id }))} className={`rounded-full py-2 text-xs font-bold ${fv("modalidad", "online") === id ? "bg-espresso text-white" : "text-espresso/60"}`}>{label}</button>
             ))}
           </div>
-          <Field label={t("Fecha", "Date")}><input required type="date" className={inputCls} value={fv("fecha")} onChange={fs("fecha")} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("Fecha", "Date")}>
+              <input required type="date" className={inputCls} value={fv("fecha", todayKey())} onChange={fs("fecha")} />
+            </Field>
+            <Field label={t("Hora", "Time")}>
+              <input className={inputCls} value={fv("hora", "10:00 AM")} onChange={fs("hora")} placeholder="10:00 AM" />
+            </Field>
+          </div>
+          <Field label={t("Motivo o nota para tu sanador (opcional)", "Note for your healer (optional)")}>
+            <input className={inputCls} value={fv("notas")} onChange={fs("notas")} placeholder={t("Ej. Respiración, manejo de ansiedad, BAM...", "E.g. Breathwork, anxiety relief, BAM...")} />
+          </Field>
           <label className="flex items-center gap-3 rounded-2xl bg-[#E7F2F1] px-4 py-3 text-sm font-semibold text-espresso">
             <input type="checkbox" checked={fv("gratis") === "1"} onChange={(e) => setForm((p) => ({ ...p, gratis: e.target.checked ? "1" : "0" }))} className="h-5 w-5 accent-[#D85678]" />
             {t("Usar mi sesión gratuita del mes", "Use my free session this month")}

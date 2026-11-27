@@ -641,6 +641,7 @@ async function resolvePatientAndFicha(req: NextRequest) {
     const { data: createdFicha } = await supabaseAdmin
       .from("ficha_paciente")
       .insert({
+        _seeded: true,
         nombre_familia: `Familia de ${user.nombre.split(" ")[0]}`,
         paciente_usuario_id: user.id,
         nombre_paciente: user.nombre,
@@ -649,6 +650,8 @@ async function resolvePatientAndFicha(req: NextRequest) {
         historia_medica: SAMPLE_HISTORIA,
         alergias: SAMPLE_ALERGIAS,
         datos_nutricionales: SAMPLE_NUTRICION,
+        bienestar_diario: {},
+        bitacora_clinica: SAMPLE_BITACORA,
         suplementos: SAMPLE_SUPLEMENTOS,
         resultados_laboratorio: SAMPLE_BITACORA,
         medicamentos_y_horarios: SAMPLE_MEDICAMENTOS,
@@ -662,6 +665,7 @@ async function resolvePatientAndFicha(req: NextRequest) {
 
     ficha = createdFicha || {
       id: 1,
+      _seeded: true,
       nombre_familia: `Familia de ${user.nombre.split(" ")[0]}`,
       paciente_usuario_id: user.id,
       cuidador_usuario_id: null,
@@ -672,6 +676,8 @@ async function resolvePatientAndFicha(req: NextRequest) {
       historia_medica: SAMPLE_HISTORIA,
       alergias: SAMPLE_ALERGIAS,
       datos_nutricionales: SAMPLE_NUTRICION,
+      bienestar_diario: {},
+      bitacora_clinica: SAMPLE_BITACORA,
       suplementos: SAMPLE_SUPLEMENTOS,
       resultados_laboratorio: SAMPLE_BITACORA,
       medicamentos_y_horarios: SAMPLE_MEDICAMENTOS,
@@ -679,6 +685,74 @@ async function resolvePatientAndFicha(req: NextRequest) {
       documentos_oncologo: SAMPLE_DOCUMENTOS,
       contactos_personales: SAMPLE_CONTACTOS,
     };
+  } else if (!ficha._seeded) {
+    const seededPatch = {
+      _seeded: true,
+      historia_medica: ficha.historia_medica || SAMPLE_HISTORIA,
+      alergias: ficha.alergias || SAMPLE_ALERGIAS,
+      datos_nutricionales: ficha.datos_nutricionales || SAMPLE_NUTRICION,
+      bienestar_diario:
+        ficha.bienestar_diario && typeof ficha.bienestar_diario === "object"
+          ? ficha.bienestar_diario
+          : {},
+      bitacora_clinica:
+        Array.isArray(ficha.bitacora_clinica) && ficha.bitacora_clinica.length > 0
+          ? ficha.bitacora_clinica
+          : Array.isArray(ficha.resultados_laboratorio) && ficha.resultados_laboratorio.length > 0
+            ? ficha.resultados_laboratorio
+            : SAMPLE_BITACORA,
+      suplementos:
+        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
+          ? ficha.suplementos
+          : SAMPLE_SUPLEMENTOS,
+      medicamentos_y_horarios:
+        Array.isArray(ficha.medicamentos_y_horarios) && ficha.medicamentos_y_horarios.length > 0
+          ? ficha.medicamentos_y_horarios
+          : SAMPLE_MEDICAMENTOS,
+      citas_medicas:
+        Array.isArray(ficha.citas_medicas) && ficha.citas_medicas.length > 0
+          ? ficha.citas_medicas
+          : SAMPLE_CITAS,
+      documentos_oncologo:
+        Array.isArray(ficha.documentos_oncologo) && ficha.documentos_oncologo.length > 0
+          ? ficha.documentos_oncologo
+          : SAMPLE_DOCUMENTOS,
+      contactos_personales:
+        Array.isArray(ficha.contactos_personales) && ficha.contactos_personales.length > 0
+          ? ficha.contactos_personales
+          : SAMPLE_CONTACTOS,
+    };
+    await supabaseAdmin.from("ficha_paciente").update(seededPatch).eq("id", ficha.id);
+    ficha = { ...ficha, ...seededPatch };
+  }
+
+  // Sembrar sesiones de sanador iniciales una sola vez por ficha para que se puedan editar y eliminar en la BD
+  if (!ficha._sessions_seeded) {
+    const { data: existingSessions } = await supabaseAdmin
+      .from("citas_y_bitacora_sanador")
+      .select("*")
+      .eq("ficha_paciente_id", ficha.id);
+    if (!Array.isArray(existingSessions) || existingSessions.length === 0) {
+      for (const s of SAMPLE_HEALER_SESSIONS) {
+        await supabaseAdmin.from("citas_y_bitacora_sanador").insert({
+          ficha_paciente_id: ficha.id,
+          sanador_usuario_id: s.sanador_usuario_id || 3,
+          reservado_por_usuario_id: user.id,
+          asistente_rol: s.asistente_rol || "paciente",
+          modalidad: s.modalidad || "online",
+          fecha_sesion: s.fecha_sesion,
+          es_sesion_gratuita_mensual: Boolean(s.es_sesion_gratuita_mensual),
+          enlace_o_lugar: s.enlace_o_lugar,
+          zoom_url: s.zoom_url || "https://zoom.us/j/lovehealseffect-circle",
+          estado_cita: "programada",
+        });
+      }
+    }
+    await supabaseAdmin
+      .from("ficha_paciente")
+      .update({ _sessions_seeded: true })
+      .eq("id", ficha.id);
+    ficha = { ...ficha, _sessions_seeded: true };
   }
 
   return { user, ficha };
@@ -783,22 +857,17 @@ export async function GET(req: NextRequest) {
 
     // Citas con sanadores (citas_y_bitacora_sanador)
     const sessionsData = sessionsDataRes?.data;
-    const healerSessions =
-      Array.isArray(sessionsData) && sessionsData.length > 0
-        ? sessionsData
-        : SAMPLE_HEALER_SESSIONS;
+    const healerSessions = Array.isArray(sessionsData) ? sessionsData : [];
 
     // Tickets de soporte / feedback enviados por la paciente
     const ticketsData = ticketsDataRes?.data;
     const tickets = Array.isArray(ticketsData) ? ticketsData : [];
 
-    const rawBitacora =
-      Array.isArray(ficha.bitacora_clinica) && ficha.bitacora_clinica.length > 0
-        ? ficha.bitacora_clinica
-        : Array.isArray(ficha.resultados_laboratorio) &&
-          ficha.resultados_laboratorio.length > 0
+    const rawBitacora = Array.isArray(ficha.bitacora_clinica)
+      ? ficha.bitacora_clinica
+      : Array.isArray(ficha.resultados_laboratorio)
         ? ficha.resultados_laboratorio
-        : SAMPLE_BITACORA;
+        : [];
 
     return NextResponse.json({
       ok: true,
@@ -806,38 +875,26 @@ export async function GET(req: NextRequest) {
       ficha: {
         ...ficha,
         etapa_actual: ficha.etapa_actual || "tratamiento_activo",
-        historia_medica: ficha.historia_medica || SAMPLE_HISTORIA,
-        alergias: ficha.alergias || SAMPLE_ALERGIAS,
-        datos_nutricionales: ficha.datos_nutricionales || SAMPLE_NUTRICION,
+        historia_medica: ficha.historia_medica ?? "",
+        alergias: ficha.alergias ?? "",
+        datos_nutricionales: ficha.datos_nutricionales ?? "",
         bienestar_diario:
           ficha.bienestar_diario && typeof ficha.bienestar_diario === "object"
             ? ficha.bienestar_diario
             : {},
         bitacora_clinica: rawBitacora,
-        suplementos:
-          Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
-            ? ficha.suplementos
-            : SAMPLE_SUPLEMENTOS,
+        suplementos: Array.isArray(ficha.suplementos) ? ficha.suplementos : [],
         resultados_laboratorio: rawBitacora,
-        medicamentos_y_horarios:
-          Array.isArray(ficha.medicamentos_y_horarios) &&
-          ficha.medicamentos_y_horarios.length > 0
-            ? ficha.medicamentos_y_horarios
-            : SAMPLE_MEDICAMENTOS,
-        citas_medicas:
-          Array.isArray(ficha.citas_medicas) && ficha.citas_medicas.length > 0
-            ? ficha.citas_medicas
-            : SAMPLE_CITAS,
-        documentos_oncologo:
-          Array.isArray(ficha.documentos_oncologo) &&
-          ficha.documentos_oncologo.length > 0
-            ? ficha.documentos_oncologo
-            : SAMPLE_DOCUMENTOS,
-        contactos_personales:
-          Array.isArray(ficha.contactos_personales) &&
-          ficha.contactos_personales.length > 0
-            ? ficha.contactos_personales
-            : SAMPLE_CONTACTOS,
+        medicamentos_y_horarios: Array.isArray(ficha.medicamentos_y_horarios)
+          ? ficha.medicamentos_y_horarios
+          : [],
+        citas_medicas: Array.isArray(ficha.citas_medicas) ? ficha.citas_medicas : [],
+        documentos_oncologo: Array.isArray(ficha.documentos_oncologo)
+          ? ficha.documentos_oncologo
+          : [],
+        contactos_personales: Array.isArray(ficha.contactos_personales)
+          ? ficha.contactos_personales
+          : [],
       },
       caregiver,
       healers,
@@ -862,13 +919,11 @@ export async function PATCH(req: NextRequest) {
 
     // ---- Línea de tiempo clínica (bitácora): eventos automáticos ----
     const today = new Date().toLocaleDateString("en-CA");
-    const timeline: any[] =
-      Array.isArray(ficha.bitacora_clinica) && ficha.bitacora_clinica.length > 0
-        ? [...ficha.bitacora_clinica]
-        : Array.isArray(ficha.resultados_laboratorio) &&
-          ficha.resultados_laboratorio.length > 0
+    const timeline: any[] = Array.isArray(ficha.bitacora_clinica)
+      ? [...ficha.bitacora_clinica]
+      : Array.isArray(ficha.resultados_laboratorio)
         ? [...ficha.resultados_laboratorio]
-        : [...SAMPLE_BITACORA];
+        : [];
 
     const pushTimeline = async (entry: Record<string, any>) => {
       timeline.unshift({
@@ -1156,11 +1211,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "add_medication") {
-      const current =
-        Array.isArray(ficha.medicamentos_y_horarios) &&
-        ficha.medicamentos_y_horarios.length > 0
-          ? [...ficha.medicamentos_y_horarios]
-          : [...SAMPLE_MEDICAMENTOS];
+      const current = Array.isArray(ficha.medicamentos_y_horarios)
+        ? [...ficha.medicamentos_y_horarios]
+        : [];
       const updated = [
         ...current,
         {
@@ -1170,6 +1223,7 @@ export async function PATCH(req: NextRequest) {
           horario: payload.horario || "",
           indicaciones: payload.indicaciones || "",
           contraindicaciones: payload.contraindicaciones || "",
+          medico: payload.medico || "",
         },
       ];
       await supabaseAdmin
@@ -1180,11 +1234,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "update_medication") {
-      const current =
-        Array.isArray(ficha.medicamentos_y_horarios) &&
-        ficha.medicamentos_y_horarios.length > 0
-          ? [...ficha.medicamentos_y_horarios]
-          : [...SAMPLE_MEDICAMENTOS];
+      const current = Array.isArray(ficha.medicamentos_y_horarios)
+        ? [...ficha.medicamentos_y_horarios]
+        : [];
       const idx = Number(payload.index);
       if (current[idx]) {
         current[idx] = {
@@ -1193,6 +1245,9 @@ export async function PATCH(req: NextRequest) {
           dosis: payload.dosis ?? current[idx].dosis,
           horario: payload.horario ?? current[idx].horario,
           indicaciones: payload.indicaciones ?? current[idx].indicaciones,
+          contraindicaciones:
+            payload.contraindicaciones ?? current[idx].contraindicaciones ?? "",
+          medico: payload.medico ?? current[idx].medico ?? "",
         };
         await supabaseAdmin
           .from("ficha_paciente")
@@ -1203,11 +1258,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "delete_medication") {
-      const current =
-        Array.isArray(ficha.medicamentos_y_horarios) &&
-        ficha.medicamentos_y_horarios.length > 0
-          ? [...ficha.medicamentos_y_horarios]
-          : [...SAMPLE_MEDICAMENTOS];
+      const current = Array.isArray(ficha.medicamentos_y_horarios)
+        ? [...ficha.medicamentos_y_horarios]
+        : [];
       const updated = current.filter(
         (_: any, idx: number) => idx !== payload.index
       );
@@ -1219,10 +1272,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "add_supplement") {
-      const current =
-        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
-          ? [...ficha.suplementos]
-          : [...SAMPLE_SUPLEMENTOS];
+      const current = Array.isArray(ficha.suplementos)
+        ? [...ficha.suplementos]
+        : [];
       const updated = [
         ...current,
         {
@@ -1241,10 +1293,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "update_supplement") {
-      const current =
-        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
-          ? [...ficha.suplementos]
-          : [...SAMPLE_SUPLEMENTOS];
+      const current = Array.isArray(ficha.suplementos)
+        ? [...ficha.suplementos]
+        : [];
       const idx = Number(payload.index);
       if (current[idx]) {
         current[idx] = {
@@ -1263,10 +1314,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "delete_supplement") {
-      const current =
-        Array.isArray(ficha.suplementos) && ficha.suplementos.length > 0
-          ? [...ficha.suplementos]
-          : [...SAMPLE_SUPLEMENTOS];
+      const current = Array.isArray(ficha.suplementos)
+        ? [...ficha.suplementos]
+        : [];
       const updated = current.filter(
         (_: any, idx: number) => idx !== payload.index
       );
@@ -1331,9 +1381,10 @@ export async function PATCH(req: NextRequest) {
         {
           id: Date.now(),
           titulo: payload.titulo,
-          fecha: payload.fecha,
+          fecha: String(payload.fecha || today).slice(0, 10),
           hora: payload.hora || "09:00 AM",
           lugar: payload.lugar || "Clínica / Hospital",
+          medico: payload.medico || "",
           notas: payload.notas || "",
         },
       ];
@@ -1348,9 +1399,12 @@ export async function PATCH(req: NextRequest) {
       const current = Array.isArray(ficha.citas_medicas)
         ? ficha.citas_medicas
         : [];
-      const updated = current.filter(
-        (_: any, idx: number) => idx !== payload.index
-      );
+      const updated = current.filter((c: any, idx: number) => {
+        if (payload.id !== undefined && payload.id !== null && c.id !== undefined) {
+          return String(c.id) !== String(payload.id);
+        }
+        return idx !== Number(payload.index);
+      });
       await supabaseAdmin
         .from("ficha_paciente")
         .update({ citas_medicas: updated })
@@ -1365,15 +1419,17 @@ export async function PATCH(req: NextRequest) {
           ficha_paciente_id: ficha.id,
           sanador_usuario_id: payload.sanador_usuario_id || 3,
           reservado_por_usuario_id: user.id,
-          asistente_rol: "paciente",
+          asistente_rol: payload.rol_asistente || "paciente",
           modalidad: payload.modalidad || "online",
           fecha_sesion: payload.fecha_sesion,
+          hora: payload.hora || "",
           es_sesion_gratuita_mensual: Boolean(
             payload.es_sesion_gratuita_mensual
           ),
           enlace_o_lugar:
             payload.enlace_o_lugar ||
             "Sesión con Kelsie & Omar · Love Heals Effect",
+          transcripcion_o_notas: payload.notas || payload.mensaje || "",
           estado_cita: "programada",
         })
         .select("*")
@@ -1383,42 +1439,52 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (action === "reschedule_healer_session") {
-      if (payload.id && Number(payload.id) < 9000) {
+      if (payload.id) {
+        const patch: Record<string, any> = {
+          estado_cita: "programada",
+        };
+        if (payload.fecha_sesion) patch.fecha_sesion = payload.fecha_sesion;
+        if (payload.hora !== undefined) patch.hora = payload.hora;
+        if (payload.enlace_o_lugar !== undefined) patch.enlace_o_lugar = payload.enlace_o_lugar;
+        if (payload.modalidad !== undefined) patch.modalidad = payload.modalidad;
+        if (payload.notas !== undefined) patch.transcripcion_o_notas = payload.notas;
+
         await supabaseAdmin
           .from("citas_y_bitacora_sanador")
-          .update({
-            fecha_sesion: payload.fecha_sesion,
-            estado_cita: "reprogramada",
-          })
+          .update(patch)
           .eq("id", Number(payload.id));
       }
       return NextResponse.json({ ok: true });
     }
 
     if (action === "cancel_healer_session") {
-      if (payload.id && Number(payload.id) < 9000) {
+      if (payload.id) {
         await supabaseAdmin
           .from("citas_y_bitacora_sanador")
-          .update({ estado_cita: "cancelada" })
+          .delete()
           .eq("id", Number(payload.id));
       }
       return NextResponse.json({ ok: true });
     }
 
     if (action === "update_medical_appointment") {
-      const base =
-        Array.isArray(ficha.citas_medicas) && ficha.citas_medicas.length > 0
-          ? [...ficha.citas_medicas]
-          : [...SAMPLE_CITAS];
-      const idx = Number(payload.index);
-      if (base[idx]) {
-        base[idx] = {
-          ...base[idx],
-          titulo: payload.titulo ?? base[idx].titulo,
-          fecha: payload.fecha || base[idx].fecha,
-          hora: payload.hora ?? base[idx].hora,
-          lugar: payload.lugar ?? base[idx].lugar,
-          notas: payload.notas ?? base[idx].notas,
+      const base = Array.isArray(ficha.citas_medicas)
+        ? [...ficha.citas_medicas]
+        : [];
+      let targetIdx = Number(payload.index);
+      if (payload.id !== undefined && payload.id !== null) {
+        const foundIdx = base.findIndex((c: any) => String(c.id) === String(payload.id));
+        if (foundIdx >= 0) targetIdx = foundIdx;
+      }
+      if (base[targetIdx]) {
+        base[targetIdx] = {
+          ...base[targetIdx],
+          titulo: payload.titulo ?? base[targetIdx].titulo,
+          fecha: String(payload.fecha || base[targetIdx].fecha).slice(0, 10),
+          hora: payload.hora ?? base[targetIdx].hora,
+          lugar: payload.lugar ?? base[targetIdx].lugar,
+          medico: payload.medico ?? base[targetIdx].medico ?? "",
+          notas: payload.notas ?? base[targetIdx].notas,
         };
         await supabaseAdmin
           .from("ficha_paciente")
@@ -1440,6 +1506,8 @@ export async function PATCH(req: NextRequest) {
           rol: payload.rol || "Oncólogo / Médico",
           telefono: payload.telefono || "",
           correo: payload.correo || "",
+          clinica: payload.clinica || "",
+          notas: payload.notas || "",
         },
       ];
       await supabaseAdmin
@@ -1447,6 +1515,29 @@ export async function PATCH(req: NextRequest) {
         .update({ contactos_personales: updated })
         .eq("id", ficha.id);
       return NextResponse.json({ ok: true, items: updated });
+    }
+
+    if (action === "update_contact") {
+      const current = Array.isArray(ficha.contactos_personales)
+        ? [...ficha.contactos_personales]
+        : [];
+      const idx = Number(payload.index);
+      if (current[idx]) {
+        current[idx] = {
+          ...current[idx],
+          nombre: payload.nombre ?? current[idx].nombre,
+          rol: payload.rol ?? current[idx].rol,
+          telefono: payload.telefono ?? current[idx].telefono,
+          correo: payload.correo ?? current[idx].correo,
+          clinica: payload.clinica ?? current[idx].clinica ?? "",
+          notas: payload.notas ?? current[idx].notas ?? "",
+        };
+        await supabaseAdmin
+          .from("ficha_paciente")
+          .update({ contactos_personales: current })
+          .eq("id", ficha.id);
+      }
+      return NextResponse.json({ ok: true, items: current });
     }
 
     if (action === "delete_contact") {

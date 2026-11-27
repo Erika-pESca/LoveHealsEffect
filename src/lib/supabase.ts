@@ -20,7 +20,12 @@ const supabasePublishableKey = (
   ""
 ).trim();
 
+const forceLocalDb =
+  process.env.USE_LOCAL_DB === "true" ||
+  process.env.USE_LOCAL_DB === "1";
+
 const hasSupabaseConfig =
+  !forceLocalDb &&
   Boolean(supabaseUrl) &&
   Boolean(supabaseSecretKey || supabasePublishableKey) &&
   supabaseUrl.startsWith("http") &&
@@ -337,6 +342,9 @@ class LocalQueryBuilder {
   private filters: Array<(row: RowRecord) => boolean> = [];
   private payload: any = null;
   private headOnly = false;
+  private sortCol: string | null = null;
+  private sortAsc = true;
+  private maxRows: number | null = null;
 
   constructor(tableName: keyof LocalDatabaseSchema) {
     this.tableName = tableName;
@@ -367,12 +375,48 @@ class LocalQueryBuilder {
   }
 
   eq(column: string, value: any) {
-    this.filters.push((row) => row[column] === value);
+    this.filters.push(
+      (row) =>
+        row[column] === value ||
+        (row[column] !== null &&
+          row[column] !== undefined &&
+          value !== null &&
+          value !== undefined &&
+          String(row[column]) === String(value))
+    );
+    return this;
+  }
+
+  neq(column: string, value: any) {
+    this.filters.push((row) => row[column] !== value);
+    return this;
+  }
+
+  in(column: string, values: any[]) {
+    const set = new Set((values || []).map((v) => String(v)));
+    this.filters.push((row) => row[column] !== undefined && set.has(String(row[column])));
+    return this;
+  }
+
+  ilike(column: string, pattern: string) {
+    const clean = String(pattern || "").replace(/%/g, "").toLowerCase();
+    this.filters.push((row) => String(row[column] || "").toLowerCase().includes(clean));
     return this;
   }
 
   is(column: string, value: any) {
     this.filters.push((row) => (row[column] ?? null) === value);
+    return this;
+  }
+
+  order(column: string, options?: { ascending?: boolean }) {
+    this.sortCol = column;
+    this.sortAsc = options?.ascending !== false;
+    return this;
+  }
+
+  limit(count: number) {
+    this.maxRows = count;
     return this;
   }
 
@@ -397,7 +441,7 @@ class LocalQueryBuilder {
       };
     }
 
-    const matched = table.filter((row) => this.filters.every((fn) => fn(row)));
+    let matched = table.filter((row) => this.filters.every((fn) => fn(row)));
 
     if (this.operation === "update") {
       matched.forEach((row) => {
@@ -418,11 +462,24 @@ class LocalQueryBuilder {
       return { data: matched, error: null };
     }
 
-    if (this.headOnly) {
-      return { data: null, error: null, count: matched.length };
+    if (this.sortCol) {
+      const col = this.sortCol;
+      const dir = this.sortAsc ? 1 : -1;
+      matched = [...matched].sort((a, b) =>
+        String(a[col] ?? "").localeCompare(String(b[col] ?? "")) * dir
+      );
     }
 
-    return { data: matched, error: null, count: matched.length };
+    const totalCount = matched.length;
+    if (this.maxRows !== null && this.maxRows >= 0) {
+      matched = matched.slice(0, this.maxRows);
+    }
+
+    if (this.headOnly) {
+      return { data: null, error: null, count: totalCount };
+    }
+
+    return { data: matched, error: null, count: totalCount };
   }
 
   async maybeSingle() {
